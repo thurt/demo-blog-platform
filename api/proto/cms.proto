@@ -1,0 +1,69 @@
+syntax = "proto3";
+package cms;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+message Page {
+    string guid = 1;
+    string title = 2;
+    string content = 3;
+    string created = 4;
+    string edited = 5;
+}
+
+message Pages {
+    repeated Page pages = 1;
+}
+
+message Comment {
+    string author = 1;
+    string content = 2;
+    string created = 3;
+    string edited = 4;
+    string page_guid = 5;
+}
+
+message Comments {
+    repeated Comment comments = 1;
+}
+
+message User {
+    string username = 1;
+    string email = 2;
+    string created = 3;
+}
+
+message Users {
+    repeated User users = 1;
+}
+
+message PageId {
+    string guid = 1;
+}
+
+message CreatePageRequest {
+    string title = 1;
+    string content = 2;
+}
+
+service Cms {
+    rpc GetPage(PageId) returns (Page) {
+        option (google.api.http) = {
+            get: "/pages/{guid}"
+        };
+    }
+    rpc CreatePage(CreatePageRequest) returns (PageId) {
+        option (google.api.http) = {
+            post: "/pages"
+            body: "*"
+        };
+    }
+    rpc DeletePage(PageId) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/pages/{guid}"
+        };
+    }
+    rpc GetPageComments(PageId) returns (Comments) {} 
+}
+

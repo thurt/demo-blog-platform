@@ -1,0 +1,168 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "cms.proto",
+    "version": "version not set"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/pages": {
+      "post": {
+        "operationId": "CreatePage",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/cmsPageId"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cmsCreatePageRequest"
+            }
+          }
+        ],
+        "tags": [
+          "cms"
+        ]
+      }
+    },
+    "/pages/{guid}": {
+      "get": {
+        "operationId": "GetPage",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/cmsPage"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guid",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "cms"
+        ]
+      },
+      "delete": {
+        "operationId": "DeletePage",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/protobufEmpty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guid",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "cms"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cmsComment": {
+      "type": "object",
+      "properties": {
+        "author": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "created": {
+          "type": "string"
+        },
+        "edited": {
+          "type": "string"
+        },
+        "page_guid": {
+          "type": "string"
+        }
+      }
+    },
+    "cmsComments": {
+      "type": "object",
+      "properties": {
+        "comments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cmsComment"
+          }
+        }
+      }
+    },
+    "cmsCreatePageRequest": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    "cmsPage": {
+      "type": "object",
+      "properties": {
+        "guid": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "created": {
+          "type": "string"
+        },
+        "edited": {
+          "type": "string"
+        }
+      }
+    },
+    "cmsPageId": {
+      "type": "object",
+      "properties": {
+        "guid": {
+          "type": "string"
+        }
+      }
+    },
+    "protobufEmpty": {
+      "type": "object",
+      "description": "service Foo {\n      rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);\n    }\n\nThe JSON representation for `Empty` is empty JSON object `{}`.",
+      "title": "A generic empty message that you can re-use to avoid defining duplicated\nempty messages in your APIs. A typical example is to use it as the request\nor the response type of an API method. For instance:"
+    }
+  }
+}
