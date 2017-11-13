@@ -11,7 +11,7 @@ services:
             - cms-db
         volumes:
             - type: bind
-              source: ./third_party/wait-for-it/wait-for-it.sh
+              source: ../third_party/wait-for-it/wait-for-it.sh
               target: /usr/local/bin/wait-for-it.sh
         command: ["wait-for-it", "db:3306", "--", "go-wrapper", "run"] 
     cms-db:
