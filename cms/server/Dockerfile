@@ -8,4 +8,4 @@ RUN go-wrapper install
 
 CMD ["go-wrapper", "run"]
 
-EXPOSE 10000/TCP 8282/TCP
+EXPOSE 10000/TCP 8080/TCP
