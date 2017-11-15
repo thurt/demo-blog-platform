@@ -1,0 +1,23 @@
+version: "3.3"
+services:
+    server:
+        build: ./server
+        ports:
+            - "10000:10000" #grpc
+            - "8282:8080"   #rest
+        environment:
+            - DB_PASS
+        depends_on:
+            - db
+        command: ["/go/src/app/wait-for-it.sh", "--timeout=120", "db:3306", "--", "go-wrapper", "run"]
+    db:
+        build: ./db 
+        volumes:
+            - type: volume
+              source: db-data
+              target: /var/lib/mysql
+        environment:
+            - MYSQL_ROOT_PASSWORD=${DB_PASS}
+
+volumes:
+    db-data:

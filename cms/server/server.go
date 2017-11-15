@@ -11,10 +11,9 @@ import (
 	"golang.org/x/net/context"
 
 	empty "github.com/golang/protobuf/ptypes/empty"
-	pb "github.com/thurt/demo-blog-platform/api/proto"
+	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/grpclog"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -38,7 +37,18 @@ func newServer() *cmsServer {
 }
 
 func (s *cmsServer) GetPage(ctx context.Context, pid *pb.PageId) (*pb.Page, error) {
-	return &pb.Page{}, nil
+	thisPage := &pb.Page{}
+	// TODO: validate inputs
+
+	err := database.QueryRow("SELECT page_title, page_content, page_date, page_guid FROM pages WHERE page_guid=?", pid.GetGuid()).Scan(&thisPage.Title, &thisPage.Content, &thisPage.Created, &thisPage.Guid)
+
+	// TODO: return proper errors depending on results of previous code
+	if err != nil {
+		log.Println(err)
+		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
+	}
+
+	return thisPage, nil
 }
 
 func (s *cmsServer) CreatePage(ctx context.Context, cpr *pb.CreatePageRequest) (*pb.PageId, error) {
@@ -46,11 +56,11 @@ func (s *cmsServer) CreatePage(ctx context.Context, cpr *pb.CreatePageRequest) (
 	// TODO: create a scheme to create a page_guid from the page_title (currently using hardCodedValue)
 	hardCodedValue := "hard-coded"
 
-	timeNow := time.Now()
-	_, err := database.Exec("INSERT INTO pages SET page_guid=?, page_title=?, page_content=?, page_created=?, page_edited=?", hardCodedValue, cpr.GetTitle(), cpr.GetContent(), timeNow, timeNow)
+	_, err := database.Exec("INSERT INTO pages SET page_guid=?, page_title=?, page_content=?", hardCodedValue, cpr.GetTitle(), cpr.GetContent())
 
 	// TODO: return proper errors depending on the results of previous code (ie. sql row already exists, invalid inputs)
 	if err != nil {
+		log.Println(err)
 		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
 	}
 
@@ -58,11 +68,44 @@ func (s *cmsServer) CreatePage(ctx context.Context, cpr *pb.CreatePageRequest) (
 }
 
 func (s *cmsServer) DeletePage(ctx context.Context, pid *pb.PageId) (*empty.Empty, error) {
+	// TODO: validate inputs
+	_, err := database.Exec("DELETE FROM pages WHERE page_guid=?", pid.GetGuid())
+
+	// TODO: return proper errors depending on results of previous code
+	if err != nil {
+		log.Println(err)
+		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
+	}
 	return &empty.Empty{}, nil
 }
 
 func (s *cmsServer) GetPageComments(ctx context.Context, pid *pb.PageId) (*pb.Comments, error) {
-	return &pb.Comments{}, nil
+	// TODO: validate inputs
+
+	comments, err := database.Query("SELECT comment_name,comment_text,comment_date FROM comments WHERE page_guid=?", pid.GetGuid())
+
+	// TODO: return proper errors depending on results of previous code
+
+	if err != nil {
+		log.Println(err)
+		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
+	}
+	defer comments.Close()
+
+	var Comments []*pb.Comment
+
+	for comments.Next() {
+		thisComment := &pb.Comment{}
+		comments.Scan(&thisComment.Author, &thisComment.Content, &thisComment.Created)
+		Comments = append(Comments, thisComment)
+	}
+
+	if err = comments.Err(); err != nil {
+		log.Println(err)
+		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
+	}
+
+	return &pb.Comments{Comments}, nil
 }
 
 func main() {
@@ -85,18 +128,26 @@ func main() {
 	// setup grpc server
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", PORT))
 	if err != nil {
-		grpclog.Fatalf("failed to listen: %v", err)
-	}
-	var opts []grpc.ServerOption
-	grpcServer := grpc.NewServer(opts...)
-	pb.RegisterCmsServer(grpcServer, newServer())
-	err = grpcServer.Serve(lis)
-	if err != nil {
-		log.Println("Failed to start gRPC server")
+		log.Println("failed to listen")
 		panic(err.Error())
 	}
-	log.Printf("Started gRPC server (port %d)", PORT)
+	opts := []grpc.ServerOption{grpc.ConnectionTimeout(5 * time.Second)}
+	grpcServer := grpc.NewServer(opts...)
+	pb.RegisterCmsServer(grpcServer, newServer())
+	log.Printf("Started grpc server on port %d", PORT)
 
-	log.Println("Staring up proxy")
-	ProxyStartup()
+	go func() {
+		log.Println("Staring up rest-proxy")
+		err = ProxyServe()
+		if err != nil {
+			log.Println("proxy error")
+			panic(err.Error())
+		}
+	}()
+
+	err = grpcServer.Serve(lis)
+	if err != nil {
+		log.Println("grpc server net.Listen failed")
+		panic(err.Error())
+	}
 }

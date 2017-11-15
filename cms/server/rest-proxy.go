@@ -1,19 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
-	"github.com/golang/glog"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
-	pb "github.com/thurt/demo-blog-platform/api/proto"
+	pb "github.com/thurt/demo-blog-platform/cms/proto"
 )
 
-const (
-	GrpcHost = "localhost:10000"
-)
+var GrpcHost string
 
 func run() error {
 	ctx := context.Background()
@@ -22,6 +20,7 @@ func run() error {
 
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithInsecure()}
+	GrpcHost = fmt.Sprintf("localhost:%d", PORT)
 	err := pb.RegisterCmsHandlerFromEndpoint(ctx, mux, GrpcHost, opts)
 	if err != nil {
 		return err
@@ -30,10 +29,6 @@ func run() error {
 	return http.ListenAndServe(":8080", mux)
 }
 
-func ProxyStartup() {
-	defer glog.Flush()
-
-	if err := run(); err != nil {
-		glog.Fatal(err)
-	}
+func ProxyServe() error {
+	return run()
 }
