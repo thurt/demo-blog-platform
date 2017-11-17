@@ -4,66 +4,167 @@ package cms;
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 
-message Page {
-    string guid = 1;
-    string title = 2;
-    string content = 3;
-    string created = 4;
-    string edited = 5;
-}
+// Posts
+    message Post {
+        string id = 1;
+        string title = 2;
+        string content = 3;
+        string created = 4;
+        string last_edited = 5;
+    }
 
-message Pages {
-    repeated Page pages = 1;
-}
+    message Post {
+        repeated Post posts = 1;
+    }
 
-message Comment {
-    string author = 1;
-    string content = 2;
-    string created = 3;
-    string edited = 4;
-    string page_guid = 5;
-}
+    message PostId {
+        string id = 1;
+    }
 
-message Comments {
-    repeated Comment comments = 1;
-}
+    message CreatePostRequest {
+        string title = 1;
+        string content = 2;
+    }
 
-message User {
-    string username = 1;
-    string email = 2;
-    string created = 3;
-}
+    message UpdatePostRequest {
+        string id = 1;
+        string title = 1;
+        string content = 2;
+    }
 
-message Users {
-    repeated User users = 1;
-}
+// Comments
+    message Comment {
+        uint32 id = 1;
+        string content = 2;
+        string created = 3;
+        string last_edited = 4;
+        string user_id = 1;
+        string post_id = 5;
+    }
 
-message PageId {
-    string guid = 1;
-}
+    message Comments {
+        repeated Comment comments = 1;
+    }
 
-message CreatePageRequest {
-    string title = 1;
-    string content = 2;
-}
+    message CommentId {
+        uint32 id = 1;
+    }
+
+    message UpdateCommentRequest {
+        uint32 id = 1;
+        string content = 2;
+    }
+
+// Users
+    message User {
+        string id = 1;
+        string email = 2;
+        string created = 3;
+        string last_active = 4;
+    }
+
+    message Users {
+        repeated User users = 1;
+    }
+
+    message UserId {
+        string id = 1;
+    }
+
+    message CreateUserRequest {
+        string id = 1;
+        string email = 2;
+    }
 
 service Cms {
-    rpc GetPage(PageId) returns (Page) {
+// Post CRUD
+    rpc CreatePost(CreatePostRequest) returns (PostId) {
         option (google.api.http) = {
-            get: "/pages/{guid}"
-        };
-    }
-    rpc CreatePage(CreatePageRequest) returns (PageId) {
-        option (google.api.http) = {
-            post: "/pages"
+            post: "/posts"
             body: "*"
         };
     }
-    rpc DeletePage(PageId) returns (google.protobuf.Empty) {
+   rpc GetPost(PostId) returns (Post) {
         option (google.api.http) = {
-            delete: "/pages/{guid}"
+            get: "/posts/{id}"
         };
     }
-    rpc GetPageComments(PageId) returns (Comments) {} 
+    rpc UpdatePost(UpdatePostRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            put: "/posts/{id}"
+            body: "*"
+        };
+    }
+    rpc DeletePost(PostId) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/posts/{id}"
+        };
+    }
+// Post Use-Cases
+    rpc GetPostComments(PostId) returns (Comments) {
+        option (google.api.http) = {
+            get: "/posts/{id}/comments"
+        }
+    }
+    rpc GetPosts() return (Posts) {
+         option (google.api.http) = {
+            get: "/posts"
+        }
+    }
+    
+
+// User CRD
+    rpc CreateUser(CreateUserRequest) returns (User) {
+         option (google.api.http) = {
+            post: "/users"
+            body: "*"
+        }
+    }
+    rpc GetUser(UserId) returns (User) {
+        option (google.api.http) = {
+            get: "/users/{id}"
+        }
+    }
+   rpc DeleteUser(UserId) returns (google.protobuf.Empty) {
+         option (google.api.http) = {
+            delete: "/users/{id}"
+        }
+    
+// User Use-Cases
+    rpc GetUserComments(UserId) returns (Comments) {
+         option (google.api.http) = {
+            get: "/users/{id}/comments"
+        }
+    }
+
+// Comment CRUD
+    rpc CreateComment(CreateCommentRequest) returns (Comment) {
+         option (google.api.http) = {
+            post: "/comments"
+            body: "*"
+        }
+    }
+    rpc GetComment(CommentId) returns (Comment) {
+         option (google.api.http) = {
+            get: "/comments/{id}"
+        }
+    }
+    rpc UpdateComment(UpdateCommentRequest) returns (Comment) {
+        option (google.api.http) = {
+            put: "/comments/{id}"
+            body: "*"
+        }
+    }
+    rpc DeleteComment(CommentId) returns (google.protobuf.Empty) {
+         option (google.api.http) = {
+            delete: "/comments/{id}"
+        }
+    }
+// Comment Use-Cases
+    rpc GetComments() returns (Comments) {
+         option (google.api.http) = {
+            get: "/comments"
+        }
+    }
 }
 
