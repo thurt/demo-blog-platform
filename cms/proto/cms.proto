@@ -80,7 +80,7 @@ import "github.com/mwitkow/go-proto-validators/validator.proto";
 
 service Cms {
 // Post CRUD
-    rpc CreatePost(CreatePostRequest) returns (Post) {
+    rpc CreatePost(CreatePostRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/posts"
             body: "*"
@@ -116,7 +116,7 @@ service Cms {
     
 
 // User CRD
-    rpc CreateUser(CreateUserRequest) returns (User) {
+    rpc CreateUser(CreateUserRequest) returns (google.protobuf.Empty) {
          option (google.api.http) = {
             post: "/users"
             body: "*"
@@ -140,7 +140,7 @@ service Cms {
     }
 
 // Comment CRUD
-    rpc CreateComment(CreateCommentRequest) returns (Comment) {
+    rpc CreateComment(CreateCommentRequest) returns (google.protobuf.Empty) {
          option (google.api.http) = {
             post: "/comments"
             body: "*"
@@ -151,7 +151,7 @@ service Cms {
             get: "/comments/{id}"
         }
     }
-    rpc UpdateComment(UpdateCommentRequest) returns (Comment) {
+    rpc UpdateComment(UpdateCommentRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             put: "/comments/{id}"
             body: "*"
