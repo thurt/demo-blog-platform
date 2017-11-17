@@ -3,6 +3,7 @@ package cms;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
+import "github.com/mwitkow/go-proto-validators/validator.proto";
 
 // Posts
     message Post {
@@ -17,19 +18,20 @@ import "google/protobuf/empty.proto";
         repeated Post posts = 1;
     }
 
-    message PostId {
-        string id = 1;
+    message PostRequest {
+        string id = 1 [(validator.field) = {string_not_empty}];
     }
 
     message CreatePostRequest {
-        string title = 1;
-        string content = 2;
+        string title = 1 [(validator.field) = {string_not_empty}];
+        string content = 2 [(validator.field) = {string_not_empty}];
+
     }
 
     message UpdatePostRequest {
-        string id = 1;
-        string title = 1;
-        string content = 2;
+        string id = 1 [(validator.field) = {string_not_empty}];
+        string title = 2 [(validator.field) = {string_not_empty}];
+        string content = 3 [(validator.field) = {string_not_empty}]; 
     }
 
 // Comments
@@ -46,13 +48,13 @@ import "google/protobuf/empty.proto";
         repeated Comment comments = 1;
     }
 
-    message CommentId {
-        uint32 id = 1;
+    message CommentRequest {
+        uint32 id = 1 [(validator.field) = {int_gt: -1}];
     }
 
     message UpdateCommentRequest {
-        uint32 id = 1;
-        string content = 2;
+        uint32 id = 1 [(validator.field) = {int_gt: -1}];
+        string content = 2 [(validator.field) = {string_not_empty}]; 
     }
 
 // Users
@@ -67,24 +69,24 @@ import "google/protobuf/empty.proto";
         repeated User users = 1;
     }
 
-    message UserId {
-        string id = 1;
+    message UserRequest {
+        string id = 1 [(validator.field) = {string_not_empty}];
     }
 
     message CreateUserRequest {
-        string id = 1;
-        string email = 2;
+        string id = 1 [(validator.field) = {string_not_empty}];
+        string email = 2 [(validator.field) = {string_not_empty}];
     }
 
 service Cms {
 // Post CRUD
-    rpc CreatePost(CreatePostRequest) returns (PostId) {
+    rpc CreatePost(CreatePostRequest) returns (Post) {
         option (google.api.http) = {
             post: "/posts"
             body: "*"
         };
     }
-   rpc GetPost(PostId) returns (Post) {
+   rpc GetPost(PostRequest) returns (Post) {
         option (google.api.http) = {
             get: "/posts/{id}"
         };
@@ -95,13 +97,13 @@ service Cms {
             body: "*"
         };
     }
-    rpc DeletePost(PostId) returns (google.protobuf.Empty) {
+    rpc DeletePost(PostRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             delete: "/posts/{id}"
         };
     }
 // Post Use-Cases
-    rpc GetPostComments(PostId) returns (Comments) {
+    rpc GetPostComments(PostRequest) returns (Comments) {
         option (google.api.http) = {
             get: "/posts/{id}/comments"
         }
