@@ -103,12 +103,12 @@ service Cms {
         };
     }
 // Post Use-Cases
-    rpc GetPostComments(PostRequest) returns (Comments) {
+    rpc GetPostComments(PostRequest) returns (stream Comment) {
         option (google.api.http) = {
             get: "/posts/{id}/comments"
         }
     }
-    rpc GetPosts() return (Posts) {
+    rpc GetPosts() return (stream Post) {
          option (google.api.http) = {
             get: "/posts"
         }
@@ -133,7 +133,7 @@ service Cms {
         }
     
 // User Use-Cases
-    rpc GetUserComments(UserId) returns (Comments) {
+    rpc GetUserComments(UserId) returns (stream Comment) {
          option (google.api.http) = {
             get: "/users/{id}/comments"
         }
@@ -163,7 +163,7 @@ service Cms {
         }
     }
 // Comment Use-Cases
-    rpc GetComments() returns (Comments) {
+    rpc GetComments() returns (stream Comment) {
          option (google.api.http) = {
             get: "/comments"
         }
