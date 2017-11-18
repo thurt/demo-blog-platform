@@ -107,12 +107,12 @@ service Cms {
     }
     rpc PublishPost(PostRequest) return (google.protobuf.Empty) {
         option (google.api.http) = {
-            post: "/posts/{id}"
+            put: "/posts/{id}"
         }
     }
     rpc UnPublishPost(PostRequest) return (google.protobuf.Empty) {
         option (google.api.http) = {
-            post: "/posts/{id}"
+            put: "/posts/{id}"
         }
     }
     
