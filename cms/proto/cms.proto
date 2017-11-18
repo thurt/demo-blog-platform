@@ -19,19 +19,19 @@ import "github.com/mwitkow/go-proto-validators/validator.proto";
     }
 
     message PostRequest {
-        string id = 1 [(validator.field) = {string_not_empty}];
+        string id = 1 [(validator.field) = {string_not_empty: true}];
     }
 
     message CreatePostRequest {
-        string title = 1 [(validator.field) = {string_not_empty}];
-        string content = 2 [(validator.field) = {string_not_empty}];
+        string title = 1 [(validator.field) = {string_not_empty: true}];
+        string content = 2 [(validator.field) = {string_not_empty: true}];
 
     }
 
     message UpdatePostRequest {
-        string id = 1 [(validator.field) = {string_not_empty}];
-        string title = 2 [(validator.field) = {string_not_empty}];
-        string content = 3 [(validator.field) = {string_not_empty}]; 
+        string id = 1 [(validator.field) = {string_not_empty: true}];
+        string title = 2 [(validator.field) = {string_not_empty: true}];
+        string content = 3 [(validator.field) = {string_not_empty: true}]; 
     }
 
 // Comments
@@ -40,17 +40,21 @@ import "github.com/mwitkow/go-proto-validators/validator.proto";
         string content = 2;
         string created = 3;
         string last_edited = 4;
-        string user_id = 1;
-        string post_id = 5;
+        string user_id = 5;
+        string post_id = 6;
     }
 
     message CommentRequest {
         uint32 id = 1 [(validator.field) = {int_gt: -1}];
     }
 
+    message CreateCommentRequest {
+        string content = 1 [(validator.field) = {string_not_empty: true}];
+    }
+
     message UpdateCommentRequest {
         uint32 id = 1 [(validator.field) = {int_gt: -1}];
-        string content = 2 [(validator.field) = {string_not_empty}]; 
+        string content = 2 [(validator.field) = {string_not_empty: true}]; 
     }
 
 // Users
@@ -62,12 +66,12 @@ import "github.com/mwitkow/go-proto-validators/validator.proto";
     }
 
     message UserRequest {
-        string id = 1 [(validator.field) = {string_not_empty}];
+        string id = 1 [(validator.field) = {string_not_empty: true}];
     }
 
     message CreateUserRequest {
-        string id = 1 [(validator.field) = {string_not_empty}];
-        string email = 2 [(validator.field) = {string_not_empty}];
+        string id = 1 [(validator.field) = {string_not_empty: true}];
+        string email = 2 [(validator.field) = {string_not_empty: true}];
     }
 
 service Cms {
@@ -94,26 +98,26 @@ service Cms {
             delete: "/posts/{id}"
         };
     }
-// Post Use-Cases
+    // Post Use-Cases
     rpc GetPostComments(PostRequest) returns (stream Comment) {
         option (google.api.http) = {
             get: "/posts/{id}/comments"
-        }
+        };
     }
-    rpc GetPosts() return (stream Post) {
+    rpc GetPosts(google.protobuf.Empty) returns (stream Post) {
          option (google.api.http) = {
             get: "/posts"
-        }
+        };
     }
-    rpc PublishPost(PostRequest) return (google.protobuf.Empty) {
+    rpc PublishPost(PostRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             put: "/posts/{id}"
-        }
+        };
     }
-    rpc UnPublishPost(PostRequest) return (google.protobuf.Empty) {
+    rpc UnPublishPost(PostRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             put: "/posts/{id}"
-        }
+        };
     }
     
 
@@ -122,23 +126,24 @@ service Cms {
          option (google.api.http) = {
             post: "/users"
             body: "*"
-        }
+        };
     }
-    rpc GetUser(UserId) returns (User) {
+    rpc GetUser(UserRequest) returns (User) {
         option (google.api.http) = {
             get: "/users/{id}"
-        }
+        };
     }
-   rpc DeleteUser(UserId) returns (google.protobuf.Empty) {
+    rpc DeleteUser(UserRequest) returns (google.protobuf.Empty) {
          option (google.api.http) = {
             delete: "/users/{id}"
-        }
+        };
+    }
     
 // User Use-Cases
-    rpc GetUserComments(UserId) returns (stream Comment) {
+    rpc GetUserComments(UserRequest) returns (stream Comment) {
          option (google.api.http) = {
             get: "/users/{id}/comments"
-        }
+        };
     }
 
 // Comment CRUD
@@ -146,29 +151,29 @@ service Cms {
          option (google.api.http) = {
             post: "/comments"
             body: "*"
-        }
+        };
     }
-    rpc GetComment(CommentId) returns (Comment) {
+    rpc GetComment(CommentRequest) returns (Comment) {
          option (google.api.http) = {
             get: "/comments/{id}"
-        }
+        };
     }
     rpc UpdateComment(UpdateCommentRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             put: "/comments/{id}"
             body: "*"
-        }
+        };
     }
-    rpc DeleteComment(CommentId) returns (google.protobuf.Empty) {
+    rpc DeleteComment(CommentRequest) returns (google.protobuf.Empty) {
          option (google.api.http) = {
             delete: "/comments/{id}"
-        }
+        };
     }
 // Comment Use-Cases
-    rpc GetComments() returns (stream Comment) {
+    rpc GetComments(google.protobuf.Empty) returns (stream Comment) {
          option (google.api.http) = {
             get: "/comments"
-        }
+        };
     }
 }
 
