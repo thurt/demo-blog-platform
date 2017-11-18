@@ -1,7 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "cms.proto",
+    "title": "CMS",
+    "description": "CMS Service API provides access to CMS entities and supports CMS use-cases",
     "version": "version not set"
   },
   "schemes": [
@@ -15,57 +16,25 @@
     "application/json"
   ],
   "paths": {
-    "/pages": {
-      "post": {
-        "operationId": "CreatePage",
-        "responses": {
-          "200": {
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/cmsPageId"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/cmsCreatePageRequest"
-            }
-          }
-        ],
-        "tags": [
-          "cms"
-        ]
-      }
-    },
-    "/pages/{guid}": {
+    "/comments": {
       "get": {
-        "operationId": "GetPage",
+        "summary": "Comment Use-Cases",
+        "operationId": "GetComments",
         "responses": {
           "200": {
-            "description": "",
+            "description": "(streaming responses)",
             "schema": {
-              "$ref": "#/definitions/cmsPage"
+              "$ref": "#/definitions/cmsComment"
             }
           }
         },
-        "parameters": [
-          {
-            "name": "guid",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
         "tags": [
-          "cms"
+          "Cms"
         ]
       },
-      "delete": {
-        "operationId": "DeletePage",
+      "post": {
+        "summary": "Comment CRUD",
+        "operationId": "CreateComment",
         "responses": {
           "200": {
             "description": "",
@@ -76,14 +45,327 @@
         },
         "parameters": [
           {
-            "name": "guid",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cmsCreateCommentRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Cms"
+        ]
+      }
+    },
+    "/comments/{id}": {
+      "get": {
+        "operationId": "GetComment",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/cmsComment"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Cms"
+        ]
+      },
+      "delete": {
+        "operationId": "DeleteComment",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/protobufEmpty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Cms"
+        ]
+      },
+      "put": {
+        "operationId": "UpdateComment",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/protobufEmpty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cmsUpdateCommentRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Cms"
+        ]
+      }
+    },
+    "/posts": {
+      "get": {
+        "operationId": "GetPosts",
+        "responses": {
+          "200": {
+            "description": "(streaming responses)",
+            "schema": {
+              "$ref": "#/definitions/cmsPost"
+            }
+          }
+        },
+        "tags": [
+          "Cms"
+        ]
+      },
+      "post": {
+        "summary": "Post CRUD",
+        "operationId": "CreatePost",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/protobufEmpty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cmsCreatePostRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Cms"
+        ]
+      }
+    },
+    "/posts/{id}": {
+      "get": {
+        "operationId": "GetPost",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/cmsPost"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
             "in": "path",
             "required": true,
             "type": "string"
           }
         ],
         "tags": [
-          "cms"
+          "Cms"
+        ]
+      },
+      "delete": {
+        "operationId": "DeletePost",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/protobufEmpty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Cms"
+        ]
+      },
+      "put": {
+        "operationId": "UnPublishPost",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/protobufEmpty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Cms"
+        ]
+      }
+    },
+    "/posts/{id}/comments": {
+      "get": {
+        "summary": "Post Use-Cases",
+        "operationId": "GetPostComments",
+        "responses": {
+          "200": {
+            "description": "(streaming responses)",
+            "schema": {
+              "$ref": "#/definitions/cmsComment"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Cms"
+        ]
+      }
+    },
+    "/users": {
+      "post": {
+        "summary": "User CRD",
+        "operationId": "CreateUser",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/protobufEmpty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cmsCreateUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Cms"
+        ]
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "operationId": "GetUser",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/cmsUser"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Cms"
+        ]
+      },
+      "delete": {
+        "operationId": "DeleteUser",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/protobufEmpty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Cms"
+        ]
+      }
+    },
+    "/users/{id}/comments": {
+      "get": {
+        "summary": "User Use-Cases",
+        "operationId": "GetUserComments",
+        "responses": {
+          "200": {
+            "description": "(streaming responses)",
+            "schema": {
+              "$ref": "#/definitions/cmsComment"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Cms"
         ]
       }
     }
@@ -92,8 +374,9 @@
     "cmsComment": {
       "type": "object",
       "properties": {
-        "author": {
-          "type": "string"
+        "id": {
+          "type": "integer",
+          "format": "int64"
         },
         "content": {
           "type": "string"
@@ -101,26 +384,27 @@
         "created": {
           "type": "string"
         },
-        "edited": {
+        "last_edited": {
           "type": "string"
         },
-        "page_guid": {
+        "user_id": {
+          "type": "string"
+        },
+        "post_id": {
+          "type": "string"
+        }
+      },
+      "title": "Comments"
+    },
+    "cmsCreateCommentRequest": {
+      "type": "object",
+      "properties": {
+        "content": {
           "type": "string"
         }
       }
     },
-    "cmsComments": {
-      "type": "object",
-      "properties": {
-        "comments": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/cmsComment"
-          }
-        }
-      }
-    },
-    "cmsCreatePageRequest": {
+    "cmsCreatePostRequest": {
       "type": "object",
       "properties": {
         "title": {
@@ -131,10 +415,21 @@
         }
       }
     },
-    "cmsPage": {
+    "cmsCreateUserRequest": {
       "type": "object",
       "properties": {
-        "guid": {
+        "id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "cmsPost": {
+      "type": "object",
+      "properties": {
+        "id": {
           "type": "string"
         },
         "title": {
@@ -146,18 +441,55 @@
         "created": {
           "type": "string"
         },
-        "edited": {
+        "last_edited": {
+          "type": "string"
+        }
+      },
+      "title": "Posts"
+    },
+    "cmsUpdateCommentRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "content": {
           "type": "string"
         }
       }
     },
-    "cmsPageId": {
+    "cmsUpdatePostRequest": {
       "type": "object",
       "properties": {
-        "guid": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
           "type": "string"
         }
       }
+    },
+    "cmsUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "created": {
+          "type": "string"
+        },
+        "last_active": {
+          "type": "string"
+        }
+      },
+      "title": "Users"
     },
     "protobufEmpty": {
       "type": "object",
