@@ -1,4 +1,8 @@
 syntax = "proto3";
+
+// CMS
+//
+// CMS Service API provides access to CMS entities and supports CMS use-cases
 package cms;
 
 import "google/api/annotations.proto";
@@ -111,6 +115,16 @@ service Cms {
     rpc GetPosts() return (stream Post) {
          option (google.api.http) = {
             get: "/posts"
+        }
+    }
+    rpc PublishPost(PostRequest) return (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/posts/{id}"
+        }
+    }
+    rpc UnPublishPost(PostRequest) return (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/posts/{id}"
         }
     }
     
