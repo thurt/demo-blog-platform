@@ -18,10 +18,6 @@ import "github.com/mwitkow/go-proto-validators/validator.proto";
         string last_edited = 5;
     }
 
-    message Post {
-        repeated Post posts = 1;
-    }
-
     message PostRequest {
         string id = 1 [(validator.field) = {string_not_empty}];
     }
@@ -48,10 +44,6 @@ import "github.com/mwitkow/go-proto-validators/validator.proto";
         string post_id = 5;
     }
 
-    message Comments {
-        repeated Comment comments = 1;
-    }
-
     message CommentRequest {
         uint32 id = 1 [(validator.field) = {int_gt: -1}];
     }
@@ -67,10 +59,6 @@ import "github.com/mwitkow/go-proto-validators/validator.proto";
         string email = 2;
         string created = 3;
         string last_active = 4;
-    }
-
-    message Users {
-        repeated User users = 1;
     }
 
     message UserRequest {
