@@ -50,6 +50,8 @@ import "github.com/mwitkow/go-proto-validators/validator.proto";
 
     message CreateCommentRequest {
         string content = 1 [(validator.field) = {string_not_empty: true}];
+        string user_id = 2 [(validator.field) = {string_not_empty: true}];
+        string post_id = 3 [(validator.field) = {string_not_empty: true}];
     }
 
     message UpdateCommentRequest {
@@ -76,7 +78,7 @@ import "github.com/mwitkow/go-proto-validators/validator.proto";
 
 service Cms {
 // Post CRUD
-    rpc CreatePost(CreatePostRequest) returns (google.protobuf.Empty) {
+    rpc CreatePost(CreatePostRequest) returns (PostRequest) {
         option (google.api.http) = {
             post: "/posts"
             body: "*"
@@ -122,7 +124,7 @@ service Cms {
     
 
 // User CRD
-    rpc CreateUser(CreateUserRequest) returns (google.protobuf.Empty) {
+    rpc CreateUser(CreateUserRequest) returns (UserRequest) {
          option (google.api.http) = {
             post: "/users"
             body: "*"
@@ -147,7 +149,7 @@ service Cms {
     }
 
 // Comment CRUD
-    rpc CreateComment(CreateCommentRequest) returns (google.protobuf.Empty) {
+    rpc CreateComment(CreateCommentRequest) returns (CommentRequest) {
          option (google.api.http) = {
             post: "/comments"
             body: "*"
