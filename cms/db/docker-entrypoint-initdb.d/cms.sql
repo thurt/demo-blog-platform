@@ -32,16 +32,16 @@ USE `cms`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `comments` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `page_guid` varchar(256) NOT NULL,
-  `comment_guid` varchar(256) DEFAULT NULL,
-  `comment_name` varchar(64) DEFAULT NULL,
-  `comment_email` varchar(128) DEFAULT NULL,
-  `comment_text` mediumtext,
-  `comment_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `content` MEDIUMTEXT DEFAULT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `last_edited` TIMESTAMP,
+  `user_id` VARCHAR(18) NOT NULL,
+  `post_id` VARCHAR(36) NOT NULL, 
   PRIMARY KEY (`id`),
-  KEY `page_id` (`page_guid`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=latin1;
+  FOREIGN KEY (`user_id`) REFERENCES users(`id`)
+  FOREIGN KEY (`post_id`) REFERENCES posts(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -50,15 +50,15 @@ CREATE TABLE `comments` (
 
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `pages` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `page_guid` varchar(256) NOT NULL DEFAULT '',
-  `page_title` varchar(256) DEFAULT NULL,
-  `page_content` mediumtext,
-  `page_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+CREATE TABLE `posts` (
+  `id` VARCHAR(36) NOT NULL DEFAULT UUID(),
+  `title` TINYTEXT DEFAULT NULL,
+  `content` MEDIUMTEXT DEFAULT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `last_edited` TIMESTAMP,
+  `published` BOOLEAN NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `page_guid` (`page_guid`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -86,14 +86,13 @@ CREATE TABLE `sessions` (
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `users` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `user_name` varchar(32) NOT NULL,
-  `user_email` varchar(128) NOT NULL DEFAULT '',
-  `user_password` varchar(128) NOT NULL DEFAULT '',
-  `user_joined_timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `id` VARCHAR(18) NOT NULL,
+  `email` VARCHAR(255) NOT NULL,
+  `password` VARCHAR(128) NOT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `last_active` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `user_name` (`user_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
