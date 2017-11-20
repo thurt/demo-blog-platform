@@ -123,7 +123,7 @@ func (s *cmsServer) CreateComment(ctx context.Context, r *pb.CreateCommentReques
 }
 
 func (s *cmsServer) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb.UserRequest, error) {
-	_, err := database.Exec("INSERT INTO users SET id=?, email=?", r.GetId(), r.GetEmail())
+	_, err := database.Exec("INSERT INTO users SET id=?, email=?, password=?", r.GetId(), r.GetEmail(), r.GetPassword())
 
 	if err != nil {
 		log.Println(err)
@@ -267,7 +267,7 @@ func (s *cmsServer) GetUserComments(r *pb.UserRequest, stream pb.Cms_GetUserComm
 }
 
 func (s *cmsServer) PublishPost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
-	_, err := database.Exec("UPDATE posts SET published=true WHERE id=?", r.GetId())
+	_, err := database.Exec("UPDATE posts SET published=TRUE WHERE id=?", r.GetId())
 
 	if err != nil {
 		log.Println(err)
@@ -278,7 +278,7 @@ func (s *cmsServer) PublishPost(ctx context.Context, r *pb.PostRequest) (*empty.
 }
 
 func (s *cmsServer) UnPublishPost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
-	_, err := database.Exec("UPDATE posts SET published=false WHERE id=?", r.GetId())
+	_, err := database.Exec("UPDATE posts SET published=FALSE WHERE id=?", r.GetId())
 
 	if err != nil {
 		log.Println(err)
