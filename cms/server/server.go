@@ -10,12 +10,13 @@ import (
 
 	"golang.org/x/net/context"
 
+	"github.com/VividCortex/mysqlerr"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	_ "github.com/go-sql-driver/mysql"
+	mysql "github.com/go-sql-driver/mysql"
 )
 
 const (
@@ -31,6 +32,36 @@ var DBPass string
 
 type cmsServer struct{}
 
+func sqlErrorToGrpcError(err error) error {
+	var e error
+
+	if deviceErr, ok := err.(*mysql.MySQLError); ok {
+		// these are just a few mysql errors that i found while trying to insert bad values
+		// i'm not familiar with mysql errors but i suspect there will be more errors that come up commonly
+
+		switch deviceErr.Number {
+		case mysqlerr.ER_DUP_ENTRY: // tried to insert primary key value that already exists
+			fallthrough
+		case mysqlerr.ER_TRUNCATED_WRONG_VALUE_FOR_FIELD: // tried to insert/update a value with an incorrect type
+			fallthrough
+		case mysqlerr.ER_DATA_TOO_LONG: // tried to insert string that is too long
+			fallthrough
+		case mysqlerr.ER_NO_DEFAULT_FOR_FIELD: // tried to insert row without passing a required value
+			fallthrough
+		case mysqlerr.ER_NO_REFERENCED_ROW_2: // foreign key value provided was not found
+			e = grpc.Errorf(codes.InvalidArgument, err.Error())
+		case mysqlerr.ER_PARSE_ERROR: // a sql statement syntax error
+			e = grpc.Errorf(codes.Internal, err.Error())
+		default: // unknown
+			e = grpc.Errorf(codes.Unknown, err.Error())
+		}
+	} else if err == sql.ErrNoRows { // this error is specific only to QueryRow invocations
+		e = grpc.Errorf(codes.NotFound, err.Error())
+	}
+
+	return e
+}
+
 func newServer() *cmsServer {
 	s := new(cmsServer)
 	return s
@@ -41,12 +72,9 @@ func (s *cmsServer) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, e
 
 	err := database.QueryRow("SELECT id, title, content, created, last_edited, published FROM posts WHERE id=?", r.GetId()).Scan(&p.Id, &p.Title, &p.Content, &p.Created, &p.LastEdited, &p.Published)
 
-	if err == sql.ErrNoRows {
+	if err != nil {
 		log.Println(err)
-		return nil, grpc.Errorf(codes.NotFound, err.Error())
-	} else if err != nil {
-		log.Println(err)
-		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
+		return nil, sqlErrorToGrpcError(err)
 	}
 
 	return p, nil
@@ -61,7 +89,7 @@ func (s *cmsServer) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*p
 	// TODO: return proper errors depending on the results of previous code (ie. sql row already exists, invalid inputs)
 	if err != nil {
 		log.Println(err)
-		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
+		return nil, sqlErrorToGrpcError(err)
 	}
 
 	return &pb.PostRequest{hardCodedValue}, nil
@@ -71,10 +99,9 @@ func (s *cmsServer) DeletePost(ctx context.Context, pr *pb.PostRequest) (*empty.
 	// TODO: validate inputs
 	_, err := database.Exec("DELETE FROM posts WHERE id=?", pr.GetId())
 
-	// TODO: return proper errors depending on results of previous code
 	if err != nil {
 		log.Println(err)
-		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
+		return nil, sqlErrorToGrpcError(err)
 	}
 	return &empty.Empty{}, nil
 }
@@ -82,11 +109,9 @@ func (s *cmsServer) DeletePost(ctx context.Context, pr *pb.PostRequest) (*empty.
 func (s *cmsServer) GetPostComments(r *pb.PostRequest, stream pb.Cms_GetPostCommentsServer) error {
 	cs, err := database.Query("SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE post_id=?", r.GetId())
 
-	// TODO: return proper errors depending on results of previous code
-
 	if err != nil {
 		log.Println(err)
-		return grpc.Errorf(codes.Unknown, "Ouch!")
+		return sqlErrorToGrpcError(err)
 	}
 	defer cs.Close()
 
@@ -112,7 +137,7 @@ func (s *cmsServer) CreateComment(ctx context.Context, r *pb.CreateCommentReques
 
 	if err != nil {
 		log.Println(err)
-		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
+		return nil, sqlErrorToGrpcError(err)
 	}
 
 	id, err := res.LastInsertId()
@@ -129,7 +154,7 @@ func (s *cmsServer) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*p
 
 	if err != nil {
 		log.Println(err)
-		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
+		return nil, sqlErrorToGrpcError(err)
 	}
 
 	return &pb.UserRequest{r.GetId()}, nil
@@ -140,7 +165,7 @@ func (s *cmsServer) DeleteComment(ctx context.Context, r *pb.CommentRequest) (*e
 
 	if err != nil {
 		log.Println(err)
-		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
+		return nil, sqlErrorToGrpcError(err)
 	}
 
 	return &empty.Empty{}, nil
@@ -151,7 +176,7 @@ func (s *cmsServer) DeleteUser(ctx context.Context, r *pb.UserRequest) (*empty.E
 
 	if err != nil {
 		log.Println(err)
-		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
+		return nil, sqlErrorToGrpcError(err)
 	}
 
 	return &empty.Empty{}, nil
@@ -162,12 +187,9 @@ func (s *cmsServer) GetComment(ctx context.Context, r *pb.CommentRequest) (*pb.C
 
 	err := database.QueryRow("SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE id=?", r.GetId()).Scan(&c.Id, &c.Content, &c.Created, &c.LastEdited, &c.UserId, &c.PostId)
 
-	if err == sql.ErrNoRows {
+	if err != nil {
 		log.Println(err)
-		return nil, grpc.Errorf(codes.NotFound, err.Error())
-	} else if err != nil {
-		log.Println(err)
-		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
+		return nil, sqlErrorToGrpcError(err)
 	}
 
 	return c, nil
@@ -176,11 +198,9 @@ func (s *cmsServer) GetComment(ctx context.Context, r *pb.CommentRequest) (*pb.C
 func (s *cmsServer) GetComments(_ *empty.Empty, stream pb.Cms_GetCommentsServer) error {
 	cs, err := database.Query("SELECT id, content, created, last_edited, user_id, post_id FROM comments")
 
-	// TODO: return proper errors depending on results of previous code
-
 	if err != nil {
 		log.Println(err)
-		return grpc.Errorf(codes.Unknown, "Ouch!")
+		return sqlErrorToGrpcError(err)
 	}
 	defer cs.Close()
 
@@ -204,11 +224,9 @@ func (s *cmsServer) GetComments(_ *empty.Empty, stream pb.Cms_GetCommentsServer)
 func (s *cmsServer) GetPosts(_ *empty.Empty, stream pb.Cms_GetPostsServer) error {
 	ps, err := database.Query("SELECT id, title, content, created, last_edited FROM posts")
 
-	// TODO: return proper errors depending on results of previous code
-
 	if err != nil {
 		log.Println(err)
-		return grpc.Errorf(codes.Unknown, "Ouch!")
+		return sqlErrorToGrpcError(err)
 	}
 	defer ps.Close()
 
@@ -234,26 +252,20 @@ func (s *cmsServer) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, e
 
 	err := database.QueryRow("SELECT id, email, created, last_active FROM users WHERE id=?", r.GetId()).Scan(&u.Id, &u.Email, &u.Created, &u.LastActive)
 
-	if err == sql.ErrNoRows {
+	if err != nil {
 		log.Println(err)
-		return nil, grpc.Errorf(codes.NotFound, err.Error())
-	} else if err != nil {
-		log.Println(err)
-		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
+		return nil, sqlErrorToGrpcError(err)
 	}
 
 	return u, nil
-
 }
 
 func (s *cmsServer) GetUserComments(r *pb.UserRequest, stream pb.Cms_GetUserCommentsServer) error {
 	cs, err := database.Query("SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE user_id=?", r.GetId())
 
-	// TODO: return proper errors depending on results of previous code
-
 	if err != nil {
 		log.Println(err)
-		return grpc.Errorf(codes.Unknown, "Ouch!")
+		return sqlErrorToGrpcError(err)
 	}
 	defer cs.Close()
 
@@ -279,7 +291,7 @@ func (s *cmsServer) PublishPost(ctx context.Context, r *pb.PostRequest) (*empty.
 
 	if err != nil {
 		log.Println(err)
-		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
+		return nil, sqlErrorToGrpcError(err)
 	}
 
 	return &empty.Empty{}, nil
@@ -290,7 +302,7 @@ func (s *cmsServer) UnPublishPost(ctx context.Context, r *pb.PostRequest) (*empt
 
 	if err != nil {
 		log.Println(err)
-		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
+		return nil, sqlErrorToGrpcError(err)
 	}
 
 	return &empty.Empty{}, nil
@@ -301,7 +313,7 @@ func (s *cmsServer) UpdateComment(ctx context.Context, r *pb.UpdateCommentReques
 
 	if err != nil {
 		log.Println(err)
-		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
+		return nil, sqlErrorToGrpcError(err)
 	}
 
 	return &empty.Empty{}, nil
@@ -312,7 +324,7 @@ func (s *cmsServer) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*e
 
 	if err != nil {
 		log.Println(err)
-		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
+		return nil, sqlErrorToGrpcError(err)
 	}
 
 	return &empty.Empty{}, nil
