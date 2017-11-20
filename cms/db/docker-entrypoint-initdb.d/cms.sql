@@ -51,7 +51,7 @@ CREATE TABLE `comments` (
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `posts` (
-  `id` VARCHAR(36) NOT NULL DEFAULT UUID(),
+  `id` VARCHAR(36) NOT NULL,
   `title` TINYTEXT DEFAULT NULL,
   `content` MEDIUMTEXT DEFAULT NULL,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
