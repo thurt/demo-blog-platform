@@ -461,6 +461,9 @@
         },
         "last_edited": {
           "type": "string"
+        },
+        "published": {
+          "type": "string"
         }
       },
       "title": "Posts"

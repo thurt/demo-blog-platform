@@ -16,6 +16,7 @@ import "github.com/mwitkow/go-proto-validators/validator.proto";
         string content = 3;
         string created = 4;
         string last_edited = 5;
+        string published = 6;
     }
 
     message PostRequest {
