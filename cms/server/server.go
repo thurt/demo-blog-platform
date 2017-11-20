@@ -39,10 +39,12 @@ func newServer() *cmsServer {
 func (s *cmsServer) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
 	p := &pb.Post{}
 
-	err := database.QueryRow("SELECT page_title, page_content, page_date, page_guid FROM pages WHERE page_guid=?", r.GetId()).Scan(&p.Title, &p.Content, &p.Created, &p.Id)
+	err := database.QueryRow("SELECT id, title, content, created, last_edited, published FROM posts WHERE id=?", r.GetId()).Scan(&p.Id, &p.Title, &p.Content, &p.Created, &p.LastEdited, &p.Published)
 
-	// TODO: return proper errors depending on results of previous code
-	if err != nil {
+	if err == sql.ErrNoRows {
+		log.Println(err)
+		return nil, grpc.Errorf(codes.NotFound, err.Error())
+	} else if err != nil {
 		log.Println(err)
 		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
 	}
@@ -51,10 +53,10 @@ func (s *cmsServer) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, e
 }
 
 func (s *cmsServer) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb.PostRequest, error) {
-	// TODO: create a scheme to create a page_guid from the page_title (currently using hardCodedValue)
+	// TODO: create a scheme to create an id from the title (currently using hardCodedValue)
 	hardCodedValue := "hard-coded"
 
-	_, err := database.Exec("INSERT INTO pages SET page_guid=?, page_title=?, page_content=?", hardCodedValue, r.GetTitle(), r.GetContent())
+	_, err := database.Exec("INSERT INTO posts SET id=?, title=?, content=?", hardCodedValue, r.GetTitle(), r.GetContent())
 
 	// TODO: return proper errors depending on the results of previous code (ie. sql row already exists, invalid inputs)
 	if err != nil {
@@ -67,7 +69,7 @@ func (s *cmsServer) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*p
 
 func (s *cmsServer) DeletePost(ctx context.Context, pr *pb.PostRequest) (*empty.Empty, error) {
 	// TODO: validate inputs
-	_, err := database.Exec("DELETE FROM pages WHERE page_guid=?", pr.GetId())
+	_, err := database.Exec("DELETE FROM posts WHERE id=?", pr.GetId())
 
 	// TODO: return proper errors depending on results of previous code
 	if err != nil {
@@ -160,7 +162,10 @@ func (s *cmsServer) GetComment(ctx context.Context, r *pb.CommentRequest) (*pb.C
 
 	err := database.QueryRow("SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE id=?", r.GetId()).Scan(&c.Id, &c.Content, &c.Created, &c.LastEdited, &c.UserId, &c.PostId)
 
-	if err != nil {
+	if err == sql.ErrNoRows {
+		log.Println(err)
+		return nil, grpc.Errorf(codes.NotFound, err.Error())
+	} else if err != nil {
 		log.Println(err)
 		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
 	}
@@ -229,7 +234,10 @@ func (s *cmsServer) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, e
 
 	err := database.QueryRow("SELECT id, email, created, last_active FROM users WHERE id=?", r.GetId()).Scan(&u.Id, &u.Email, &u.Created, &u.LastActive)
 
-	if err != nil {
+	if err == sql.ErrNoRows {
+		log.Println(err)
+		return nil, grpc.Errorf(codes.NotFound, err.Error())
+	} else if err != nil {
 		log.Println(err)
 		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
 	}
