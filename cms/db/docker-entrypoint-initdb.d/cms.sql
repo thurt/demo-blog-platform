@@ -39,8 +39,8 @@ CREATE TABLE `comments` (
   `user_id` VARCHAR(18) NOT NULL,
   `post_id` VARCHAR(36) NOT NULL, 
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`user_id`) REFERENCES users(`id`)
-  FOREIGN KEY (`post_id`) REFERENCES posts(`id`)
+  FOREIGN KEY (`user_id`) REFERENCES users(id),
+  FOREIGN KEY (`post_id`) REFERENCES posts(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
