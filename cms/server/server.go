@@ -48,15 +48,19 @@ func sqlErrorToGrpcError(err error) error {
 			fallthrough
 		case mysqlerr.ER_NO_DEFAULT_FOR_FIELD: // tried to insert row without passing a required value
 			fallthrough
-		case mysqlerr.ER_NO_REFERENCED_ROW_2: // foreign key value provided was not found
+		case mysqlerr.ER_ROW_IS_REFERENCED_2: // tried to update/delete a row key that is still referenced as a foreign key in another tabele
+			fallthrough
+		case mysqlerr.ER_NO_REFERENCED_ROW_2: // tried to supply a foreign key value that is not found in parent table
 			e = grpc.Errorf(codes.InvalidArgument, err.Error())
-		case mysqlerr.ER_PARSE_ERROR: // a sql statement syntax error
+		case mysqlerr.ER_PARSE_ERROR: // tried to execute a sql statement that has syntax error(s)
 			e = grpc.Errorf(codes.Internal, err.Error())
 		default: // unknown
 			e = grpc.Errorf(codes.Unknown, err.Error())
 		}
 	} else if err == sql.ErrNoRows { // this error is specific only to QueryRow invocations
 		e = grpc.Errorf(codes.NotFound, err.Error())
+	} else {
+		e = grpc.Errorf(codes.Unknown, err.Error())
 	}
 
 	return e
@@ -97,12 +101,21 @@ func (s *cmsServer) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*p
 
 func (s *cmsServer) DeletePost(ctx context.Context, pr *pb.PostRequest) (*empty.Empty, error) {
 	// TODO: validate inputs
-	_, err := database.Exec("DELETE FROM posts WHERE id=?", pr.GetId())
+	res, err := database.Exec("DELETE FROM posts WHERE id=?", pr.GetId())
 
 	if err != nil {
 		log.Println(err)
 		return nil, sqlErrorToGrpcError(err)
 	}
+
+	ra, err := res.RowsAffected()
+	// error only occurs if the sql implementation does not include RowsAffected() capability
+	// if no rows were affected then it is also an error
+	if err != nil || ra == 0 {
+		log.Println(err)
+		return nil, sqlErrorToGrpcError(err)
+	}
+
 	return &empty.Empty{}, nil
 }
 
@@ -161,9 +174,17 @@ func (s *cmsServer) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*p
 }
 
 func (s *cmsServer) DeleteComment(ctx context.Context, r *pb.CommentRequest) (*empty.Empty, error) {
-	_, err := database.Exec("DELETE FROM comments WHERE id=?", r.GetId())
+	res, err := database.Exec("DELETE FROM comments WHERE id=?", r.GetId())
 
 	if err != nil {
+		log.Println(err)
+		return nil, sqlErrorToGrpcError(err)
+	}
+
+	ra, err := res.RowsAffected()
+	// error only occurs if the sql implementation does not include RowsAffected() capability
+	// if no rows were affected then it is also an error
+	if err != nil || ra == 0 {
 		log.Println(err)
 		return nil, sqlErrorToGrpcError(err)
 	}
@@ -172,9 +193,17 @@ func (s *cmsServer) DeleteComment(ctx context.Context, r *pb.CommentRequest) (*e
 }
 
 func (s *cmsServer) DeleteUser(ctx context.Context, r *pb.UserRequest) (*empty.Empty, error) {
-	_, err := database.Exec("DELETE FROM users WHERE id=?", r.GetId())
+	res, err := database.Exec("DELETE FROM users WHERE id=?", r.GetId())
 
 	if err != nil {
+		log.Println(err)
+		return nil, sqlErrorToGrpcError(err)
+	}
+
+	ra, err := res.RowsAffected()
+	// error only occurs if the sql implementation does not include RowsAffected() capability
+	// if no rows were affected then it is also an error
+	if err != nil || ra == 0 {
 		log.Println(err)
 		return nil, sqlErrorToGrpcError(err)
 	}
