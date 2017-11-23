@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	cms "github.com/thurt/demo-blog-platform/cms/proto"
-	"github.com/thurt/demo-blog-platform/cms/providers/mysql"
+	"github.com/thurt/demo-blog-platform/cms/mysqlprovider"
+	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"google.golang.org/grpc"
 )
 
@@ -47,7 +47,7 @@ func main() {
 	}
 	opts := []grpc.ServerOption{grpc.ConnectionTimeout(5 * time.Second)}
 	grpcServer := grpc.NewServer(opts...)
-	cms.RegisterCmsServer(grpcServer, mysql_provider.NewProvider(db))
+	pb.RegisterCmsServer(grpcServer, mysqlprovider.New(db))
 	log.Printf("Started grpc server on port %d", PORT)
 
 	// setup rest proxy server
@@ -60,9 +60,11 @@ func main() {
 		}
 	}()
 
+	// finally server the grpc
 	err = grpcServer.Serve(lis) // this call is permanently blocking unless an error occurs -- so only error handling code should follow
 	if err != nil {
 		log.Println("grpc server net.Listen failed")
 		panic(err.Error())
 	}
+
 }
