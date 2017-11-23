@@ -1,7 +1,7 @@
 version: "3.3"
 services:
     server:
-        build: ./server
+        build: ./cms
         ports:
             - "10000:10000" #grpc
             - "8282:8080"   #rest
@@ -11,7 +11,7 @@ services:
             - db
         command: ["/go/src/app/wait-for-it.sh", "--timeout=120", "db:3306", "--", "go-wrapper", "run"]
     db:
-        build: ./db 
+        build: ./cms/providers/mysql/db 
         volumes:
             - type: volume
               source: db-data

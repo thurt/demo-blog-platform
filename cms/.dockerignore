@@ -1,0 +1,4 @@
+.*.s[a-w][a-z]
+docker-compose.yml
+providers/
+proto/

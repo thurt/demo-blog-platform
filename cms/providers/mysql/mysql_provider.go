@@ -1,36 +1,28 @@
-package main
+package mysql_provider
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
-	"net"
-	"os"
-	"time"
 
 	"golang.org/x/net/context"
 
 	"github.com/VividCortex/mysqlerr"
-	empty "github.com/golang/protobuf/ptypes/empty"
+	mysql "github.com/go-sql-driver/mysql"
+	"github.com/golang/protobuf/ptypes/empty"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-
-	mysql "github.com/go-sql-driver/mysql"
 )
 
-const (
-	PORT    = 10000
-	DBHost  = "db"
-	DBPort  = ":3306"
-	DBUser  = "root"
-	DBDbase = "cms"
-)
+type provider struct{}
 
 var database *sql.DB
-var DBPass string
 
-type cmsServer struct{}
+func NewProvider(db *sql.DB) *provider {
+	database = db
+	s := new(provider)
+	return s
+}
 
 func sqlErrorToGrpcError(err error) error {
 	var e error
@@ -66,25 +58,20 @@ func sqlErrorToGrpcError(err error) error {
 	return e
 }
 
-func newServer() *cmsServer {
-	s := new(cmsServer)
-	return s
-}
+func (p *provider) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
+	po := &pb.Post{}
 
-func (s *cmsServer) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
-	p := &pb.Post{}
-
-	err := database.QueryRow("SELECT id, title, content, created, last_edited, published FROM posts WHERE id=?", r.GetId()).Scan(&p.Id, &p.Title, &p.Content, &p.Created, &p.LastEdited, &p.Published)
+	err := database.QueryRow("SELECT id, title, content, created, last_edited, published FROM posts WHERE id=?", r.GetId()).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Published)
 
 	if err != nil {
 		log.Println(err)
 		return nil, sqlErrorToGrpcError(err)
 	}
 
-	return p, nil
+	return po, nil
 }
 
-func (s *cmsServer) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb.PostRequest, error) {
+func (p *provider) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb.PostRequest, error) {
 	// TODO: create a scheme to create an id from the title (currently using hardCodedValue)
 	hardCodedValue := "hard-coded"
 
@@ -99,9 +86,9 @@ func (s *cmsServer) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*p
 	return &pb.PostRequest{hardCodedValue}, nil
 }
 
-func (s *cmsServer) DeletePost(ctx context.Context, pr *pb.PostRequest) (*empty.Empty, error) {
+func (p *provider) DeletePost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
 	// TODO: validate inputs
-	res, err := database.Exec("DELETE FROM posts WHERE id=?", pr.GetId())
+	res, err := database.Exec("DELETE FROM posts WHERE id=?", r.GetId())
 
 	if err != nil {
 		log.Println(err)
@@ -119,7 +106,7 @@ func (s *cmsServer) DeletePost(ctx context.Context, pr *pb.PostRequest) (*empty.
 	return &empty.Empty{}, nil
 }
 
-func (s *cmsServer) GetPostComments(r *pb.PostRequest, stream pb.Cms_GetPostCommentsServer) error {
+func (s *provider) GetPostComments(r *pb.PostRequest, stream pb.Cms_GetPostCommentsServer) error {
 	cs, err := database.Query("SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE post_id=?", r.GetId())
 
 	if err != nil {
@@ -145,7 +132,7 @@ func (s *cmsServer) GetPostComments(r *pb.PostRequest, stream pb.Cms_GetPostComm
 	return nil
 }
 
-func (s *cmsServer) CreateComment(ctx context.Context, r *pb.CreateCommentRequest) (*pb.CommentRequest, error) {
+func (p *provider) CreateComment(ctx context.Context, r *pb.CreateCommentRequest) (*pb.CommentRequest, error) {
 	res, err := database.Exec("INSERT INTO comments SET content=?, user_id=?, post_id=?", r.GetContent(), r.GetUserId(), r.GetPostId())
 
 	if err != nil {
@@ -162,7 +149,7 @@ func (s *cmsServer) CreateComment(ctx context.Context, r *pb.CreateCommentReques
 	return &pb.CommentRequest{uint32(id)}, nil
 }
 
-func (s *cmsServer) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb.UserRequest, error) {
+func (p *provider) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb.UserRequest, error) {
 	_, err := database.Exec("INSERT INTO users SET id=?, email=?, password=?", r.GetId(), r.GetEmail(), r.GetPassword())
 
 	if err != nil {
@@ -173,7 +160,7 @@ func (s *cmsServer) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*p
 	return &pb.UserRequest{r.GetId()}, nil
 }
 
-func (s *cmsServer) DeleteComment(ctx context.Context, r *pb.CommentRequest) (*empty.Empty, error) {
+func (p *provider) DeleteComment(ctx context.Context, r *pb.CommentRequest) (*empty.Empty, error) {
 	res, err := database.Exec("DELETE FROM comments WHERE id=?", r.GetId())
 
 	if err != nil {
@@ -192,7 +179,7 @@ func (s *cmsServer) DeleteComment(ctx context.Context, r *pb.CommentRequest) (*e
 	return &empty.Empty{}, nil
 }
 
-func (s *cmsServer) DeleteUser(ctx context.Context, r *pb.UserRequest) (*empty.Empty, error) {
+func (p *provider) DeleteUser(ctx context.Context, r *pb.UserRequest) (*empty.Empty, error) {
 	res, err := database.Exec("DELETE FROM users WHERE id=?", r.GetId())
 
 	if err != nil {
@@ -211,7 +198,7 @@ func (s *cmsServer) DeleteUser(ctx context.Context, r *pb.UserRequest) (*empty.E
 	return &empty.Empty{}, nil
 }
 
-func (s *cmsServer) GetComment(ctx context.Context, r *pb.CommentRequest) (*pb.Comment, error) {
+func (p *provider) GetComment(ctx context.Context, r *pb.CommentRequest) (*pb.Comment, error) {
 	c := &pb.Comment{}
 
 	err := database.QueryRow("SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE id=?", r.GetId()).Scan(&c.Id, &c.Content, &c.Created, &c.LastEdited, &c.UserId, &c.PostId)
@@ -224,7 +211,7 @@ func (s *cmsServer) GetComment(ctx context.Context, r *pb.CommentRequest) (*pb.C
 	return c, nil
 }
 
-func (s *cmsServer) GetComments(_ *empty.Empty, stream pb.Cms_GetCommentsServer) error {
+func (p *provider) GetComments(_ *empty.Empty, stream pb.Cms_GetCommentsServer) error {
 	cs, err := database.Query("SELECT id, content, created, last_edited, user_id, post_id FROM comments")
 
 	if err != nil {
@@ -250,7 +237,7 @@ func (s *cmsServer) GetComments(_ *empty.Empty, stream pb.Cms_GetCommentsServer)
 	return nil
 }
 
-func (s *cmsServer) GetPosts(_ *empty.Empty, stream pb.Cms_GetPostsServer) error {
+func (p *provider) GetPosts(_ *empty.Empty, stream pb.Cms_GetPostsServer) error {
 	ps, err := database.Query("SELECT id, title, content, created, last_edited FROM posts")
 
 	if err != nil {
@@ -276,7 +263,7 @@ func (s *cmsServer) GetPosts(_ *empty.Empty, stream pb.Cms_GetPostsServer) error
 	return nil
 }
 
-func (s *cmsServer) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, error) {
+func (p *provider) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, error) {
 	u := &pb.User{}
 
 	err := database.QueryRow("SELECT id, email, created, last_active FROM users WHERE id=?", r.GetId()).Scan(&u.Id, &u.Email, &u.Created, &u.LastActive)
@@ -289,7 +276,7 @@ func (s *cmsServer) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, e
 	return u, nil
 }
 
-func (s *cmsServer) GetUserComments(r *pb.UserRequest, stream pb.Cms_GetUserCommentsServer) error {
+func (p *provider) GetUserComments(r *pb.UserRequest, stream pb.Cms_GetUserCommentsServer) error {
 	cs, err := database.Query("SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE user_id=?", r.GetId())
 
 	if err != nil {
@@ -315,7 +302,7 @@ func (s *cmsServer) GetUserComments(r *pb.UserRequest, stream pb.Cms_GetUserComm
 	return nil
 }
 
-func (s *cmsServer) PublishPost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
+func (p *provider) PublishPost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
 	_, err := database.Exec("UPDATE posts SET published=TRUE WHERE id=?", r.GetId())
 
 	if err != nil {
@@ -326,7 +313,7 @@ func (s *cmsServer) PublishPost(ctx context.Context, r *pb.PostRequest) (*empty.
 	return &empty.Empty{}, nil
 }
 
-func (s *cmsServer) UnPublishPost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
+func (p *provider) UnPublishPost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
 	_, err := database.Exec("UPDATE posts SET published=FALSE WHERE id=?", r.GetId())
 
 	if err != nil {
@@ -337,7 +324,7 @@ func (s *cmsServer) UnPublishPost(ctx context.Context, r *pb.PostRequest) (*empt
 	return &empty.Empty{}, nil
 }
 
-func (s *cmsServer) UpdateComment(ctx context.Context, r *pb.UpdateCommentRequest) (*empty.Empty, error) {
+func (p *provider) UpdateComment(ctx context.Context, r *pb.UpdateCommentRequest) (*empty.Empty, error) {
 	_, err := database.Exec("UPDATE comments SET content=? WHERE id=?", r.GetContent(), r.GetId())
 
 	if err != nil {
@@ -348,7 +335,7 @@ func (s *cmsServer) UpdateComment(ctx context.Context, r *pb.UpdateCommentReques
 	return &empty.Empty{}, nil
 }
 
-func (s *cmsServer) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*empty.Empty, error) {
+func (p *provider) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*empty.Empty, error) {
 	_, err := database.Exec("UPDATE posts SET title=?, content=? WHERE id=?", r.GetTitle(), r.GetContent(), r.GetId())
 
 	if err != nil {
@@ -357,48 +344,4 @@ func (s *cmsServer) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*e
 	}
 
 	return &empty.Empty{}, nil
-}
-
-func main() {
-	// connect to db
-	DBPass = os.Getenv("DB_PASS")
-	dbConn := fmt.Sprintf("%s:%s@tcp(%s)/%s", DBUser, DBPass, DBHost, DBDbase)
-	db, err := sql.Open("mysql", dbConn)
-	if err != nil {
-		log.Println("Couldn't connect with mysql connection string")
-		panic(err.Error())
-	}
-	err = db.Ping()
-	if err != nil {
-		log.Println("Couldn't ping database server")
-		panic(err.Error())
-	}
-	database = db
-	log.Println("Connected to db server:" + dbConn)
-
-	// setup grpc server
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", PORT))
-	if err != nil {
-		log.Println("failed to listen")
-		panic(err.Error())
-	}
-	opts := []grpc.ServerOption{grpc.ConnectionTimeout(5 * time.Second)}
-	grpcServer := grpc.NewServer(opts...)
-	pb.RegisterCmsServer(grpcServer, newServer())
-	log.Printf("Started grpc server on port %d", PORT)
-
-	go func() {
-		log.Println("Staring up rest-proxy")
-		err = ProxyServe()
-		if err != nil {
-			log.Println("proxy error")
-			panic(err.Error())
-		}
-	}()
-
-	err = grpcServer.Serve(lis)
-	if err != nil {
-		log.Println("grpc server net.Listen failed")
-		panic(err.Error())
-	}
 }
