@@ -8,7 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/thurt/demo-blog-platform/cms/proto"
+	cms "github.com/thurt/demo-blog-platform/cms/proto"
+	"github.com/thurt/demo-blog-platform/cms/providers/mysql"
 	"google.golang.org/grpc"
 )
 
@@ -46,7 +47,7 @@ func main() {
 	}
 	opts := []grpc.ServerOption{grpc.ConnectionTimeout(5 * time.Second)}
 	grpcServer := grpc.NewServer(opts...)
-	cms.RegisterCmsServer(grpcServer, cms.NewMySqlProvider(db))
+	cms.RegisterCmsServer(grpcServer, mysql_provider.NewProvider(db))
 	log.Printf("Started grpc server on port %d", PORT)
 
 	// setup rest proxy server
