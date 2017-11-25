@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"strings"
+	"regexp"
 	"testing"
 
 	"github.com/golang/protobuf/ptypes/empty"
@@ -84,10 +84,8 @@ func checkExpectations(t *testing.T) {
 	}
 }
 
-// rpl replaces any "?" in the sql statement to ".+"
-// this transformation is required because the mock library makes expectations based on a regex string instead of a regular string
-func rpl(stmt string) string {
-	return strings.Replace(stmt, "?", ".+", -1)
+func esc(stmt string) string {
+	return regexp.QuoteMeta(stmt)
 }
 
 func checkQuerySyntax(query string, t *testing.T) {
@@ -152,7 +150,7 @@ func TestDeleteComment(t *testing.T) {
 
 func TestCreatePost(t *testing.T) {
 	// TODO: change hard-coded -- see comment in source code
-	mock.ExpectExec(rpl(p.q.CreatePost())).WithArgs("hard-coded", "title", "content")
+	mock.ExpectExec(esc(p.q.CreatePost())).WithArgs("hard-coded", "title", "content")
 	r := &pb.CreatePostRequest{Title: "title", Content: "content"}
 
 	_, _ = p.CreatePost(context.Background(), r)
@@ -161,7 +159,7 @@ func TestCreatePost(t *testing.T) {
 }
 
 func TestCreateComment(t *testing.T) {
-	mock.ExpectExec(rpl(p.q.CreateComment())).WithArgs("content", "user_id", "post_id")
+	mock.ExpectExec(esc(p.q.CreateComment())).WithArgs("content", "user_id", "post_id")
 	r := &pb.CreateCommentRequest{Content: "content", UserId: "user_id", PostId: "post_id"}
 
 	_, _ = p.CreateComment(context.Background(), r)
@@ -170,7 +168,7 @@ func TestCreateComment(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
-	mock.ExpectExec(rpl(p.q.CreateUser())).WithArgs("id", "email", "password")
+	mock.ExpectExec(esc(p.q.CreateUser())).WithArgs("id", "email", "password")
 	r := &pb.CreateUserRequest{Id: "id", Email: "email", Password: "password"}
 
 	_, _ = p.CreateUser(context.Background(), r)
@@ -179,7 +177,7 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestPublishPost(t *testing.T) {
-	mock.ExpectExec(rpl(p.q.PublishPost())).WithArgs("id")
+	mock.ExpectExec(esc(p.q.PublishPost())).WithArgs("id")
 	r := &pb.PostRequest{Id: "id"}
 
 	_, _ = p.PublishPost(context.Background(), r)
@@ -188,7 +186,7 @@ func TestPublishPost(t *testing.T) {
 }
 
 func TestUnPublishPost(t *testing.T) {
-	mock.ExpectExec(rpl(p.q.UnPublishPost())).WithArgs("id")
+	mock.ExpectExec(esc(p.q.UnPublishPost())).WithArgs("id")
 	r := &pb.PostRequest{Id: "id"}
 
 	_, _ = p.UnPublishPost(context.Background(), r)
@@ -197,7 +195,7 @@ func TestUnPublishPost(t *testing.T) {
 }
 
 func TestUpdateComment(t *testing.T) {
-	mock.ExpectExec(rpl(p.q.UpdateComment())).WithArgs("content", 0)
+	mock.ExpectExec(esc(p.q.UpdateComment())).WithArgs("content", 0)
 	r := &pb.UpdateCommentRequest{Content: "content", Id: 0}
 
 	_, _ = p.UpdateComment(context.Background(), r)
@@ -206,7 +204,7 @@ func TestUpdateComment(t *testing.T) {
 }
 
 func TestUpdatePost(t *testing.T) {
-	mock.ExpectExec(rpl(p.q.UpdatePost())).WithArgs("title", "content", "id")
+	mock.ExpectExec(esc(p.q.UpdatePost())).WithArgs("title", "content", "id")
 	r := &pb.UpdatePostRequest{Title: "title", Content: "content", Id: "id"}
 
 	_, _ = p.UpdatePost(context.Background(), r)
@@ -215,7 +213,7 @@ func TestUpdatePost(t *testing.T) {
 }
 
 func TestGetPostComments(t *testing.T) {
-	mock.ExpectQuery(rpl(p.q.GetPostComments())).WithArgs("id")
+	mock.ExpectQuery(esc(p.q.GetPostComments())).WithArgs("id")
 	r := &pb.PostRequest{Id: "id"}
 	s := &mockCms_GetPostCommentsServer{}
 
@@ -225,7 +223,7 @@ func TestGetPostComments(t *testing.T) {
 }
 
 func TestGetComments(t *testing.T) {
-	mock.ExpectQuery(rpl(p.q.GetComments()))
+	mock.ExpectQuery(esc(p.q.GetComments()))
 	r := &empty.Empty{}
 	s := &mockCms_GetCommentsServer{}
 
@@ -235,7 +233,7 @@ func TestGetComments(t *testing.T) {
 }
 
 func TestGetPosts(t *testing.T) {
-	mock.ExpectQuery(rpl(p.q.GetPosts()))
+	mock.ExpectQuery(esc(p.q.GetPosts()))
 	r := &empty.Empty{}
 	s := &mockCms_GetPostsServer{}
 
@@ -245,7 +243,7 @@ func TestGetPosts(t *testing.T) {
 }
 
 func TestGetUserComments(t *testing.T) {
-	mock.ExpectQuery(rpl(p.q.GetUserComments())).WithArgs("id")
+	mock.ExpectQuery(esc(p.q.GetUserComments())).WithArgs("id")
 	r := &pb.UserRequest{Id: "id"}
 	s := &mockCms_GetUserCommentsServer{}
 
