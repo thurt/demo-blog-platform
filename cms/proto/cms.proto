@@ -11,16 +11,17 @@ import "github.com/mwitkow/go-proto-validators/validator.proto";
 
 // Posts
     message Post {
-        string id = 1;
+        uint32 id = 1;
         string title = 2;
         string content = 3;
         string created = 4;
         string last_edited = 5;
         string published = 6;
+        string slug = 7;
     }
 
     message PostRequest {
-        string id = 1 [(validator.field) = {string_not_empty: true}];
+        uint32 id = 1 [(validator.field) = {int_gt: -1}];
     }
 
     message CreatePostRequest {
@@ -30,7 +31,7 @@ import "github.com/mwitkow/go-proto-validators/validator.proto";
     }
 
     message UpdatePostRequest {
-        string id = 1 [(validator.field) = {string_not_empty: true}];
+        uint32 id = 1 [(validator.field) = {int_gt: -1}];
         string title = 2 [(validator.field) = {string_not_empty: true}];
         string content = 3 [(validator.field) = {string_not_empty: true}]; 
     }

@@ -45,6 +45,10 @@ func New(db *sql.DB) pb.CmsServer {
 	return s
 }
 
+func slugMake(str string) string {
+	slug.MaxLength = 36
+	return slug.Make(str)
+}
 func sqlErrorToGrpcError(err error) error {
 	var e error
 
@@ -96,21 +100,24 @@ func (p *Provider) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, er
 }
 
 func (q *sqlQuery) CreatePost() string {
-	return "INSERT INTO posts SET title=?, content=?"
+	return "INSERT INTO posts SET slug=?, title=?, content=?"
 }
 func (p *Provider) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb.PostRequest, error) {
-	slug.MaxLength = 36
-	id := slug.Make(r.GetTitle())
 
-	_, err := p.db.Exec(p.q.CreatePost(), id, r.GetTitle(), r.GetContent())
+	rs, err := p.db.Exec(p.q.CreatePost(), slugMake(r.GetTitle()), r.GetTitle(), r.GetContent())
 
-	// TODO: return proper errors depending on the results of previous code (ie. sql row already exists, invalid inputs)
 	if err != nil {
 		log.Println(err)
 		return nil, sqlErrorToGrpcError(err)
 	}
 
-	return &pb.PostRequest{id}, nil
+	id, err := rs.LastInsertId()
+	if err != nil {
+		log.Println(err)
+		return nil, sqlErrorToGrpcError(err)
+	}
+
+	return &pb.PostRequest{uint32(id)}, nil
 }
 
 func (q *sqlQuery) DeletePost() string {
@@ -406,10 +413,10 @@ func (p *Provider) UpdateComment(ctx context.Context, r *pb.UpdateCommentRequest
 }
 
 func (q *sqlQuery) UpdatePost() string {
-	return "UPDATE posts SET title=?, content=? WHERE id=?"
+	return "UPDATE posts SET slug=?, title=?, content=? WHERE id=?"
 }
 func (p *Provider) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*empty.Empty, error) {
-	_, err := p.db.Exec(p.q.UpdatePost(), r.GetTitle(), r.GetContent(), r.GetId())
+	_, err := p.db.Exec(p.q.UpdatePost(), slugMake(r.GetTitle()), r.GetTitle(), r.GetContent(), r.GetId())
 
 	if err != nil {
 		log.Println(err)

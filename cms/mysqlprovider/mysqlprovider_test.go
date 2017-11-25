@@ -95,8 +95,8 @@ func checkQuerySyntax(query string, t *testing.T) {
 }
 
 func TestGetPost(t *testing.T) {
-	mock.ExpectQuery(p.q.GetPost()).WithArgs("under_test")
-	r := &pb.PostRequest{Id: "under_test"}
+	mock.ExpectQuery(p.q.GetPost()).WithArgs(0)
+	r := &pb.PostRequest{Id: 0}
 
 	_, _ = p.GetPost(context.Background(), r)
 
@@ -131,8 +131,8 @@ func TestDeleteUser(t *testing.T) {
 }
 
 func TestDeletePost(t *testing.T) {
-	mock.ExpectExec(p.q.DeletePost()).WithArgs("under_test")
-	r := &pb.PostRequest{Id: "under_test"}
+	mock.ExpectExec(p.q.DeletePost()).WithArgs(0)
+	r := &pb.PostRequest{Id: 0}
 
 	_, _ = p.DeletePost(context.Background(), r)
 
@@ -176,8 +176,8 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestPublishPost(t *testing.T) {
-	mock.ExpectExec(esc(p.q.PublishPost())).WithArgs("id")
-	r := &pb.PostRequest{Id: "id"}
+	mock.ExpectExec(esc(p.q.PublishPost())).WithArgs(0)
+	r := &pb.PostRequest{Id: 0}
 
 	_, _ = p.PublishPost(context.Background(), r)
 
@@ -185,8 +185,8 @@ func TestPublishPost(t *testing.T) {
 }
 
 func TestUnPublishPost(t *testing.T) {
-	mock.ExpectExec(esc(p.q.UnPublishPost())).WithArgs("id")
-	r := &pb.PostRequest{Id: "id"}
+	mock.ExpectExec(esc(p.q.UnPublishPost())).WithArgs(0)
+	r := &pb.PostRequest{Id: 0}
 
 	_, _ = p.UnPublishPost(context.Background(), r)
 
@@ -203,8 +203,8 @@ func TestUpdateComment(t *testing.T) {
 }
 
 func TestUpdatePost(t *testing.T) {
-	mock.ExpectExec(esc(p.q.UpdatePost())).WithArgs("title", "content", "id")
-	r := &pb.UpdatePostRequest{Title: "title", Content: "content", Id: "id"}
+	mock.ExpectExec(esc(p.q.UpdatePost())).WithArgs("a-great-title", "A Great Title!", "content", 0)
+	r := &pb.UpdatePostRequest{Title: "A Great Title!", Content: "content", Id: 0}
 
 	_, _ = p.UpdatePost(context.Background(), r)
 
@@ -212,8 +212,8 @@ func TestUpdatePost(t *testing.T) {
 }
 
 func TestGetPostComments(t *testing.T) {
-	mock.ExpectQuery(esc(p.q.GetPostComments())).WithArgs("id")
-	r := &pb.PostRequest{Id: "id"}
+	mock.ExpectQuery(esc(p.q.GetPostComments())).WithArgs(0)
+	r := &pb.PostRequest{Id: 0}
 	s := &mockCms_GetPostCommentsServer{}
 
 	_ = p.GetPostComments(r, s)
