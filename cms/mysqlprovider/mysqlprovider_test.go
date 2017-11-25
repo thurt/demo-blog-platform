@@ -95,7 +95,7 @@ func checkQuerySyntax(query string, t *testing.T) {
 }
 
 func TestGetPost(t *testing.T) {
-	mock.ExpectQuery(p.q.GetPost()).WithArgs(0)
+	mock.ExpectQuery(esc(p.q.GetPost())).WithArgs(0)
 	r := &pb.PostRequest{Id: 0}
 
 	_, _ = p.GetPost(context.Background(), r)
@@ -104,7 +104,7 @@ func TestGetPost(t *testing.T) {
 }
 
 func TestGetComment(t *testing.T) {
-	mock.ExpectQuery(p.q.GetComment()).WithArgs(0)
+	mock.ExpectQuery(esc(p.q.GetComment())).WithArgs(0)
 	r := &pb.CommentRequest{Id: 0}
 
 	_, _ = p.GetComment(context.Background(), r)
@@ -113,7 +113,7 @@ func TestGetComment(t *testing.T) {
 }
 
 func TestGetUser(t *testing.T) {
-	mock.ExpectQuery(p.q.GetUser()).WithArgs("under_test")
+	mock.ExpectQuery(esc(p.q.GetUser())).WithArgs("under_test")
 	r := &pb.UserRequest{Id: "under_test"}
 
 	_, _ = p.GetUser(context.Background(), r)
@@ -122,7 +122,7 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestDeleteUser(t *testing.T) {
-	mock.ExpectExec(p.q.DeleteUser()).WithArgs("under_test")
+	mock.ExpectExec(esc(p.q.DeleteUser())).WithArgs("under_test")
 	r := &pb.UserRequest{Id: "under_test"}
 
 	_, _ = p.DeleteUser(context.Background(), r)
@@ -131,7 +131,7 @@ func TestDeleteUser(t *testing.T) {
 }
 
 func TestDeletePost(t *testing.T) {
-	mock.ExpectExec(p.q.DeletePost()).WithArgs(0)
+	mock.ExpectExec(esc(p.q.DeletePost())).WithArgs(0)
 	r := &pb.PostRequest{Id: 0}
 
 	_, _ = p.DeletePost(context.Background(), r)
@@ -140,7 +140,7 @@ func TestDeletePost(t *testing.T) {
 }
 
 func TestDeleteComment(t *testing.T) {
-	mock.ExpectExec(p.q.DeleteComment()).WithArgs(0)
+	mock.ExpectExec(esc(p.q.DeleteComment())).WithArgs(0)
 	r := &pb.CommentRequest{Id: 0}
 
 	_, _ = p.DeleteComment(context.Background(), r)
