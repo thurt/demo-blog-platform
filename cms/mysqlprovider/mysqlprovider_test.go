@@ -149,9 +149,8 @@ func TestDeleteComment(t *testing.T) {
 }
 
 func TestCreatePost(t *testing.T) {
-	// TODO: change hard-coded -- see comment in source code
-	mock.ExpectExec(esc(p.q.CreatePost())).WithArgs("hard-coded", "title", "content")
-	r := &pb.CreatePostRequest{Title: "title", Content: "content"}
+	mock.ExpectExec(esc(p.q.CreatePost())).WithArgs("a-great-title", "A Great Title!", "content")
+	r := &pb.CreatePostRequest{Title: "A Great Title!", Content: "content"}
 
 	_, _ = p.CreatePost(context.Background(), r)
 

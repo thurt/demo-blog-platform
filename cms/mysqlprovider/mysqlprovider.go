@@ -4,12 +4,12 @@ import (
 	"database/sql"
 	"log"
 
-	"golang.org/x/net/context"
-
 	"github.com/VividCortex/mysqlerr"
 	mysql "github.com/go-sql-driver/mysql"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/gosimple/slug"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )
@@ -99,10 +99,10 @@ func (q *sqlQuery) CreatePost() string {
 	return "INSERT INTO posts SET title=?, content=?"
 }
 func (p *Provider) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb.PostRequest, error) {
-	// TODO: create a scheme to create an id from the title (currently using hardCodedValue)
-	hardCodedValue := "hard-coded"
+	slug.MaxLength = 36
+	id := slug.Make(r.GetTitle())
 
-	_, err := p.db.Exec(p.q.CreatePost(), hardCodedValue, r.GetTitle(), r.GetContent())
+	_, err := p.db.Exec(p.q.CreatePost(), id, r.GetTitle(), r.GetContent())
 
 	// TODO: return proper errors depending on the results of previous code (ie. sql row already exists, invalid inputs)
 	if err != nil {
@@ -110,7 +110,7 @@ func (p *Provider) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb
 		return nil, sqlErrorToGrpcError(err)
 	}
 
-	return &pb.PostRequest{hardCodedValue}, nil
+	return &pb.PostRequest{id}, nil
 }
 
 func (q *sqlQuery) DeletePost() string {
