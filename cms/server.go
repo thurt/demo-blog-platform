@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/grpc-ecosystem/go-grpc-middleware/validator"
 	"github.com/thurt/demo-blog-platform/cms/mysqlprovider"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"google.golang.org/grpc"
@@ -45,7 +46,10 @@ func main() {
 		log.Println("failed to listen")
 		panic(err.Error())
 	}
-	opts := []grpc.ServerOption{grpc.ConnectionTimeout(5 * time.Second)}
+	opts := []grpc.ServerOption{
+		grpc.ConnectionTimeout(5 * time.Second),
+		grpc.UnaryInterceptor(grpc_validator.UnaryServerInterceptor()),
+	}
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterCmsServer(grpcServer, mysqlprovider.New(db))
 	log.Printf("Started grpc server on port %d", PORT)
