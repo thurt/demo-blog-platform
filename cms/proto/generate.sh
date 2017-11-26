@@ -38,3 +38,6 @@ protoc \
     -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
      --swagger_out=logtostderr=true:. \
      ${SERVICE}
+
+#generate CmsServer mock 
+mockgen github.com/thurt/demo-blog-platform/cms/proto CmsServer > ../mock_proto/mock_proto.go
