@@ -27,12 +27,14 @@ import "github.com/mwitkow/go-proto-validators/validator.proto";
     message CreatePostRequest {
         string title = 1; 
         string content = 2; 
+        string slug = 3;
     }
 
     message UpdatePostRequest {
         uint32 id = 1 [(validator.field) = {int_gt: 0}];
         string title = 2; 
         string content = 3; 
+        string slug = 4;
     }
 
 // Comments
