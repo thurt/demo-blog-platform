@@ -11,6 +11,16 @@ protoc \
     --go_out=plugins=grpc:. \
     ${SERVICE}
 
+#generate ${SERVICE}.validator.pb.go
+protoc \
+    -I/usr/local/include \
+    -I. \
+    -I$GOPATH/src \
+    -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
+    --govalidators_out=logtostderr=true:. \
+    ${SERVICE}
+
+
 #generate ${SERVICE}.pb.gw.go
 protoc \
     -I/usr/local/include \
