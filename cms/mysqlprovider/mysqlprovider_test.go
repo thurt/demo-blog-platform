@@ -18,7 +18,7 @@ import (
 var (
 	db   *sql.DB
 	mock sqlmock.Sqlmock
-	p    *Provider
+	p    *provider
 )
 
 type mockCms_GetPostsServer struct {
@@ -72,7 +72,7 @@ func TestMain(m *testing.M) {
 	}
 
 	// create the service provider
-	p = New(db).(*Provider)
+	p = New(db).(*provider)
 
 	os.Exit(m.Run())
 }
