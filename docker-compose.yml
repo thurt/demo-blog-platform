@@ -11,7 +11,7 @@ services:
             - db
         command: ["/go/src/app/wait-for-it.sh", "--timeout=120", "db:3306", "--", "go-wrapper", "run"]
     db:
-        build: ./cms/providers/mysql/db 
+        build: ./cms/mysqlprovider/db 
         volumes:
             - type: volume
               source: db-data
