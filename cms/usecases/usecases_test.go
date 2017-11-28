@@ -50,7 +50,7 @@ func TestCreateUser(t *testing.T) {
 	t.Run("hashes the password", func(t *testing.T) {
 		mock, uc := setup(t)
 
-		r := &pb.CreateUserRequest{Id: "id", Password: "password"}
+		r := &pb.CreateUserRequest{Password: "password"}
 
 		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(nil, status.Error(codes.NotFound, ""))
 		mock.EXPECT().CreateUser(gomock.Any(), gomock.Not(&pb.CreateUserRequest{Password: "password"}))
