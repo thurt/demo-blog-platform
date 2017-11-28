@@ -33,7 +33,7 @@ USE `cms`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `comments` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `content` MEDIUMTEXT DEFAULT NULL,
+  `content` TEXT DEFAULT NULL,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `last_edited` TIMESTAMP,
   `user_id` VARCHAR(18) NOT NULL,
@@ -89,7 +89,7 @@ CREATE TABLE `sessions` (
 CREATE TABLE `users` (
   `id` VARCHAR(18) NOT NULL,
   `email` VARCHAR(255) NOT NULL,
-  `password` VARCHAR(128) NOT NULL,
+  `password` CHAR(60) NOT NULL,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `last_active` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
