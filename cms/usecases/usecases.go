@@ -7,9 +7,11 @@ import (
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
+
+var ErrAlreadyExists error = status.Error(codes.AlreadyExists, codes.AlreadyExists.String())
 
 type useCases struct {
 	pb.CmsServer
@@ -54,9 +56,20 @@ func (u *useCases) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*em
 }
 
 func (u *useCases) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb.UserRequest, error) {
+	// check if user id already exists
+	_, err := u.GetUser(ctx, &pb.UserRequest{Id: r.GetId()})
+	if err == nil {
+		return nil, ErrAlreadyExists
+	} else {
+		s, ok := status.FromError(err)
+		if !ok || s.Code() != codes.NotFound {
+			return nil, err
+		}
+	}
+
 	hashedPassword, err := hashPassword(r.GetPassword())
 	if err != nil {
-		return nil, grpc.Errorf(codes.Internal, "Internal server error")
+		return nil, err
 	}
 
 	r.Password = hashedPassword
