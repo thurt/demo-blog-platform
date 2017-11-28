@@ -10,8 +10,8 @@ import (
 	"github.com/gosimple/slug"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type provider struct {
@@ -68,16 +68,16 @@ func sqlErrorToGrpcError(err error) error {
 		case mysqlerr.ER_ROW_IS_REFERENCED_2: // tried to update/delete a row key that is still referenced as a foreign key in another tabele
 			fallthrough
 		case mysqlerr.ER_NO_REFERENCED_ROW_2: // tried to supply a foreign key value that is not found in parent table
-			e = grpc.Errorf(codes.InvalidArgument, err.Error())
+			e = status.Error(codes.InvalidArgument, err.Error())
 		case mysqlerr.ER_PARSE_ERROR: // tried to execute a sql statement that has syntax error(s)
-			e = grpc.Errorf(codes.Internal, err.Error())
+			e = status.Error(codes.Internal, err.Error())
 		default: // unknown
-			e = grpc.Errorf(codes.Unknown, err.Error())
+			e = status.Error(codes.Unknown, err.Error())
 		}
 	} else if err == sql.ErrNoRows { // this error is specific only to QueryRow invocations
-		e = grpc.Errorf(codes.NotFound, err.Error())
+		e = status.Error(codes.NotFound, err.Error())
 	} else {
-		e = grpc.Errorf(codes.Unknown, err.Error())
+		e = status.Error(codes.Unknown, err.Error())
 	}
 
 	return e
@@ -166,7 +166,7 @@ func (p *provider) GetPostComments(r *pb.PostRequest, stream pb.Cms_GetPostComme
 
 	if err = cs.Err(); err != nil {
 		log.Println(err)
-		return grpc.Errorf(codes.Unknown, "Ouch!")
+		return status.Error(codes.Unknown, "Ouch!")
 	}
 
 	return nil
@@ -186,7 +186,7 @@ func (p *provider) CreateComment(ctx context.Context, r *pb.CreateCommentRequest
 	id, err := res.LastInsertId()
 	if err != nil {
 		log.Println(err)
-		return nil, grpc.Errorf(codes.Unknown, "Ouch!")
+		return nil, status.Error(codes.Unknown, "Ouch!")
 	}
 
 	return &pb.CommentRequest{uint32(id)}, nil
@@ -289,7 +289,7 @@ func (p *provider) GetComments(_ *empty.Empty, stream pb.Cms_GetCommentsServer) 
 
 	if err = cs.Err(); err != nil {
 		log.Println(err)
-		return grpc.Errorf(codes.Unknown, "Ouch!")
+		return status.Error(codes.Unknown, "Ouch!")
 	}
 
 	return nil
@@ -319,7 +319,7 @@ func (p *provider) GetPosts(_ *empty.Empty, stream pb.Cms_GetPostsServer) error 
 
 	if err = ps.Err(); err != nil {
 		log.Println(err)
-		return grpc.Errorf(codes.Unknown, "Ouch!")
+		return status.Error(codes.Unknown, "Ouch!")
 	}
 
 	return nil
@@ -364,7 +364,7 @@ func (p *provider) GetUserComments(r *pb.UserRequest, stream pb.Cms_GetUserComme
 
 	if err = cs.Err(); err != nil {
 		log.Println(err)
-		return grpc.Errorf(codes.Unknown, "Ouch!")
+		return status.Error(codes.Unknown, "Ouch!")
 	}
 
 	return nil
