@@ -7,7 +7,6 @@ import (
 	"github.com/VividCortex/mysqlerr"
 	mysql "github.com/go-sql-driver/mysql"
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/gosimple/slug"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
@@ -45,10 +44,6 @@ func New(db *sql.DB) pb.CmsServer {
 	return s
 }
 
-func slugMake(str string) string {
-	slug.MaxLength = 36
-	return slug.Make(str)
-}
 func sqlErrorToGrpcError(err error) error {
 	var e error
 
@@ -104,7 +99,7 @@ func (q *sqlQuery) CreatePost() string {
 }
 func (p *provider) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb.PostRequest, error) {
 
-	rs, err := p.db.Exec(p.q.CreatePost(), slugMake(r.GetTitle()), r.GetTitle(), r.GetContent())
+	rs, err := p.db.Exec(p.q.CreatePost(), r.GetSlug(), r.GetTitle(), r.GetContent())
 
 	if err != nil {
 		log.Println(err)
@@ -416,7 +411,7 @@ func (q *sqlQuery) UpdatePost() string {
 	return "UPDATE posts SET slug=?, title=?, content=? WHERE id=?"
 }
 func (p *provider) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*empty.Empty, error) {
-	_, err := p.db.Exec(p.q.UpdatePost(), slugMake(r.GetTitle()), r.GetTitle(), r.GetContent(), r.GetId())
+	_, err := p.db.Exec(p.q.UpdatePost(), r.GetSlug(), r.GetTitle(), r.GetContent(), r.GetId())
 
 	if err != nil {
 		log.Println(err)

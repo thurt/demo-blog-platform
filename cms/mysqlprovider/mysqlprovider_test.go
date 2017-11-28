@@ -150,7 +150,7 @@ func TestDeleteComment(t *testing.T) {
 
 func TestCreatePost(t *testing.T) {
 	mock.ExpectExec(esc(p.q.CreatePost())).WithArgs("a-great-title", "A Great Title!", "content")
-	r := &pb.CreatePostRequest{Title: "A Great Title!", Content: "content"}
+	r := &pb.CreatePostRequest{Title: "A Great Title!", Content: "content", Slug: "a-great-title"}
 
 	_, _ = p.CreatePost(context.Background(), r)
 
@@ -204,7 +204,7 @@ func TestUpdateComment(t *testing.T) {
 
 func TestUpdatePost(t *testing.T) {
 	mock.ExpectExec(esc(p.q.UpdatePost())).WithArgs("a-great-title", "A Great Title!", "content", 0)
-	r := &pb.UpdatePostRequest{Title: "A Great Title!", Content: "content", Id: 0}
+	r := &pb.UpdatePostRequest{Title: "A Great Title!", Content: "content", Id: 0, Slug: "a-great-title"}
 
 	_, _ = p.UpdatePost(context.Background(), r)
 
