@@ -101,11 +101,8 @@ func (this *CreateCommentRequest) Validate() error {
 	if this.UserId == "" {
 		return go_proto_validators.FieldError("UserId", fmt.Errorf(`User Id must be 3-18 characters and can only include letters`))
 	}
-	if this.PostId == "" {
-		return go_proto_validators.FieldError("PostId", fmt.Errorf(`value '%v' must not be an empty string`, this.PostId))
-	}
-	if !(len(this.PostId) < 37) {
-		return go_proto_validators.FieldError("PostId", fmt.Errorf(`value '%v' must length be less than '37'`, this.PostId))
+	if !(this.PostId > 0) {
+		return go_proto_validators.FieldError("PostId", fmt.Errorf(`value '%v' must be greater than '0'`, this.PostId))
 	}
 	return nil
 }

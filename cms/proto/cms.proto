@@ -54,7 +54,7 @@ import "github.com/mwitkow/go-proto-validators/validator.proto";
     message CreateCommentRequest {
         string content = 1 [(validator.field) = {string_not_empty: true, length_lt: 65536}];
         string user_id = 2 [(validator.field) = {string_not_empty: true, regex: "^[a-zA-Z]{3,18}$", human_error: "User Id must be 3-18 characters and can only include letters"}];
-        string post_id = 3 [(validator.field) = {string_not_empty: true, length_lt: 37}];
+        uint32 post_id = 3 [(validator.field) = {int_gt: 0}];
     }
 
     message UpdateCommentRequest {
