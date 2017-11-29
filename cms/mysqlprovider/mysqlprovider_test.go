@@ -158,8 +158,8 @@ func TestCreatePost(t *testing.T) {
 }
 
 func TestCreateComment(t *testing.T) {
-	mock.ExpectExec(esc(p.q.CreateComment())).WithArgs("content", "user_id", "post_id")
-	r := &pb.CreateCommentRequest{Content: "content", UserId: "user_id", PostId: "post_id"}
+	mock.ExpectExec(esc(p.q.CreateComment())).WithArgs("content", "user_id", 0)
+	r := &pb.CreateCommentRequest{Content: "content", UserId: "user_id", PostId: 0}
 
 	_, _ = p.CreateComment(context.Background(), r)
 
