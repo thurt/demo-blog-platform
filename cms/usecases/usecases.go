@@ -21,6 +21,7 @@ type UseCases interface {
 	CreatePost(context.Context, *pb.CreatePostRequest) (*pb.PostRequest, error)
 	UpdatePost(context.Context, *pb.UpdatePostRequest) (*empty.Empty, error)
 	CreateUser(context.Context, *pb.CreateUserRequest) (*pb.UserRequest, error)
+	CreateComment(context.Context, *pb.CreateCommentRequest) (*pb.CommentRequest, error)
 }
 
 func New(provider pb.CmsServer) *useCases {
@@ -46,17 +47,19 @@ func hashPassword(password string) (string, error) {
 }
 
 func (u *useCases) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb.PostRequest, error) {
+	// requires a Slug to be created from the Title and added to the request
 	r.Slug = slugMake(r.GetTitle())
 	return u.CmsServer.CreatePost(ctx, r)
 }
 
 func (u *useCases) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*empty.Empty, error) {
+	// requires a Slug to be created from the Title and added to the request
 	r.Slug = slugMake(r.GetTitle())
 	return u.CmsServer.UpdatePost(ctx, r)
 }
 
 func (u *useCases) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb.UserRequest, error) {
-	// check if user id already exists
+	// requires that user id does not exist
 	_, err := u.GetUser(ctx, &pb.UserRequest{Id: r.GetId()})
 	if err == nil {
 		return nil, ErrAlreadyExists
@@ -67,6 +70,7 @@ func (u *useCases) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb
 		}
 	}
 
+	// requires that password is hashed
 	hashedPassword, err := hashPassword(r.GetPassword())
 	if err != nil {
 		return nil, err
@@ -74,4 +78,20 @@ func (u *useCases) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb
 
 	r.Password = hashedPassword
 	return u.CmsServer.CreateUser(ctx, r)
+}
+
+func (u *useCases) CreateComment(ctx context.Context, r *pb.CreateCommentRequest) (*pb.CommentRequest, error) {
+	// requires a valid user id
+	_, err := u.GetUser(ctx, &pb.UserRequest{Id: r.GetUserId()})
+	if err != nil {
+		return nil, err
+	}
+
+	// requires a valid post id
+	_, err = u.GetPost(ctx, &pb.PostRequest{Id: r.GetPostId()})
+	if err != nil {
+		return nil, err
+	}
+
+	return u.CmsServer.CreateComment(ctx, r)
 }

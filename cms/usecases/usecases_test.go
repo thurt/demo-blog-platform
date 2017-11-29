@@ -22,7 +22,7 @@ func setup(t *testing.T) (*mock_proto.MockCmsServer, UseCases) {
 }
 
 func TestCreatePost(t *testing.T) {
-	t.Run("creates a Slug from the provided Title", func(t *testing.T) {
+	t.Run("requires a Slug to be created from the Title and added to the request", func(t *testing.T) {
 		mock, uc := setup(t)
 
 		r := &pb.CreatePostRequest{Title: "Hello World!"}
@@ -35,7 +35,7 @@ func TestCreatePost(t *testing.T) {
 }
 
 func TestUpdatePost(t *testing.T) {
-	t.Run("creates a Slug from the provided Title", func(t *testing.T) {
+	t.Run("requires a Slug to be created from the Title and added to the request", func(t *testing.T) {
 		mock, uc := setup(t)
 
 		r := &pb.UpdatePostRequest{Title: "Hello World!"}
@@ -47,7 +47,19 @@ func TestUpdatePost(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
-	t.Run("hashes the password", func(t *testing.T) {
+	t.Run("requires that user id does not exist", func(t *testing.T) {
+		mock, uc := setup(t)
+
+		r := &pb.CreateUserRequest{}
+
+		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{}, nil)
+
+		_, err := uc.CreateUser(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
+	t.Run("requires that password is hashed", func(t *testing.T) {
 		mock, uc := setup(t)
 
 		r := &pb.CreateUserRequest{Password: "password"}
@@ -60,14 +72,31 @@ func TestCreateUser(t *testing.T) {
 			t.Error("unexpected error:", err.Error())
 		}
 	})
-	t.Run("returns an error when user already exists", func(t *testing.T) {
+}
+
+func TestCreateComment(t *testing.T) {
+	t.Run("requires a valid user id", func(t *testing.T) {
 		mock, uc := setup(t)
 
-		r := &pb.CreateUserRequest{}
+		r := &pb.CreateCommentRequest{UserId: "id"}
+
+		mock.EXPECT().GetUser(gomock.Any(), &pb.UserRequest{"id"}).Return(nil, status.Error(codes.NotFound, ""))
+
+		_, err := uc.CreateComment(ctx, r)
+
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
+	t.Run("requires a valid post id", func(t *testing.T) {
+		mock, uc := setup(t)
+
+		r := &pb.CreateCommentRequest{PostId: 0}
 
 		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{}, nil)
+		mock.EXPECT().GetPost(gomock.Any(), &pb.PostRequest{0}).Return(nil, status.Error(codes.NotFound, ""))
 
-		_, err := uc.CreateUser(ctx, r)
+		_, err := uc.CreateComment(ctx, r)
 		if err == nil {
 			t.Error("expected an error")
 		}
