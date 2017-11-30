@@ -46,21 +46,13 @@ func New(server pb.CmsServer) pb.CmsServer {
 func hasPermission(ctx context.Context, roles_allowed ...Role) bool {
 	md, ok := metadata.FromIncomingContext(ctx)
 
-	if !ok {
-		return false
-	}
-	if md["role"] == nil {
-		return false
-	}
-	if len(md["role"][0]) == 0 {
-		return false
-	}
+	if ok && md["role"] != nil && len(md["role"][0]) != 0 {
+		cr := Role(md["role"][0])
 
-	cr := Role(md["role"][0])
-
-	for _, r := range roles_allowed {
-		if r == cr {
-			return true
+		for _, r := range roles_allowed {
+			if r == cr {
+				return true
+			}
 		}
 	}
 
