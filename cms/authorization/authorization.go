@@ -18,6 +18,10 @@ var (
 	User  = Role("user")
 )
 
+func (r Role) String() string {
+	return string(r)
+}
+
 type authorization struct {
 	pb.CmsServer
 }
@@ -70,6 +74,15 @@ func (a *authorization) CreatePost(ctx context.Context, r *pb.CreatePostRequest)
 	}
 
 	return a.CmsServer.CreatePost(ctx, r)
+}
+
+func (a *authorization) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*empty.Empty, error) {
+	// requires Admin Role has permission
+	if !hasPermission(ctx, Admin) {
+		return nil, ErrPermissionDenied
+	}
+
+	return a.CmsServer.UpdatePost(ctx, r)
 }
 
 func (a *authorization) DeletePost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
