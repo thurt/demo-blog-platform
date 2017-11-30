@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/validator"
+	"github.com/thurt/demo-blog-platform/cms/authorization"
 	"github.com/thurt/demo-blog-platform/cms/mysqlprovider"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"github.com/thurt/demo-blog-platform/cms/usecases"
@@ -52,7 +53,7 @@ func main() {
 		grpc.UnaryInterceptor(grpc_validator.UnaryServerInterceptor()),
 	}
 	grpcServer := grpc.NewServer(opts...)
-	pb.RegisterCmsServer(grpcServer, usecases.New(mysqlprovider.New(db)))
+	pb.RegisterCmsServer(grpcServer, authorization.New(usecases.New(mysqlprovider.New(db))))
 	log.Printf("Started grpc server on port %d", PORT)
 
 	// setup rest proxy server
