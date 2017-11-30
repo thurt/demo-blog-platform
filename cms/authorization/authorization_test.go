@@ -5,6 +5,9 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/thurt/demo-blog-platform/cms/mock_proto"
+	pb "github.com/thurt/demo-blog-platform/cms/proto"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc/metadata"
 )
 
 func setup(t *testing.T) (*mock_proto.MockCmsServer, Authorization) {
@@ -48,5 +51,18 @@ func TestUpdatePost(t *testing.T) {
 }
 
 func TestCreatePost(t *testing.T) {
-	t.Skip()
+	t.Run("requires Admin Role has permission", func(t *testing.T) {
+		mock, a := setup(t)
+
+		md := metadata.Pairs("role", "admin")
+		ctx := metadata.NewIncomingContext(context.Background(), md)
+		r := &pb.CreatePostRequest{}
+
+		mock.EXPECT().CreatePost(ctx, r)
+
+		_, err := a.CreatePost(ctx, r)
+		if err != nil {
+			t.Error("unexpected error:", err)
+		}
+	})
 }
