@@ -25,6 +25,18 @@ func createCtxRole(r Role) context.Context {
 }
 
 func TestDeleteComment(t *testing.T) {
+	t.Run("requires permission", func(t *testing.T) {
+		mock, a := setup(t)
+		ctx := context.Background()
+		r := &pb.CommentRequest{}
+
+		mock.EXPECT().DeleteComment(ctx, r)
+
+		_, err := a.DeleteComment(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
 	t.Run("requires Admin Role has permission", func(t *testing.T) {
 		mock, a := setup(t)
 		ctx := createCtxRole(Admin)
@@ -52,6 +64,18 @@ func TestDeleteComment(t *testing.T) {
 }
 
 func TestUpdateComment(t *testing.T) {
+	t.Run("requires permission", func(t *testing.T) {
+		mock, a := setup(t)
+		ctx := context.Background()
+		r := &pb.UpdateCommentRequest{}
+
+		mock.EXPECT().UpdateComment(ctx, r)
+
+		_, err := a.UpdateComment(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
 	t.Run("requires Admin Role has permission", func(t *testing.T) {
 		mock, a := setup(t)
 		ctx := createCtxRole(Admin)
@@ -182,7 +206,6 @@ func TestUnPublishPost(t *testing.T) {
 			t.Error("unexpected error:", err)
 		}
 	})
-
 }
 
 func TestPublishPost(t *testing.T) {
@@ -210,7 +233,6 @@ func TestPublishPost(t *testing.T) {
 			t.Error("unexpected error:", err)
 		}
 	})
-
 }
 
 func TestDeletePost(t *testing.T) {
