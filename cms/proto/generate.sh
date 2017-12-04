@@ -39,5 +39,7 @@ protoc \
      --swagger_out=logtostderr=true:. \
      ${SERVICE}
 
-#generate CmsServer mock 
+#generate Cms mocks
 mockgen github.com/thurt/demo-blog-platform/cms/proto CmsServer > ../mock_proto/mock_proto.go
+mockgen github.com/thurt/demo-blog-platform/cms/proto CmsInternalServer > ../mock_proto/mock_proto_internal.go
+
