@@ -63,11 +63,18 @@ import "github.com/mwitkow/go-proto-validators/validator.proto";
     }
 
 // Users
+    enum UserRole {
+        UNKNOWN = 0;
+        ADMIN = 1;
+        USER = 2;
+    }
+
     message User {
         string id = 1;
         string email = 2;
         string created = 3;
         string last_active = 4;
+        UserRole role = 5;
     }
 
     message UserRequest {
@@ -79,6 +86,25 @@ import "github.com/mwitkow/go-proto-validators/validator.proto";
         string email = 2 [(validator.field) = {string_not_empty: true, length_lt:256}];
         string password = 3 [(validator.field) = {string_not_empty: true, length_lt:51}];
     }
+
+    message AuthUserRequest {
+        string id = 1 [(validator.field) = {string_not_empty: true, regex: "^[a-zA-Z]{3,18}$", human_error: "User Id must be 3-18 characters and can only include letters"}];
+        string password = 2 [(validator.field) = {string_not_empty: true, length_lt:51}];
+    }
+
+    message AccessToken {
+        string access_token = 1;
+        string token_type = 2;
+        uint32 expires_in = 3;
+    }
+
+    message UserPassword {
+        string password = 1;
+    }
+            
+service CmsInternal {
+    rpc GetUserPassword(UserRequest) returns (UserPassword) {}
+}
 
 service Cms {
 // Post CRUD
@@ -179,6 +205,13 @@ service Cms {
     rpc GetComments(google.protobuf.Empty) returns (stream Comment) {
          option (google.api.http) = {
             get: "/comments"
+        };
+    }
+
+// Auth Use-Cases
+    rpc AuthUser(AuthUserRequest) returns (AccessToken) {
+        option (google.api.http) = {
+            post: "/auth/user"
         };
     }
 }
