@@ -14,17 +14,24 @@ import (
 
 var ctx context.Context = context.Background()
 
-func setup(t *testing.T) (*mock_proto.MockCmsServer, domain.UseCases) {
+func setup(t *testing.T) (*mock_proto.MockCmsServer, *mock_proto.MockCmsInternalServer, domain.UseCases) {
+	// create NewMockCmsServer
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mock := mock_proto.NewMockCmsServer(mockCtrl)
-	uc := New(mock)
-	return mock, uc
+
+	// create NewMockCmsInternalServer
+	mockCtrlI := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockI := mock_proto.NewMockCmsInternalServer(mockCtrlI)
+
+	uc := New(mock, mockI)
+	return mock, mockI, uc
 }
 
 func TestCreatePost(t *testing.T) {
 	t.Run("requires a Slug to be created from the Title and added to the request", func(t *testing.T) {
-		mock, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		r := &pb.CreatePostRequest{Title: "Hello World!"}
 
@@ -37,7 +44,7 @@ func TestCreatePost(t *testing.T) {
 
 func TestUpdatePost(t *testing.T) {
 	t.Run("requires a Slug to be created from the Title and added to the request", func(t *testing.T) {
-		mock, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		r := &pb.UpdatePostRequest{Title: "Hello World!"}
 
@@ -49,7 +56,7 @@ func TestUpdatePost(t *testing.T) {
 
 func TestCreateUser(t *testing.T) {
 	t.Run("requires that user id does not exist", func(t *testing.T) {
-		mock, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		r := &pb.CreateUserRequest{}
 
@@ -61,7 +68,7 @@ func TestCreateUser(t *testing.T) {
 		}
 	})
 	t.Run("requires that password is hashed", func(t *testing.T) {
-		mock, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		r := &pb.CreateUserRequest{Password: "password"}
 
@@ -77,7 +84,7 @@ func TestCreateUser(t *testing.T) {
 
 func TestCreateComment(t *testing.T) {
 	t.Run("requires a valid user id", func(t *testing.T) {
-		mock, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		r := &pb.CreateCommentRequest{UserId: "id"}
 
@@ -90,7 +97,7 @@ func TestCreateComment(t *testing.T) {
 		}
 	})
 	t.Run("requires a valid post id", func(t *testing.T) {
-		mock, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		r := &pb.CreateCommentRequest{PostId: 0}
 
@@ -98,6 +105,41 @@ func TestCreateComment(t *testing.T) {
 		mock.EXPECT().GetPost(gomock.Any(), &pb.PostRequest{0}).Return(nil, status.Error(codes.NotFound, ""))
 
 		_, err := uc.CreateComment(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
+}
+
+func TestAuthUser(t *testing.T) {
+	t.Run("requires a valid user id", func(t *testing.T) {
+		_, mock, uc := setup(t)
+
+		r := &pb.AuthUserRequest{Id: "id", Password: "password"}
+
+		mock.EXPECT().GetUserPassword(gomock.Any(), &pb.UserRequest{Id: r.GetId()}).Return(nil, status.Error(codes.NotFound, ""))
+
+		_, err := uc.AuthUser(ctx, r)
+
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
+	t.Run("requires a valid password", func(t *testing.T) {
+		_, mockI, uc := setup(t)
+
+		r := &pb.AuthUserRequest{Id: "id", Password: "wrong_password"}
+
+		// run my implementation of hashing in order to create mock's stub
+		stubbedHash, err := hashPassword("right_password")
+		if err != nil {
+			t.Error("unexpected error during stub preparation")
+		}
+
+		mockI.EXPECT().GetUserPassword(gomock.Any(), &pb.UserRequest{Id: r.GetId()}).Return(&pb.UserPassword{stubbedHash}, nil)
+
+		_, err = uc.AuthUser(ctx, r)
+
 		if err == nil {
 			t.Error("expected an error")
 		}

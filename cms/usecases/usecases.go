@@ -16,10 +16,11 @@ var ErrAlreadyExists error = status.Error(codes.AlreadyExists, codes.AlreadyExis
 
 type useCases struct {
 	domain.Provider
+	internal pb.CmsInternalServer
 }
 
-func New(provider domain.Provider) *useCases {
-	uc := &useCases{provider}
+func New(provider domain.Provider, internalProvider pb.CmsInternalServer) *useCases {
+	uc := &useCases{provider, internalProvider}
 	return uc
 }
 
