@@ -92,6 +92,7 @@ CREATE TABLE `users` (
   `password` CHAR(60) NOT NULL,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `last_active` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `role` UNSIGNED TINYINT NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
