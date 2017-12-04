@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"log"
 
-	"github.com/VividCortex/mysqlerr"
-	mysql "github.com/go-sql-driver/mysql"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/thurt/demo-blog-platform/cms/domain"
+	helper "github.com/thurt/demo-blog-platform/cms/mysqlprovider_helper"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
+
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -49,36 +49,6 @@ func New(db *sql.DB) domain.Provider {
 	return s
 }
 
-func sqlErrorToGrpcError(err error) error {
-	var e error
-
-	if deviceErr, ok := err.(*mysql.MySQLError); ok {
-		// these are just a few mysql errors that i found while trying to insert bad values
-		// i'm not familiar with mysql errors but i suspect there will be more errors that come up commonly
-
-		switch deviceErr.Number {
-		case
-			mysqlerr.ER_DUP_ENTRY,                       // tried to insert primary key value that already exists
-			mysqlerr.ER_TRUNCATED_WRONG_VALUE_FOR_FIELD, // tried to insert/update a value with an incorrect type
-			mysqlerr.ER_DATA_TOO_LONG,                   // tried to insert string that is too long
-			mysqlerr.ER_NO_DEFAULT_FOR_FIELD,            // tried to insert row without passing a required value
-			mysqlerr.ER_ROW_IS_REFERENCED_2,             // tried to update/delete a row key that is still referenced as a foreign key in another tabele
-			mysqlerr.ER_NO_REFERENCED_ROW_2:             // tried to supply a foreign key value that is not found in parent table
-			e = status.Error(codes.InvalidArgument, err.Error())
-		case mysqlerr.ER_PARSE_ERROR: // tried to execute a sql statement that has syntax error(s)
-			e = status.Error(codes.Internal, err.Error())
-		default: // unknown
-			e = status.Error(codes.Unknown, err.Error())
-		}
-	} else if err == sql.ErrNoRows { // this error is specific only to QueryRow invocations
-		e = status.Error(codes.NotFound, err.Error())
-	} else {
-		e = status.Error(codes.Unknown, err.Error())
-	}
-
-	return e
-}
-
 func (q *sqlQuery) GetPost() string {
 	return "SELECT id, title, content, created, last_edited, published FROM posts WHERE id=?"
 }
@@ -89,7 +59,7 @@ func (p *provider) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, er
 
 	if err != nil {
 		log.Println(err)
-		return nil, sqlErrorToGrpcError(err)
+		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
 	return po, nil
@@ -104,13 +74,13 @@ func (p *provider) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb
 
 	if err != nil {
 		log.Println(err)
-		return nil, sqlErrorToGrpcError(err)
+		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
 	id, err := rs.LastInsertId()
 	if err != nil {
 		log.Println(err)
-		return nil, sqlErrorToGrpcError(err)
+		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
 	return &pb.PostRequest{uint32(id)}, nil
@@ -125,7 +95,7 @@ func (p *provider) DeletePost(ctx context.Context, r *pb.PostRequest) (*empty.Em
 
 	if err != nil {
 		log.Println(err)
-		return nil, sqlErrorToGrpcError(err)
+		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
 	ra, err := res.RowsAffected()
@@ -133,7 +103,7 @@ func (p *provider) DeletePost(ctx context.Context, r *pb.PostRequest) (*empty.Em
 	// if no rows were affected then it is also an error
 	if err != nil || ra == 0 {
 		log.Println(err)
-		return nil, sqlErrorToGrpcError(err)
+		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
 	return &empty.Empty{}, nil
@@ -147,7 +117,7 @@ func (p *provider) GetPostComments(r *pb.PostRequest, stream pb.Cms_GetPostComme
 
 	if err != nil {
 		log.Println(err)
-		return sqlErrorToGrpcError(err)
+		return helper.SqlErrorToGrpcError(err)
 	}
 	defer cs.Close()
 
@@ -176,7 +146,7 @@ func (p *provider) CreateComment(ctx context.Context, r *pb.CreateCommentRequest
 
 	if err != nil {
 		log.Println(err)
-		return nil, sqlErrorToGrpcError(err)
+		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
 	id, err := res.LastInsertId()
@@ -196,7 +166,7 @@ func (p *provider) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb
 
 	if err != nil {
 		log.Println(err)
-		return nil, sqlErrorToGrpcError(err)
+		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
 	return &pb.UserRequest{r.GetId()}, nil
@@ -210,7 +180,7 @@ func (p *provider) DeleteComment(ctx context.Context, r *pb.CommentRequest) (*em
 
 	if err != nil {
 		log.Println(err)
-		return nil, sqlErrorToGrpcError(err)
+		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
 	ra, err := res.RowsAffected()
@@ -218,7 +188,7 @@ func (p *provider) DeleteComment(ctx context.Context, r *pb.CommentRequest) (*em
 	// if no rows were affected then it is also an error
 	if err != nil || ra == 0 {
 		log.Println(err)
-		return nil, sqlErrorToGrpcError(err)
+		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
 	return &empty.Empty{}, nil
@@ -232,7 +202,7 @@ func (p *provider) DeleteUser(ctx context.Context, r *pb.UserRequest) (*empty.Em
 
 	if err != nil {
 		log.Println(err)
-		return nil, sqlErrorToGrpcError(err)
+		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
 	ra, err := res.RowsAffected()
@@ -240,7 +210,7 @@ func (p *provider) DeleteUser(ctx context.Context, r *pb.UserRequest) (*empty.Em
 	// if no rows were affected then it is also an error
 	if err != nil || ra == 0 {
 		log.Println(err)
-		return nil, sqlErrorToGrpcError(err)
+		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
 	return &empty.Empty{}, nil
@@ -256,7 +226,7 @@ func (p *provider) GetComment(ctx context.Context, r *pb.CommentRequest) (*pb.Co
 
 	if err != nil {
 		log.Println(err)
-		return nil, sqlErrorToGrpcError(err)
+		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
 	return c, nil
@@ -270,7 +240,7 @@ func (p *provider) GetComments(_ *empty.Empty, stream pb.Cms_GetCommentsServer) 
 
 	if err != nil {
 		log.Println(err)
-		return sqlErrorToGrpcError(err)
+		return helper.SqlErrorToGrpcError(err)
 	}
 	defer cs.Close()
 
@@ -300,7 +270,7 @@ func (p *provider) GetPosts(_ *empty.Empty, stream pb.Cms_GetPostsServer) error 
 
 	if err != nil {
 		log.Println(err)
-		return sqlErrorToGrpcError(err)
+		return helper.SqlErrorToGrpcError(err)
 	}
 	defer ps.Close()
 
@@ -331,7 +301,7 @@ func (p *provider) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, er
 
 	if err != nil {
 		log.Println(err)
-		return nil, sqlErrorToGrpcError(err)
+		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
 	return u, nil
@@ -345,7 +315,7 @@ func (p *provider) GetUserComments(r *pb.UserRequest, stream pb.Cms_GetUserComme
 
 	if err != nil {
 		log.Println(err)
-		return sqlErrorToGrpcError(err)
+		return helper.SqlErrorToGrpcError(err)
 	}
 	defer cs.Close()
 
@@ -374,7 +344,7 @@ func (p *provider) PublishPost(ctx context.Context, r *pb.PostRequest) (*empty.E
 
 	if err != nil {
 		log.Println(err)
-		return nil, sqlErrorToGrpcError(err)
+		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
 	return &empty.Empty{}, nil
@@ -388,7 +358,7 @@ func (p *provider) UnPublishPost(ctx context.Context, r *pb.PostRequest) (*empty
 
 	if err != nil {
 		log.Println(err)
-		return nil, sqlErrorToGrpcError(err)
+		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
 	return &empty.Empty{}, nil
@@ -402,7 +372,7 @@ func (p *provider) UpdateComment(ctx context.Context, r *pb.UpdateCommentRequest
 
 	if err != nil {
 		log.Println(err)
-		return nil, sqlErrorToGrpcError(err)
+		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
 	return &empty.Empty{}, nil
@@ -416,7 +386,7 @@ func (p *provider) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*em
 
 	if err != nil {
 		log.Println(err)
-		return nil, sqlErrorToGrpcError(err)
+		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
 	return &empty.Empty{}, nil
