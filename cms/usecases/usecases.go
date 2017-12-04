@@ -1,6 +1,9 @@
 package usecases
 
 import (
+	"crypto/rand"
+	"fmt"
+
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/gosimple/slug"
 	"github.com/satori/go.uuid"
@@ -39,6 +42,16 @@ func slugMake(str string) string {
 func hashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
+}
+
+func hashValidatePassword(password string, hash string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+}
+
+func randToken() string {
+	b := make([]byte, 16)
+	rand.Read(b)
+	return fmt.Sprintf("%x", b)
 }
 
 func (u *useCases) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb.PostRequest, error) {
@@ -92,7 +105,22 @@ func (u *useCases) CreateComment(ctx context.Context, r *pb.CreateCommentRequest
 }
 
 func (u *useCases) AuthUser(ctx context.Context, r *pb.AuthUserRequest) (*pb.AccessToken, error) {
-	a := &pb.AccessToken{}
+
+	p, err := u.internal.GetUserPassword(ctx, &pb.UserRequest{r.GetId()})
+	if err != nil {
+		return nil, err
+	}
+
+	err = hashValidatePassword(r.GetPassword(), p.GetPassword())
+	if err != nil {
+		return nil, err
+	}
+
+	a := &pb.AccessToken{
+		AccessToken: randToken(),
+		TokenType:   "Bearer",
+		ExpiresIn:   9999,
+	}
 
 	return a, nil
 }
