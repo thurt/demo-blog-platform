@@ -10,12 +10,22 @@ import (
 
 type provider_internal struct {
 	db *sql.DB
+	q  sqlQueryI
 }
+
+type sqlQueryI interface {
+	GetUserPassword() string
+}
+
+type sqlQuery struct{}
 
 func New(db *sql.DB) pb.CmsInternalServer {
-	return &provider_internal{db}
+	return &provider_internal{db, &sqlQuery{}}
 }
 
+func (q *sqlQuery) GetUserPassword() string {
+	return "SELECT password FROM users WHERE id=?"
+}
 func (p *provider_internal) GetUserPassword(ctx context.Context, r *pb.UserRequest) (*pb.UserPassword, error) {
 	u := &pb.UserPassword{}
 
