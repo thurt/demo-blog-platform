@@ -7,10 +7,15 @@ import (
 	"github.com/VividCortex/mysqlerr"
 	mysql "github.com/go-sql-driver/mysql"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/thurt/demo-blog-platform/cms/domain"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+)
+
+const (
+	defaultRole uint32 = 2 // User
 )
 
 type provider struct {
@@ -39,7 +44,7 @@ type sqlQueryI interface {
 	UpdatePost() string
 }
 
-func New(db *sql.DB) pb.CmsServer {
+func New(db *sql.DB) domain.Provider {
 	s := &provider{db, &sqlQuery{}}
 	return s
 }
@@ -184,10 +189,10 @@ func (p *provider) CreateComment(ctx context.Context, r *pb.CreateCommentRequest
 }
 
 func (q *sqlQuery) CreateUser() string {
-	return "INSERT INTO users SET id=?, email=?, password=?"
+	return "INSERT INTO users SET id=?, email=?, password=?, role=?"
 }
 func (p *provider) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb.UserRequest, error) {
-	_, err := p.db.Exec(p.q.CreateUser(), r.GetId(), r.GetEmail(), r.GetPassword())
+	_, err := p.db.Exec(p.q.CreateUser(), r.GetId(), r.GetEmail(), r.GetPassword(), defaultRole)
 
 	if err != nil {
 		log.Println(err)
@@ -317,12 +322,12 @@ func (p *provider) GetPosts(_ *empty.Empty, stream pb.Cms_GetPostsServer) error 
 }
 
 func (q *sqlQuery) GetUser() string {
-	return "SELECT id, email, created, last_active FROM users WHERE id=?"
+	return "SELECT id, email, created, last_active, role FROM users WHERE id=?"
 }
 func (p *provider) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, error) {
 	u := &pb.User{}
 
-	err := p.db.QueryRow(p.q.GetUser(), r.GetId()).Scan(&u.Id, &u.Email, &u.Created, &u.LastActive)
+	err := p.db.QueryRow(p.q.GetUser(), r.GetId()).Scan(&u.Id, &u.Email, &u.Created, &u.LastActive, &u.Role)
 
 	if err != nil {
 		log.Println(err)

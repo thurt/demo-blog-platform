@@ -167,7 +167,7 @@ func TestCreateComment(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
-	mock.ExpectExec(esc(p.q.CreateUser())).WithArgs("id", "email", "password")
+	mock.ExpectExec(esc(p.q.CreateUser())).WithArgs("id", "email", "password", defaultRole)
 	r := &pb.CreateUserRequest{Id: "id", Email: "email", Password: "password"}
 
 	_, _ = p.CreateUser(context.Background(), r)
