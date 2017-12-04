@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/thurt/demo-blog-platform/cms/domain"
 	"github.com/thurt/demo-blog-platform/cms/mock_proto"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"golang.org/x/net/context"
@@ -13,7 +14,7 @@ import (
 
 var ctx context.Context = context.Background()
 
-func setup(t *testing.T) (*mock_proto.MockCmsServer, UseCases) {
+func setup(t *testing.T) (*mock_proto.MockCmsServer, domain.UseCases) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mock := mock_proto.NewMockCmsServer(mockCtrl)

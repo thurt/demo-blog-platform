@@ -4,6 +4,7 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/gosimple/slug"
 	"github.com/satori/go.uuid"
+	"github.com/thurt/demo-blog-platform/cms/domain"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/net/context"
@@ -14,17 +15,10 @@ import (
 var ErrAlreadyExists error = status.Error(codes.AlreadyExists, codes.AlreadyExists.String())
 
 type useCases struct {
-	pb.CmsServer
+	domain.Provider
 }
 
-type UseCases interface {
-	CreatePost(context.Context, *pb.CreatePostRequest) (*pb.PostRequest, error)
-	UpdatePost(context.Context, *pb.UpdatePostRequest) (*empty.Empty, error)
-	CreateUser(context.Context, *pb.CreateUserRequest) (*pb.UserRequest, error)
-	CreateComment(context.Context, *pb.CreateCommentRequest) (*pb.CommentRequest, error)
-}
-
-func New(provider pb.CmsServer) *useCases {
+func New(provider domain.Provider) *useCases {
 	uc := &useCases{provider}
 	return uc
 }
@@ -49,13 +43,13 @@ func hashPassword(password string) (string, error) {
 func (u *useCases) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb.PostRequest, error) {
 	// requires a Slug to be created from the Title and added to the request
 	r.Slug = slugMake(r.GetTitle())
-	return u.CmsServer.CreatePost(ctx, r)
+	return u.Provider.CreatePost(ctx, r)
 }
 
 func (u *useCases) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*empty.Empty, error) {
 	// requires a Slug to be created from the Title and added to the request
 	r.Slug = slugMake(r.GetTitle())
-	return u.CmsServer.UpdatePost(ctx, r)
+	return u.Provider.UpdatePost(ctx, r)
 }
 
 func (u *useCases) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb.UserRequest, error) {
@@ -77,7 +71,7 @@ func (u *useCases) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb
 	}
 
 	r.Password = hashedPassword
-	return u.CmsServer.CreateUser(ctx, r)
+	return u.Provider.CreateUser(ctx, r)
 }
 
 func (u *useCases) CreateComment(ctx context.Context, r *pb.CreateCommentRequest) (*pb.CommentRequest, error) {
@@ -93,5 +87,11 @@ func (u *useCases) CreateComment(ctx context.Context, r *pb.CreateCommentRequest
 		return nil, err
 	}
 
-	return u.CmsServer.CreateComment(ctx, r)
+	return u.Provider.CreateComment(ctx, r)
+}
+
+func (u *useCases) AuthUser(ctx context.Context, r *pb.AuthUserRequest) (*pb.AccessToken, error) {
+	a := &pb.AccessToken{}
+
+	return a, nil
 }
