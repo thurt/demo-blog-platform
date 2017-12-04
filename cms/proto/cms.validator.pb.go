@@ -23,6 +23,9 @@ It has these top-level messages:
 	User
 	UserRequest
 	CreateUserRequest
+	AuthUserRequest
+	AccessToken
+	UserPassword
 */
 package cms
 
@@ -155,5 +158,29 @@ func (this *CreateUserRequest) Validate() error {
 	if !(len(this.Password) < 51) {
 		return go_proto_validators.FieldError("Password", fmt.Errorf(`value '%v' must length be less than '51'`, this.Password))
 	}
+	return nil
+}
+
+var _regex_AuthUserRequest_Id = regexp.MustCompile("^[a-zA-Z]{3,18}$")
+
+func (this *AuthUserRequest) Validate() error {
+	if !_regex_AuthUserRequest_Id.MatchString(this.Id) {
+		return go_proto_validators.FieldError("Id", fmt.Errorf(`User Id must be 3-18 characters and can only include letters`))
+	}
+	if this.Id == "" {
+		return go_proto_validators.FieldError("Id", fmt.Errorf(`User Id must be 3-18 characters and can only include letters`))
+	}
+	if this.Password == "" {
+		return go_proto_validators.FieldError("Password", fmt.Errorf(`value '%v' must not be an empty string`, this.Password))
+	}
+	if !(len(this.Password) < 51) {
+		return go_proto_validators.FieldError("Password", fmt.Errorf(`value '%v' must length be less than '51'`, this.Password))
+	}
+	return nil
+}
+func (this *AccessToken) Validate() error {
+	return nil
+}
+func (this *UserPassword) Validate() error {
 	return nil
 }

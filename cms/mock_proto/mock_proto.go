@@ -35,6 +35,19 @@ func (m *MockCmsServer) EXPECT() *MockCmsServerMockRecorder {
 	return m.recorder
 }
 
+// AuthUser mocks base method
+func (m *MockCmsServer) AuthUser(arg0 context.Context, arg1 *proto.AuthUserRequest) (*proto.AccessToken, error) {
+	ret := m.ctrl.Call(m, "AuthUser", arg0, arg1)
+	ret0, _ := ret[0].(*proto.AccessToken)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AuthUser indicates an expected call of AuthUser
+func (mr *MockCmsServerMockRecorder) AuthUser(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthUser", reflect.TypeOf((*MockCmsServer)(nil).AuthUser), arg0, arg1)
+}
+
 // CreateComment mocks base method
 func (m *MockCmsServer) CreateComment(arg0 context.Context, arg1 *proto.CreateCommentRequest) (*proto.CommentRequest, error) {
 	ret := m.ctrl.Call(m, "CreateComment", arg0, arg1)

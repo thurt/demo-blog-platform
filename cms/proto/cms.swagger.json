@@ -16,6 +16,23 @@
     "application/json"
   ],
   "paths": {
+    "/auth/user": {
+      "post": {
+        "summary": "Auth Use-Cases",
+        "operationId": "AuthUser",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/cmsAccessToken"
+            }
+          }
+        },
+        "tags": [
+          "Cms"
+        ]
+      }
+    },
     "/comments": {
       "get": {
         "summary": "Comment Use-Cases",
@@ -375,6 +392,21 @@
     }
   },
   "definitions": {
+    "cmsAccessToken": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string"
+        },
+        "token_type": {
+          "type": "string"
+        },
+        "expires_in": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
     "cmsComment": {
       "type": "object",
       "properties": {
@@ -533,9 +565,19 @@
         },
         "last_active": {
           "type": "string"
+        },
+        "role": {
+          "$ref": "#/definitions/cmsUserRole"
         }
-      },
-      "title": "Users"
+      }
+    },
+    "cmsUserPassword": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "type": "string"
+        }
+      }
     },
     "cmsUserRequest": {
       "type": "object",
@@ -544,6 +586,16 @@
           "type": "string"
         }
       }
+    },
+    "cmsUserRole": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ADMIN",
+        "USER"
+      ],
+      "default": "UNKNOWN",
+      "title": "Users"
     },
     "protobufEmpty": {
       "type": "object",
