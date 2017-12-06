@@ -57,12 +57,13 @@ func tokenFromContext(ctx context.Context) (string, error) {
 }
 
 func contextFromUser(u *pb.User) context.Context {
-	return context.Background()
+	return metadata.NewIncomingContext(context.Background(), metadata.Pairs("user", u.String()))
 }
 
 func newAuthFunc(h TokenHash) grpc_auth.AuthFunc {
 	return func(ctx context.Context) (context.Context, error) {
 		t, err := tokenFromContext(ctx)
+
 		if err != nil {
 			return nil, err
 		}
@@ -70,14 +71,17 @@ func newAuthFunc(h TokenHash) grpc_auth.AuthFunc {
 			return ctx, nil
 		}
 
-		if id, ok := h[t]; ok {
-			if time.Now().After(id.expiryTime) {
-				delete(h, t)
-				return nil, ErrUnauthenticated
-			}
-			return contextFromUser(id.user), nil
+		id, ok := h[t]
+		if !ok {
+			return nil, ErrUnauthenticated
 		}
-		return ctx, nil
+
+		if time.Now().After(id.expiryTime) {
+			delete(h, t)
+			return nil, ErrUnauthenticated
+		}
+
+		return contextFromUser(id.user), nil
 	}
 }
 
