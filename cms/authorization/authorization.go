@@ -1,6 +1,7 @@
 package authorization
 
 import (
+	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/empty"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"golang.org/x/net/context"
@@ -43,14 +44,20 @@ func New(server pb.CmsServer) pb.CmsServer {
 	return a
 }
 
-func hasPermission(ctx context.Context, rolesAllowed ...Role) bool {
+func hasPermission(ctx context.Context, rolesAllowed ...pb.UserRole) bool {
 	md, ok := metadata.FromIncomingContext(ctx)
 
-	if ok && md["role"] != nil && len(md["role"][0]) != 0 {
-		cr := Role(md["role"][0])
+	if ok && md["user"] != nil && len(md["user"]) != 0 {
+		u := &pb.User{}
+		err := proto.UnmarshalText(md["user"][0], u)
+		if err != nil {
+			return false
+		}
+
+		ur := u.GetRole()
 
 		for _, r := range rolesAllowed {
-			if r == cr {
+			if r == ur {
 				return true
 			}
 		}
@@ -61,7 +68,7 @@ func hasPermission(ctx context.Context, rolesAllowed ...Role) bool {
 
 func (a *authorization) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb.PostRequest, error) {
 	// requires Admin Role has permission
-	if !hasPermission(ctx, Admin) {
+	if !hasPermission(ctx, pb.UserRole_ADMIN) {
 		return nil, ErrPermissionDenied
 	}
 
@@ -70,7 +77,7 @@ func (a *authorization) CreatePost(ctx context.Context, r *pb.CreatePostRequest)
 
 func (a *authorization) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*empty.Empty, error) {
 	// requires Admin Role has permission
-	if !hasPermission(ctx, Admin) {
+	if !hasPermission(ctx, pb.UserRole_ADMIN) {
 		return nil, ErrPermissionDenied
 	}
 
@@ -79,7 +86,7 @@ func (a *authorization) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest)
 
 func (a *authorization) DeletePost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
 	// requires Admin Role has permission
-	if !hasPermission(ctx, Admin) {
+	if !hasPermission(ctx, pb.UserRole_ADMIN) {
 		return nil, ErrPermissionDenied
 	}
 	return a.CmsServer.DeletePost(ctx, r)
@@ -87,7 +94,7 @@ func (a *authorization) DeletePost(ctx context.Context, r *pb.PostRequest) (*emp
 
 func (a *authorization) PublishPost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
 	// requires Admin Role has permission
-	if !hasPermission(ctx, Admin) {
+	if !hasPermission(ctx, pb.UserRole_ADMIN) {
 		return nil, ErrPermissionDenied
 	}
 	return a.CmsServer.PublishPost(ctx, r)
@@ -95,7 +102,7 @@ func (a *authorization) PublishPost(ctx context.Context, r *pb.PostRequest) (*em
 
 func (a *authorization) UnPublishPost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
 	// requires Admin Role has permission
-	if !hasPermission(ctx, Admin) {
+	if !hasPermission(ctx, pb.UserRole_ADMIN) {
 		return nil, ErrPermissionDenied
 	}
 	return a.CmsServer.UnPublishPost(ctx, r)
@@ -104,7 +111,7 @@ func (a *authorization) UnPublishPost(ctx context.Context, r *pb.PostRequest) (*
 func (a *authorization) DeleteUser(ctx context.Context, r *pb.UserRequest) (*empty.Empty, error) {
 	// requires Admin Role has permission
 	// requires User Role has permission
-	if !hasPermission(ctx, Admin, User) {
+	if !hasPermission(ctx, pb.UserRole_ADMIN, pb.UserRole_USER) {
 		return nil, ErrPermissionDenied
 	}
 	return a.CmsServer.DeleteUser(ctx, r)
@@ -113,7 +120,7 @@ func (a *authorization) DeleteUser(ctx context.Context, r *pb.UserRequest) (*emp
 func (a *authorization) CreateComment(ctx context.Context, r *pb.CreateCommentRequest) (*pb.CommentRequest, error) {
 	// requires Admin Role has permission
 	// requires User Role has permission
-	if !hasPermission(ctx, Admin, User) {
+	if !hasPermission(ctx, pb.UserRole_ADMIN, pb.UserRole_USER) {
 		return nil, ErrPermissionDenied
 	}
 	return a.CmsServer.CreateComment(ctx, r)
@@ -122,7 +129,7 @@ func (a *authorization) CreateComment(ctx context.Context, r *pb.CreateCommentRe
 func (a *authorization) UpdateComment(ctx context.Context, r *pb.UpdateCommentRequest) (*empty.Empty, error) {
 	// requires Admin Role has permission
 	// requires User Role has permission
-	if !hasPermission(ctx, Admin, User) {
+	if !hasPermission(ctx, pb.UserRole_ADMIN, pb.UserRole_USER) {
 		return nil, ErrPermissionDenied
 	}
 	return a.CmsServer.UpdateComment(ctx, r)
@@ -131,7 +138,7 @@ func (a *authorization) UpdateComment(ctx context.Context, r *pb.UpdateCommentRe
 func (a *authorization) DeleteComment(ctx context.Context, r *pb.CommentRequest) (*empty.Empty, error) {
 	// requires Admin Role has permission
 	// requires User Role has permission
-	if !hasPermission(ctx, Admin, User) {
+	if !hasPermission(ctx, pb.UserRole_ADMIN, pb.UserRole_USER) {
 		return nil, ErrPermissionDenied
 	}
 	return a.CmsServer.DeleteComment(ctx, r)

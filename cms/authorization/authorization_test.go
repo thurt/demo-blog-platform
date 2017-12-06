@@ -18,8 +18,8 @@ func setup(t *testing.T) (*mock_proto.MockCmsServer, Authorization) {
 	return mock, a
 }
 
-func createCtxRole(r Role) context.Context {
-	md := metadata.Pairs("role", r.String())
+func createMDUser(u *pb.User) context.Context {
+	md := metadata.Pairs("user", u.String())
 	ctx := metadata.NewIncomingContext(context.Background(), md)
 	return ctx
 }
@@ -27,7 +27,7 @@ func createCtxRole(r Role) context.Context {
 func TestDeleteComment(t *testing.T) {
 	t.Run("requires permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := context.Background()
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_UNKNOWN})
 		r := &pb.CommentRequest{}
 
 		mock.EXPECT().DeleteComment(ctx, r)
@@ -39,19 +39,19 @@ func TestDeleteComment(t *testing.T) {
 	})
 	t.Run("requires Admin Role has permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := createCtxRole(Admin)
-		r := &pb.UserRequest{}
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_ADMIN})
+		r := &pb.CommentRequest{}
 
-		mock.EXPECT().DeleteUser(ctx, r)
+		mock.EXPECT().DeleteComment(ctx, r)
 
-		_, err := a.DeleteUser(ctx, r)
+		_, err := a.DeleteComment(ctx, r)
 		if err != nil {
 			t.Error("unexpected error:", err)
 		}
 	})
 	t.Run("requires User Role has permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := createCtxRole(User)
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_USER})
 		r := &pb.CommentRequest{}
 
 		mock.EXPECT().DeleteComment(ctx, r)
@@ -66,7 +66,7 @@ func TestDeleteComment(t *testing.T) {
 func TestUpdateComment(t *testing.T) {
 	t.Run("requires permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := context.Background()
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_UNKNOWN})
 		r := &pb.UpdateCommentRequest{}
 
 		mock.EXPECT().UpdateComment(ctx, r)
@@ -78,7 +78,7 @@ func TestUpdateComment(t *testing.T) {
 	})
 	t.Run("requires Admin Role has permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := createCtxRole(Admin)
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_ADMIN})
 		r := &pb.UserRequest{}
 
 		mock.EXPECT().DeleteUser(ctx, r)
@@ -90,7 +90,7 @@ func TestUpdateComment(t *testing.T) {
 	})
 	t.Run("requires User Role has permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := createCtxRole(User)
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_USER})
 		r := &pb.UpdateCommentRequest{}
 
 		mock.EXPECT().UpdateComment(ctx, r)
@@ -106,7 +106,7 @@ func TestUpdateComment(t *testing.T) {
 func TestCreateComment(t *testing.T) {
 	t.Run("requires permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := context.Background()
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_UNKNOWN})
 		r := &pb.CreateCommentRequest{}
 
 		mock.EXPECT().CreateComment(ctx, r)
@@ -118,7 +118,7 @@ func TestCreateComment(t *testing.T) {
 	})
 	t.Run("requires Admin Role has permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := createCtxRole(Admin)
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_ADMIN})
 		r := &pb.CreateCommentRequest{}
 
 		mock.EXPECT().CreateComment(ctx, r)
@@ -130,7 +130,7 @@ func TestCreateComment(t *testing.T) {
 	})
 	t.Run("requires User Role has permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := createCtxRole(User)
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_USER})
 		r := &pb.CreateCommentRequest{}
 
 		mock.EXPECT().CreateComment(ctx, r)
@@ -145,7 +145,7 @@ func TestCreateComment(t *testing.T) {
 func TestDeleteUser(t *testing.T) {
 	t.Run("requires permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := context.Background()
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_UNKNOWN})
 		r := &pb.UserRequest{}
 
 		mock.EXPECT().DeleteUser(ctx, r)
@@ -157,7 +157,7 @@ func TestDeleteUser(t *testing.T) {
 	})
 	t.Run("requires Admin Role has permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := createCtxRole(Admin)
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_ADMIN})
 		r := &pb.UserRequest{}
 
 		mock.EXPECT().DeleteUser(ctx, r)
@@ -169,7 +169,7 @@ func TestDeleteUser(t *testing.T) {
 	})
 	t.Run("requires User Role has permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := createCtxRole(User)
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_USER})
 		r := &pb.UserRequest{}
 
 		mock.EXPECT().DeleteUser(ctx, r)
@@ -184,7 +184,7 @@ func TestDeleteUser(t *testing.T) {
 func TestUnPublishPost(t *testing.T) {
 	t.Run("requires permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := context.Background()
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_UNKNOWN})
 		r := &pb.PostRequest{}
 
 		mock.EXPECT().UnPublishPost(ctx, r)
@@ -196,7 +196,7 @@ func TestUnPublishPost(t *testing.T) {
 	})
 	t.Run("requires Admin Role has permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := createCtxRole(Admin)
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_ADMIN})
 		r := &pb.PostRequest{}
 
 		mock.EXPECT().UnPublishPost(ctx, r)
@@ -211,7 +211,7 @@ func TestUnPublishPost(t *testing.T) {
 func TestPublishPost(t *testing.T) {
 	t.Run("requires permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := context.Background()
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_UNKNOWN})
 		r := &pb.PostRequest{}
 
 		mock.EXPECT().PublishPost(ctx, r)
@@ -223,7 +223,7 @@ func TestPublishPost(t *testing.T) {
 	})
 	t.Run("requires Admin Role has permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := createCtxRole(Admin)
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_ADMIN})
 		r := &pb.PostRequest{}
 
 		mock.EXPECT().PublishPost(ctx, r)
@@ -238,7 +238,7 @@ func TestPublishPost(t *testing.T) {
 func TestDeletePost(t *testing.T) {
 	t.Run("requires permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := context.Background()
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_UNKNOWN})
 		r := &pb.PostRequest{}
 
 		mock.EXPECT().DeletePost(ctx, r)
@@ -250,7 +250,7 @@ func TestDeletePost(t *testing.T) {
 	})
 	t.Run("requires Admin Role has permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := createCtxRole(Admin)
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_ADMIN})
 		r := &pb.PostRequest{}
 
 		mock.EXPECT().DeletePost(ctx, r)
@@ -265,7 +265,7 @@ func TestDeletePost(t *testing.T) {
 func TestUpdatePost(t *testing.T) {
 	t.Run("requires permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := context.Background()
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_UNKNOWN})
 		r := &pb.UpdatePostRequest{}
 
 		mock.EXPECT().UpdatePost(ctx, r)
@@ -277,7 +277,7 @@ func TestUpdatePost(t *testing.T) {
 	})
 	t.Run("requires Admin Role has permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := createCtxRole(Admin)
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_ADMIN})
 		r := &pb.UpdatePostRequest{}
 
 		mock.EXPECT().UpdatePost(ctx, r)
@@ -292,7 +292,7 @@ func TestUpdatePost(t *testing.T) {
 func TestCreatePost(t *testing.T) {
 	t.Run("requires permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := context.Background()
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_UNKNOWN})
 		r := &pb.CreatePostRequest{}
 
 		mock.EXPECT().CreatePost(ctx, r)
@@ -304,7 +304,7 @@ func TestCreatePost(t *testing.T) {
 	})
 	t.Run("requires Admin Role has permission", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := createCtxRole(Admin)
+		ctx := createMDUser(&pb.User{Role: pb.UserRole_ADMIN})
 		r := &pb.CreatePostRequest{}
 
 		mock.EXPECT().CreatePost(ctx, r)
