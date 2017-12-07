@@ -20,10 +20,11 @@ var ErrAlreadyExists error = status.Error(codes.AlreadyExists, codes.AlreadyExis
 type useCases struct {
 	domain.Provider
 	internal pb.CmsInternalServer
+	auth     pb.CmsAuthServer
 }
 
-func New(provider domain.Provider, internalProvider pb.CmsInternalServer) *useCases {
-	uc := &useCases{provider, internalProvider}
+func New(provider domain.Provider, internalProvider pb.CmsInternalServer, authProvider pb.CmsAuthServer) *useCases {
+	uc := &useCases{provider, internalProvider, authProvider}
 	return uc
 }
 
@@ -105,6 +106,12 @@ func (u *useCases) CreateComment(ctx context.Context, r *pb.CreateCommentRequest
 }
 
 func (u *useCases) AuthUser(ctx context.Context, r *pb.AuthUserRequest) (*pb.AccessToken, error) {
+	ur := &pb.UserRequest{r.GetId()}
+
+	user, err := u.GetUser(ctx, ur)
+	if err != nil {
+		return nil, err
+	}
 
 	p, err := u.internal.GetUserPassword(ctx, &pb.UserRequest{r.GetId()})
 	if err != nil {
@@ -116,10 +123,9 @@ func (u *useCases) AuthUser(ctx context.Context, r *pb.AuthUserRequest) (*pb.Acc
 		return nil, err
 	}
 
-	a := &pb.AccessToken{
-		AccessToken: randToken(),
-		TokenType:   "Bearer",
-		ExpiresIn:   9999,
+	a, err := u.auth.ActivateNewTokenForUser(ctx, user)
+	if err != nil {
+		return nil, err
 	}
 
 	return a, nil
