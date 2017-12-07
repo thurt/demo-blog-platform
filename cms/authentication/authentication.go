@@ -54,7 +54,7 @@ func newAuthFunc(h TokenHash) grpc_auth.AuthFunc {
 	}
 }
 
-func New(hash TokenHash, tokenExpiry time.Duration) (pb.CmsAuthProviderServer, grpc_auth.AuthFunc) {
+func New(hash TokenHash, tokenExpiry time.Duration) (pb.CmsAuthServer, grpc_auth.AuthFunc) {
 	return &authProvider{hash, tokenExpiry, "Bearer"}, newAuthFunc(hash)
 }
 
