@@ -15,10 +15,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const (
-	tokenLifetime = 24 * time.Hour
-)
-
 var ErrUnauthenticated = status.Error(codes.Unauthenticated, codes.Unauthenticated.String())
 
 type Identification struct {
