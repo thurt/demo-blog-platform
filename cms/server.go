@@ -8,9 +8,13 @@ import (
 	"os"
 	"time"
 
+	"github.com/grpc-ecosystem/go-grpc-middleware"
+	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/grpc-ecosystem/go-grpc-middleware/validator"
+	"github.com/thurt/demo-blog-platform/cms/authentication"
 	"github.com/thurt/demo-blog-platform/cms/authorization"
 	"github.com/thurt/demo-blog-platform/cms/mysqlprovider"
+	"github.com/thurt/demo-blog-platform/cms/mysqlprovider_internal"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"github.com/thurt/demo-blog-platform/cms/usecases"
 	"google.golang.org/grpc"
@@ -48,12 +52,18 @@ func main() {
 		log.Println("failed to listen")
 		panic(err.Error())
 	}
+
+	authProvider, authFunc := authentication.New(authentication.TokenHash{}, 8*time.Hour)
+
 	opts := []grpc.ServerOption{
 		grpc.ConnectionTimeout(5 * time.Second),
-		grpc.UnaryInterceptor(grpc_validator.UnaryServerInterceptor()),
+		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+			grpc_validator.UnaryServerInterceptor(),
+			grpc_auth.UnaryServerInterceptor(authFunc),
+		)),
 	}
 	grpcServer := grpc.NewServer(opts...)
-	pb.RegisterCmsServer(grpcServer, authorization.New(usecases.New(mysqlprovider.New(db))))
+	pb.RegisterCmsServer(grpcServer, authorization.New(usecases.New(mysqlprovider.New(db), mysqlprovider_internal.New(db), authProvider)))
 	log.Printf("Started grpc server on port %d", PORT)
 
 	// setup rest proxy server
