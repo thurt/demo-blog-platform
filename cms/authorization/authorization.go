@@ -1,12 +1,11 @@
 package authorization
 
 import (
-	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/empty"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
+	"github.com/thurt/demo-blog-platform/cms/reqContext"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -45,21 +44,16 @@ func New(server pb.CmsServer) pb.CmsServer {
 }
 
 func hasPermission(ctx context.Context, rolesAllowed ...pb.UserRole) bool {
-	md, ok := metadata.FromIncomingContext(ctx)
+	u, err := reqContext.GetUser(ctx)
+	if err != nil {
+		return false
+	}
 
-	if ok && md["user"] != nil && len(md["user"]) != 0 {
-		u := &pb.User{}
-		err := proto.UnmarshalText(md["user"][0], u)
-		if err != nil {
-			return false
-		}
+	ur := u.GetRole()
 
-		ur := u.GetRole()
-
-		for _, r := range rolesAllowed {
-			if r == ur {
-				return true
-			}
+	for _, r := range rolesAllowed {
+		if r == ur {
+			return true
 		}
 	}
 
