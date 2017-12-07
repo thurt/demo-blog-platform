@@ -11,17 +11,6 @@ import (
 
 var ErrPermissionDenied = status.Error(codes.PermissionDenied, codes.PermissionDenied.String())
 
-type Role string
-
-var (
-	Admin = Role("admin")
-	User  = Role("user")
-)
-
-func (r Role) String() string {
-	return string(r)
-}
-
 type authorization struct {
 	pb.CmsServer
 }
