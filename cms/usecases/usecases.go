@@ -1,9 +1,6 @@
 package usecases
 
 import (
-	"crypto/rand"
-	"fmt"
-
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/gosimple/slug"
 	"github.com/satori/go.uuid"
@@ -47,12 +44,6 @@ func hashPassword(password string) (string, error) {
 
 func hashValidatePassword(password string, hash string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-}
-
-func randToken() string {
-	b := make([]byte, 16)
-	rand.Read(b)
-	return fmt.Sprintf("%x", b)
 }
 
 func (u *useCases) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb.PostRequest, error) {
