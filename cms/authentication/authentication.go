@@ -8,6 +8,7 @@ import (
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
+	"github.com/thurt/demo-blog-platform/cms/reqContext"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -56,10 +57,6 @@ func tokenFromContext(ctx context.Context) (string, error) {
 
 }
 
-func contextFromUser(u *pb.User) context.Context {
-	return metadata.NewIncomingContext(context.Background(), metadata.Pairs("user", u.String()))
-}
-
 func newAuthFunc(h TokenHash) grpc_auth.AuthFunc {
 	return func(ctx context.Context) (context.Context, error) {
 		t, err := tokenFromContext(ctx)
@@ -81,7 +78,7 @@ func newAuthFunc(h TokenHash) grpc_auth.AuthFunc {
 			return nil, ErrUnauthenticated
 		}
 
-		return contextFromUser(id.user), nil
+		return reqContext.NewFromUser(ctx, id.user), nil
 	}
 }
 
