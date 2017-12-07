@@ -2,6 +2,7 @@ package reqContext
 
 import (
 	"context"
+	"strings"
 
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
@@ -34,4 +35,25 @@ func GetUser(ctx context.Context) (*pb.User, error) {
 	}
 
 	return u, nil
+}
+
+func GetAuthorizationToken(ctx context.Context) (string, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return "", status.Error(codes.InvalidArgument, "malformed metadata from incoming context")
+	}
+
+	if md["authorization"] == nil || len(md["authorization"][0]) == 0 {
+		return "", nil
+	}
+
+	authStr := strings.TrimSpace(md["authorization"][0])
+
+	strParts := strings.Split(authStr, " ")
+	if len(strParts) != 2 || strParts[0] != "Bearer" {
+		return "", status.Error(codes.Unauthenticated, "malformed authorization header")
+	}
+	token := strParts[1]
+
+	return token, nil
 }
