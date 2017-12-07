@@ -106,7 +106,7 @@ service CmsInternal {
     rpc GetUserPassword(UserRequest) returns (UserPassword) {}
 }
 
-service CmsAuthProvider {
+service CmsAuth {
     rpc ActivateNewTokenForUser(User) returns (AccessToken) {}
 }
 
