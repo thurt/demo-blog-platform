@@ -23,6 +23,11 @@ type sqlQuery struct{}
 func New(db *sql.DB) pb.CmsInternalServer {
 	return &provider_internal{db, &sqlQuery{}}
 }
+
+func NewSqlQuery() sqlQueryI {
+	return &sqlQuery{}
+}
+
 func (q *sqlQuery) GetUserPassword() string {
 	return "SELECT password FROM users WHERE id=?"
 }

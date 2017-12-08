@@ -1,6 +1,3 @@
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `cms` /*!40100 DEFAULT CHARACTER SET latin1 */;
-
-USE `cms`;
 
 CREATE TABLE `posts` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -11,17 +8,6 @@ CREATE TABLE `posts` (
   `last_edited` TIMESTAMP,
   `published` BOOLEAN NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-CREATE TABLE `sessions` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `session_id` varchar(256) NOT NULL DEFAULT '',
-  `user_id` int(11) DEFAULT NULL,
-  `session_start` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `session_update` timestamp NOT NULL DEFAULT '1970-01-01 00:00:01',
-  `session_active` tinyint(1) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `session_id` (`session_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE `users` (
@@ -45,5 +31,3 @@ CREATE TABLE `comments` (
   FOREIGN KEY (`user_id`) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
   FOREIGN KEY (`post_id`) REFERENCES posts(id) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-

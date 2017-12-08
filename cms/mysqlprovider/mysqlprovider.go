@@ -45,8 +45,12 @@ type sqlQueryI interface {
 }
 
 func New(db *sql.DB) domain.Provider {
-	s := &provider{db, &sqlQuery{}}
+	s := &provider{db, NewSqlQuery()}
 	return s
+}
+
+func NewSqlQuery() sqlQueryI {
+	return &sqlQuery{}
 }
 
 func (q *sqlQuery) GetPost() string {
