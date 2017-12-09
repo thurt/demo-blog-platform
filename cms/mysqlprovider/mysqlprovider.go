@@ -2,7 +2,6 @@ package mysqlprovider
 
 import (
 	"database/sql"
-	"log"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/thurt/demo-blog-platform/cms/domain"
@@ -62,7 +61,6 @@ func (p *provider) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, er
 	err := p.db.QueryRow(p.q.GetPost(), r.GetId()).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Published)
 
 	if err != nil {
-		log.Println(err)
 		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
@@ -77,13 +75,11 @@ func (p *provider) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb
 	rs, err := p.db.Exec(p.q.CreatePost(), r.GetSlug(), r.GetTitle(), r.GetContent())
 
 	if err != nil {
-		log.Println(err)
 		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
 	id, err := rs.LastInsertId()
 	if err != nil {
-		log.Println(err)
 		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
@@ -98,7 +94,6 @@ func (p *provider) DeletePost(ctx context.Context, r *pb.PostRequest) (*empty.Em
 	res, err := p.db.Exec(p.q.DeletePost(), r.GetId())
 
 	if err != nil {
-		log.Println(err)
 		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
@@ -106,7 +101,6 @@ func (p *provider) DeletePost(ctx context.Context, r *pb.PostRequest) (*empty.Em
 	// error only occurs if the sql implementation does not include RowsAffected() capability
 	// if no rows were affected then it is also an error
 	if err != nil || ra == 0 {
-		log.Println(err)
 		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
@@ -120,7 +114,6 @@ func (p *provider) GetPostComments(r *pb.PostRequest, stream pb.Cms_GetPostComme
 	cs, err := p.db.Query(p.q.GetPostComments(), r.GetId())
 
 	if err != nil {
-		log.Println(err)
 		return helper.SqlErrorToGrpcError(err)
 	}
 	defer cs.Close()
@@ -135,7 +128,6 @@ func (p *provider) GetPostComments(r *pb.PostRequest, stream pb.Cms_GetPostComme
 	}
 
 	if err = cs.Err(); err != nil {
-		log.Println(err)
 		return status.Error(codes.Unknown, "Ouch!")
 	}
 
@@ -149,13 +141,11 @@ func (p *provider) CreateComment(ctx context.Context, r *pb.CreateCommentRequest
 	res, err := p.db.Exec(p.q.CreateComment(), r.GetContent(), r.GetUserId(), r.GetPostId())
 
 	if err != nil {
-		log.Println(err)
 		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		log.Println(err)
 		return nil, status.Error(codes.Unknown, "Ouch!")
 	}
 
@@ -169,7 +159,6 @@ func (p *provider) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb
 	_, err := p.db.Exec(p.q.CreateUser(), r.GetId(), r.GetEmail(), r.GetPassword(), defaultRole)
 
 	if err != nil {
-		log.Println(err)
 		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
@@ -183,7 +172,6 @@ func (p *provider) DeleteComment(ctx context.Context, r *pb.CommentRequest) (*em
 	res, err := p.db.Exec(p.q.DeleteComment(), r.GetId())
 
 	if err != nil {
-		log.Println(err)
 		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
@@ -191,7 +179,6 @@ func (p *provider) DeleteComment(ctx context.Context, r *pb.CommentRequest) (*em
 	// error only occurs if the sql implementation does not include RowsAffected() capability
 	// if no rows were affected then it is also an error
 	if err != nil || ra == 0 {
-		log.Println(err)
 		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
@@ -205,7 +192,6 @@ func (p *provider) DeleteUser(ctx context.Context, r *pb.UserRequest) (*empty.Em
 	res, err := p.db.Exec(p.q.DeleteUser(), r.GetId())
 
 	if err != nil {
-		log.Println(err)
 		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
@@ -213,7 +199,6 @@ func (p *provider) DeleteUser(ctx context.Context, r *pb.UserRequest) (*empty.Em
 	// error only occurs if the sql implementation does not include RowsAffected() capability
 	// if no rows were affected then it is also an error
 	if err != nil || ra == 0 {
-		log.Println(err)
 		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
@@ -229,7 +214,6 @@ func (p *provider) GetComment(ctx context.Context, r *pb.CommentRequest) (*pb.Co
 	err := p.db.QueryRow(p.q.GetComment(), r.GetId()).Scan(&c.Id, &c.Content, &c.Created, &c.LastEdited, &c.UserId, &c.PostId)
 
 	if err != nil {
-		log.Println(err)
 		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
@@ -243,7 +227,6 @@ func (p *provider) GetComments(_ *empty.Empty, stream pb.Cms_GetCommentsServer) 
 	cs, err := p.db.Query(p.q.GetComments())
 
 	if err != nil {
-		log.Println(err)
 		return helper.SqlErrorToGrpcError(err)
 	}
 	defer cs.Close()
@@ -258,7 +241,6 @@ func (p *provider) GetComments(_ *empty.Empty, stream pb.Cms_GetCommentsServer) 
 	}
 
 	if err = cs.Err(); err != nil {
-		log.Println(err)
 		return status.Error(codes.Unknown, "Ouch!")
 	}
 
@@ -273,7 +255,6 @@ func (p *provider) GetPosts(_ *empty.Empty, stream pb.Cms_GetPostsServer) error 
 	ps, err := p.db.Query(p.q.GetPosts())
 
 	if err != nil {
-		log.Println(err)
 		return helper.SqlErrorToGrpcError(err)
 	}
 	defer ps.Close()
@@ -288,7 +269,6 @@ func (p *provider) GetPosts(_ *empty.Empty, stream pb.Cms_GetPostsServer) error 
 	}
 
 	if err = ps.Err(); err != nil {
-		log.Println(err)
 		return status.Error(codes.Unknown, "Ouch!")
 	}
 
@@ -304,7 +284,6 @@ func (p *provider) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, er
 	err := p.db.QueryRow(p.q.GetUser(), r.GetId()).Scan(&u.Id, &u.Email, &u.Created, &u.LastActive, &u.Role)
 
 	if err != nil {
-		log.Println(err)
 		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
@@ -318,7 +297,6 @@ func (p *provider) GetUserComments(r *pb.UserRequest, stream pb.Cms_GetUserComme
 	cs, err := p.db.Query(p.q.GetUserComments(), r.GetId())
 
 	if err != nil {
-		log.Println(err)
 		return helper.SqlErrorToGrpcError(err)
 	}
 	defer cs.Close()
@@ -333,7 +311,6 @@ func (p *provider) GetUserComments(r *pb.UserRequest, stream pb.Cms_GetUserComme
 	}
 
 	if err = cs.Err(); err != nil {
-		log.Println(err)
 		return status.Error(codes.Unknown, "Ouch!")
 	}
 
@@ -347,7 +324,6 @@ func (p *provider) PublishPost(ctx context.Context, r *pb.PostRequest) (*empty.E
 	_, err := p.db.Exec(p.q.PublishPost(), r.GetId())
 
 	if err != nil {
-		log.Println(err)
 		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
@@ -361,7 +337,6 @@ func (p *provider) UnPublishPost(ctx context.Context, r *pb.PostRequest) (*empty
 	_, err := p.db.Exec(p.q.UnPublishPost(), r.GetId())
 
 	if err != nil {
-		log.Println(err)
 		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
@@ -375,7 +350,6 @@ func (p *provider) UpdateComment(ctx context.Context, r *pb.UpdateCommentRequest
 	_, err := p.db.Exec(p.q.UpdateComment(), r.GetContent(), r.GetId())
 
 	if err != nil {
-		log.Println(err)
 		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
@@ -389,7 +363,6 @@ func (p *provider) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*em
 	_, err := p.db.Exec(p.q.UpdatePost(), r.GetSlug(), r.GetTitle(), r.GetContent(), r.GetId())
 
 	if err != nil {
-		log.Println(err)
 		return nil, helper.SqlErrorToGrpcError(err)
 	}
 
