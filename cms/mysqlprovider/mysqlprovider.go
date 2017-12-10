@@ -2,10 +2,10 @@ package mysqlprovider
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/thurt/demo-blog-platform/cms/domain"
-	helper "github.com/thurt/demo-blog-platform/cms/mysqlprovider_helper"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 
 	"golang.org/x/net/context"
@@ -24,23 +24,23 @@ type provider struct {
 
 type sqlQuery struct{}
 type sqlQueryI interface {
-	GetPost() string
-	CreatePost() string
-	DeletePost() string
-	CreateComment() string
-	CreateUser() string
-	DeleteComment() string
-	DeleteUser() string
-	GetComment() string
-	GetPostComments() string
+	GetPost(*pb.PostRequest) string
+	CreatePost(*pb.CreatePostRequest) string
+	DeletePost(*pb.PostRequest) string
+	CreateComment(*pb.CreateCommentRequest) string
+	CreateUser(*pb.CreateUserRequest) string
+	DeleteComment(*pb.CommentRequest) string
+	DeleteUser(*pb.UserRequest) string
+	GetComment(*pb.CommentRequest) string
+	GetPostComments(*pb.PostRequest) string
 	GetComments() string
 	GetPosts() string
-	GetUser() string
-	GetUserComments() string
-	PublishPost() string
-	UnPublishPost() string
-	UpdateComment() string
-	UpdatePost() string
+	GetUser(*pb.UserRequest) string
+	GetUserComments(*pb.UserRequest) string
+	PublishPost(*pb.PostRequest) string
+	UnPublishPost(*pb.PostRequest) string
+	UpdateComment(*pb.UpdateCommentRequest) string
+	UpdatePost(*pb.UpdatePostRequest) string
 }
 
 func New(db *sql.DB) domain.Provider {
@@ -52,69 +52,52 @@ func NewSqlQuery() sqlQueryI {
 	return &sqlQuery{}
 }
 
-func (q *sqlQuery) GetPost() string {
-	return "SELECT id, title, content, created, last_edited, published FROM posts WHERE id=?"
+func (q *sqlQuery) GetPost(r *pb.PostRequest) string {
+	return fmt.Sprintf("SELECT id, title, content, created, last_edited, published FROM posts WHERE id=%d", r.GetId())
 }
 func (p *provider) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
 	po := &pb.Post{}
-
-	err := p.db.QueryRow(p.q.GetPost(), r.GetId()).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Published)
-
+	err := p.db.QueryRow(p.q.GetPost(r)).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Published)
 	if err != nil {
-		return nil, helper.SqlErrorToGrpcError(err)
+		return nil, err
 	}
-
 	return po, nil
 }
 
-func (q *sqlQuery) CreatePost() string {
-	return "INSERT INTO posts SET slug=?, title=?, content=?"
+func (q *sqlQuery) CreatePost(r *pb.CreatePostRequest) string {
+	return fmt.Sprintf("INSERT INTO posts SET slug=%q, title=%q, content=%q", r.GetSlug(), r.GetTitle(), r.GetContent())
 }
 func (p *provider) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb.PostRequest, error) {
-
-	rs, err := p.db.Exec(p.q.CreatePost(), r.GetSlug(), r.GetTitle(), r.GetContent())
-
+	rs, err := p.db.Exec(p.q.CreatePost(r))
 	if err != nil {
-		return nil, helper.SqlErrorToGrpcError(err)
+		return nil, err
 	}
 
-	id, err := rs.LastInsertId()
-	if err != nil {
-		return nil, helper.SqlErrorToGrpcError(err)
-	}
-
+	id, _ := rs.LastInsertId()
 	return &pb.PostRequest{uint32(id)}, nil
 }
 
-func (q *sqlQuery) DeletePost() string {
-	return "DELETE FROM posts WHERE id=?"
+func (q *sqlQuery) DeletePost(r *pb.PostRequest) string {
+	return fmt.Sprintf("DELETE FROM posts WHERE id=%d", r.GetId())
 }
 func (p *provider) DeletePost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
-	// TODO: validate inputs
-	res, err := p.db.Exec(p.q.DeletePost(), r.GetId())
+	_, err := p.db.Exec(p.q.DeletePost(r))
 
 	if err != nil {
-		return nil, helper.SqlErrorToGrpcError(err)
-	}
-
-	ra, err := res.RowsAffected()
-	// error only occurs if the sql implementation does not include RowsAffected() capability
-	// if no rows were affected then it is also an error
-	if err != nil || ra == 0 {
-		return nil, helper.SqlErrorToGrpcError(err)
+		return nil, err
 	}
 
 	return &empty.Empty{}, nil
 }
 
-func (q *sqlQuery) GetPostComments() string {
-	return "SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE post_id=?"
+func (q *sqlQuery) GetPostComments(r *pb.PostRequest) string {
+	return fmt.Sprintf("SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE post_id=%d", r.GetId())
 }
 func (p *provider) GetPostComments(r *pb.PostRequest, stream pb.Cms_GetPostCommentsServer) error {
-	cs, err := p.db.Query(p.q.GetPostComments(), r.GetId())
+	cs, err := p.db.Query(p.q.GetPostComments(r))
 
 	if err != nil {
-		return helper.SqlErrorToGrpcError(err)
+		return err
 	}
 	defer cs.Close()
 
@@ -134,89 +117,67 @@ func (p *provider) GetPostComments(r *pb.PostRequest, stream pb.Cms_GetPostComme
 	return nil
 }
 
-func (q *sqlQuery) CreateComment() string {
-	return "INSERT INTO comments SET content=?, user_id=?, post_id=?"
+func (q *sqlQuery) CreateComment(r *pb.CreateCommentRequest) string {
+	return fmt.Sprintf("INSERT INTO comments SET content=%q, user_id=%q, post_id=%d", r.GetContent(), r.GetUserId(), r.GetPostId())
 }
 func (p *provider) CreateComment(ctx context.Context, r *pb.CreateCommentRequest) (*pb.CommentRequest, error) {
-	res, err := p.db.Exec(p.q.CreateComment(), r.GetContent(), r.GetUserId(), r.GetPostId())
-
+	rs, err := p.db.Exec(p.q.CreateComment(r))
 	if err != nil {
-		return nil, helper.SqlErrorToGrpcError(err)
+		return nil, err
 	}
 
-	id, err := res.LastInsertId()
-	if err != nil {
-		return nil, status.Error(codes.Unknown, "Ouch!")
-	}
-
+	id, _ := rs.LastInsertId()
 	return &pb.CommentRequest{uint32(id)}, nil
 }
 
-func (q *sqlQuery) CreateUser() string {
-	return "INSERT INTO users SET id=?, email=?, password=?, role=?"
+func (q *sqlQuery) CreateUser(r *pb.CreateUserRequest) string {
+	return fmt.Sprintf("INSERT INTO users SET id=%q, email=%q, password=%q, role=%d", r.GetId(), r.GetEmail(), r.GetPassword(), defaultRole)
 }
 func (p *provider) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb.UserRequest, error) {
-	_, err := p.db.Exec(p.q.CreateUser(), r.GetId(), r.GetEmail(), r.GetPassword(), defaultRole)
+	_, err := p.db.Exec(p.q.CreateUser(r))
 
 	if err != nil {
-		return nil, helper.SqlErrorToGrpcError(err)
+		return nil, err
 	}
 
 	return &pb.UserRequest{r.GetId()}, nil
 }
 
-func (q *sqlQuery) DeleteComment() string {
-	return "DELETE FROM comments WHERE id=?"
+func (q *sqlQuery) DeleteComment(r *pb.CommentRequest) string {
+	return fmt.Sprintf("DELETE FROM comments WHERE id=%d", r.GetId())
 }
 func (p *provider) DeleteComment(ctx context.Context, r *pb.CommentRequest) (*empty.Empty, error) {
-	res, err := p.db.Exec(p.q.DeleteComment(), r.GetId())
+	_, err := p.db.Exec(p.q.DeleteComment(r))
 
 	if err != nil {
-		return nil, helper.SqlErrorToGrpcError(err)
-	}
-
-	ra, err := res.RowsAffected()
-	// error only occurs if the sql implementation does not include RowsAffected() capability
-	// if no rows were affected then it is also an error
-	if err != nil || ra == 0 {
-		return nil, helper.SqlErrorToGrpcError(err)
+		return nil, err
 	}
 
 	return &empty.Empty{}, nil
 }
 
-func (q *sqlQuery) DeleteUser() string {
-	return "DELETE FROM users WHERE id=?"
+func (q *sqlQuery) DeleteUser(r *pb.UserRequest) string {
+	return fmt.Sprintf("DELETE FROM users WHERE id=%q", r.GetId())
 }
 func (p *provider) DeleteUser(ctx context.Context, r *pb.UserRequest) (*empty.Empty, error) {
-	res, err := p.db.Exec(p.q.DeleteUser(), r.GetId())
+	_, err := p.db.Exec(p.q.DeleteUser(r))
 
 	if err != nil {
-		return nil, helper.SqlErrorToGrpcError(err)
-	}
-
-	ra, err := res.RowsAffected()
-	// error only occurs if the sql implementation does not include RowsAffected() capability
-	// if no rows were affected then it is also an error
-	if err != nil || ra == 0 {
-		return nil, helper.SqlErrorToGrpcError(err)
+		return nil, err
 	}
 
 	return &empty.Empty{}, nil
 }
 
-func (q *sqlQuery) GetComment() string {
-	return "SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE id=?"
+func (q *sqlQuery) GetComment(r *pb.CommentRequest) string {
+	return fmt.Sprintf("SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE id=%d", r.GetId())
 }
 func (p *provider) GetComment(ctx context.Context, r *pb.CommentRequest) (*pb.Comment, error) {
 	c := &pb.Comment{}
-
-	err := p.db.QueryRow(p.q.GetComment(), r.GetId()).Scan(&c.Id, &c.Content, &c.Created, &c.LastEdited, &c.UserId, &c.PostId)
-
+	err := p.db.QueryRow(p.q.GetComment(r)).Scan(&c.Id, &c.Content, &c.Created, &c.LastEdited, &c.UserId, &c.PostId)
 	if err != nil {
-		return nil, helper.SqlErrorToGrpcError(err)
+		return nil, err
 	}
-
 	return c, nil
 }
 
@@ -227,7 +188,7 @@ func (p *provider) GetComments(_ *empty.Empty, stream pb.Cms_GetCommentsServer) 
 	cs, err := p.db.Query(p.q.GetComments())
 
 	if err != nil {
-		return helper.SqlErrorToGrpcError(err)
+		return err
 	}
 	defer cs.Close()
 
@@ -255,7 +216,7 @@ func (p *provider) GetPosts(_ *empty.Empty, stream pb.Cms_GetPostsServer) error 
 	ps, err := p.db.Query(p.q.GetPosts())
 
 	if err != nil {
-		return helper.SqlErrorToGrpcError(err)
+		return err
 	}
 	defer ps.Close()
 
@@ -275,29 +236,26 @@ func (p *provider) GetPosts(_ *empty.Empty, stream pb.Cms_GetPostsServer) error 
 	return nil
 }
 
-func (q *sqlQuery) GetUser() string {
-	return "SELECT id, email, created, last_active, role FROM users WHERE id=?"
+func (q *sqlQuery) GetUser(r *pb.UserRequest) string {
+	return fmt.Sprintf("SELECT id, email, created, last_active, role FROM users WHERE id=%q", r.GetId())
 }
 func (p *provider) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, error) {
 	u := &pb.User{}
-
-	err := p.db.QueryRow(p.q.GetUser(), r.GetId()).Scan(&u.Id, &u.Email, &u.Created, &u.LastActive, &u.Role)
-
+	err := p.db.QueryRow(p.q.GetUser(r)).Scan(&u, &u.Id, &u.Email, &u.Created, &u.LastActive, &u.Role)
 	if err != nil {
-		return nil, helper.SqlErrorToGrpcError(err)
+		return nil, err
 	}
-
 	return u, nil
 }
 
-func (q *sqlQuery) GetUserComments() string {
-	return "SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE user_id=?"
+func (q *sqlQuery) GetUserComments(r *pb.UserRequest) string {
+	return fmt.Sprintf("SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE user_id=%q", r.GetId())
 }
 func (p *provider) GetUserComments(r *pb.UserRequest, stream pb.Cms_GetUserCommentsServer) error {
-	cs, err := p.db.Query(p.q.GetUserComments(), r.GetId())
+	cs, err := p.db.Query(p.q.GetUserComments(r))
 
 	if err != nil {
-		return helper.SqlErrorToGrpcError(err)
+		return err
 	}
 	defer cs.Close()
 
@@ -317,53 +275,53 @@ func (p *provider) GetUserComments(r *pb.UserRequest, stream pb.Cms_GetUserComme
 	return nil
 }
 
-func (q *sqlQuery) PublishPost() string {
-	return "UPDATE posts SET published=TRUE WHERE id=?"
+func (q *sqlQuery) PublishPost(r *pb.PostRequest) string {
+	return fmt.Sprintf("UPDATE posts SET published=TRUE WHERE id=%d", r.GetId())
 }
 func (p *provider) PublishPost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
-	_, err := p.db.Exec(p.q.PublishPost(), r.GetId())
+	_, err := p.db.Exec(p.q.PublishPost(r))
 
 	if err != nil {
-		return nil, helper.SqlErrorToGrpcError(err)
+		return nil, err
 	}
 
 	return &empty.Empty{}, nil
 }
 
-func (q *sqlQuery) UnPublishPost() string {
-	return "UPDATE posts SET published=FALSE WHERE id=?"
+func (q *sqlQuery) UnPublishPost(r *pb.PostRequest) string {
+	return fmt.Sprintf("UPDATE posts SET published=FALSE WHERE id=%d", r.GetId())
 }
 func (p *provider) UnPublishPost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
-	_, err := p.db.Exec(p.q.UnPublishPost(), r.GetId())
+	_, err := p.db.Exec(p.q.UnPublishPost(r))
 
 	if err != nil {
-		return nil, helper.SqlErrorToGrpcError(err)
+		return nil, err
 	}
 
 	return &empty.Empty{}, nil
 }
 
-func (q *sqlQuery) UpdateComment() string {
-	return "UPDATE comments SET content=? WHERE id=?"
+func (q *sqlQuery) UpdateComment(r *pb.UpdateCommentRequest) string {
+	return fmt.Sprintf("UPDATE comments SET content=%q WHERE id=%d", r.GetContent(), r.GetId())
 }
 func (p *provider) UpdateComment(ctx context.Context, r *pb.UpdateCommentRequest) (*empty.Empty, error) {
-	_, err := p.db.Exec(p.q.UpdateComment(), r.GetContent(), r.GetId())
+	_, err := p.db.Exec(p.q.UpdateComment(r))
 
 	if err != nil {
-		return nil, helper.SqlErrorToGrpcError(err)
+		return nil, err
 	}
 
 	return &empty.Empty{}, nil
 }
 
-func (q *sqlQuery) UpdatePost() string {
-	return "UPDATE posts SET slug=?, title=?, content=? WHERE id=?"
+func (q *sqlQuery) UpdatePost(r *pb.UpdatePostRequest) string {
+	return fmt.Sprintf("UPDATE posts SET slug=%q, title=%q, content=%q WHERE id=%d", r.GetSlug(), r.GetTitle(), r.GetContent(), r.GetId())
 }
 func (p *provider) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*empty.Empty, error) {
-	_, err := p.db.Exec(p.q.UpdatePost(), r.GetSlug(), r.GetTitle(), r.GetContent(), r.GetId())
+	_, err := p.db.Exec(p.q.UpdatePost(r))
 
 	if err != nil {
-		return nil, helper.SqlErrorToGrpcError(err)
+		return nil, err
 	}
 
 	return &empty.Empty{}, nil
