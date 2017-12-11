@@ -3,15 +3,19 @@ package mysqlprovider
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
+	"errors"
+	"reflect"
 
 	"fmt"
 	"os"
 	"regexp"
 	"testing"
 
+	"github.com/fatih/structs"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/google/gofuzz"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
-	"github.com/xwb1989/sqlparser"
 	"google.golang.org/grpc"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
@@ -20,7 +24,10 @@ var (
 	db   *sql.DB
 	mock sqlmock.Sqlmock
 	p    *provider
+	f    *fuzz.Fuzzer
 )
+
+var regexAny string = ".*"
 
 type mockCms_GetPostsServer struct {
 	grpc.ServerStream
@@ -75,6 +82,9 @@ func TestMain(m *testing.M) {
 	// create the service provider
 	p = New(db).(*provider)
 
+	// create the fuzzer
+	f = fuzz.New()
+
 	os.Exit(m.Run())
 }
 
@@ -89,19 +99,52 @@ func esc(stmt string) string {
 	return regexp.QuoteMeta(stmt)
 }
 
-func checkQuerySyntax(query string, t *testing.T) {
-	if _, err := sqlparser.Parse(query); err != nil {
-		t.Error(err)
+// makeRowData creates a slice of driver.Value by casting provided values to driver.Value,
+// which is the expected input type for sqlmock.Rows{}.AddRow
+func makeRowData(values []interface{}) []driver.Value {
+	driverVals := make([]driver.Value, len(values))
+	for i, v := range values {
+		driverVals[i] = v.(driver.Value)
 	}
+	return driverVals
 }
 
 func TestGetPost(t *testing.T) {
-	r := &pb.PostRequest{Id: 0}
-	mock.ExpectQuery(p.q.GetPost(r)).WillReturnRows(&sqlmock.Rows{})
+	stubIn := &pb.PostRequest{}
+	stubOut := &pb.Post{}
+	f.Fuzz(stubIn)
+	f.Fuzz(stubOut)
+	regexSql := esc(p.q.GetPost(stubIn))
+	stubRows := sqlmock.NewRows(structs.Names(stubOut))
+	stubRows.AddRow(makeRowData(structs.Values(stubOut))...)
 
-	_, _ = p.GetPost(context.Background(), r)
+	t.Run("requires dispatching the correct sql request", func(t *testing.T) {
+		mock.ExpectQuery(regexSql)
 
-	checkExpectations(t)
+		_, _ = p.GetPost(context.Background(), stubIn)
+
+		checkExpectations(t)
+	})
+	t.Run("requires returning result with correct values from sql response", func(t *testing.T) {
+		mock.ExpectQuery(regexAny).WillReturnRows(stubRows)
+
+		result, err := p.GetPost(context.Background(), stubIn)
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+
+		if !reflect.DeepEqual(result, stubOut) {
+			t.Error("result should have same values as stub values")
+		}
+	})
+	t.Run("requires returning error when sql response is an error", func(t *testing.T) {
+		mock.ExpectQuery(regexAny).WillReturnError(errors.New(""))
+
+		_, err := p.GetPost(context.Background(), stubIn)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
 }
 
 func TestGetComment(t *testing.T) {

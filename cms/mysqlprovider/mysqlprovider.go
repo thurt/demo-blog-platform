@@ -53,11 +53,11 @@ func NewSqlQuery() sqlQueryI {
 }
 
 func (q *sqlQuery) GetPost(r *pb.PostRequest) string {
-	return fmt.Sprintf("SELECT id, title, content, created, last_edited, published FROM posts WHERE id=%d", r.GetId())
+	return fmt.Sprintf("SELECT id, title, content, created, last_edited, published, slug FROM posts WHERE id=%d", r.GetId())
 }
 func (p *provider) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
 	po := &pb.Post{}
-	err := p.db.QueryRow(p.q.GetPost(r)).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Published)
+	err := p.db.QueryRow(p.q.GetPost(r)).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Published, &po.Slug)
 	if err != nil {
 		return nil, err
 	}
