@@ -360,13 +360,42 @@ func TestGetComments(t *testing.T) {
 }
 
 func TestGetPosts(t *testing.T) {
-	mock.ExpectQuery(esc(p.q.GetPosts())).WillReturnRows(&sqlmock.Rows{})
-	r := &empty.Empty{}
-	s := &mockCms_GetPostsServer{}
+	stubIn := &empty.Empty{}
+	stubOut := []*pb.Post{&pb.Post{}, &pb.Post{}}
+	f.Fuzz(stubIn)
+	f.Fuzz(stubOut[0])
+	f.Fuzz(stubOut[1])
+	mockStreamOut := &mockCms_GetPostsServer{}
+	regexSql := esc(p.q.GetPosts(stubIn))
+	stubRows := sqlmock.NewRows(structs.Names(stubOut[0])).AddRow(makeRowData(structs.Values(stubOut[0]))...).AddRow(makeRowData(structs.Values(stubOut[1]))...)
 
-	_ = p.GetPosts(r, s)
+	t.Run("requires dispatching the correct sql request", func(t *testing.T) {
+		mock.ExpectQuery(regexSql)
 
-	checkExpectations(t)
+		_ = p.GetPosts(stubIn, mockStreamOut)
+
+		checkExpectations(t)
+	})
+	t.Run("requires returning result with correct values from sql response", func(t *testing.T) {
+		mock.ExpectQuery(regexAny).WillReturnRows(stubRows)
+
+		err := p.GetPosts(stubIn, mockStreamOut)
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+
+		if !reflect.DeepEqual(mockStreamOut.Results, stubOut) {
+			t.Error(fmt.Sprintf("result should have same values as stub values:\nHave:\n%v\nWant:\n%v\n", mockStreamOut.Results, stubOut))
+		}
+	})
+	t.Run("requires returning error when sql response is an error", func(t *testing.T) {
+		mock.ExpectQuery(regexAny).WillReturnError(errors.New(""))
+
+		err := p.GetPosts(stubIn, mockStreamOut)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
 }
 
 func TestGetUserComments(t *testing.T) {
