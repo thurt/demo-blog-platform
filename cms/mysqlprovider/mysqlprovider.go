@@ -34,7 +34,7 @@ type sqlQueryI interface {
 	GetComment(*pb.CommentRequest) string
 	GetPostComments(*pb.PostRequest) string
 	GetComments() string
-	GetPosts() string
+	GetPosts(*empty.Empty) string
 	GetUser(*pb.UserRequest) string
 	GetUserComments(*pb.UserRequest) string
 	PublishPost(*pb.PostRequest) string
@@ -208,13 +208,11 @@ func (p *provider) GetComments(_ *empty.Empty, stream pb.Cms_GetCommentsServer) 
 	return nil
 }
 
-func (q *sqlQuery) GetPosts() string {
-	return "SELECT id, title, content, created, last_edited FROM posts"
+func (q *sqlQuery) GetPosts(_ *empty.Empty) string {
+	return "SELECT id, title, content, created, last_edited, published, slug FROM posts"
 }
-func (p *provider) GetPosts(_ *empty.Empty, stream pb.Cms_GetPostsServer) error {
-
-	ps, err := p.db.Query(p.q.GetPosts())
-
+func (p *provider) GetPosts(r *empty.Empty, stream pb.Cms_GetPostsServer) error {
+	ps, err := p.db.Query(p.q.GetPosts(r))
 	if err != nil {
 		return err
 	}
@@ -222,7 +220,10 @@ func (p *provider) GetPosts(_ *empty.Empty, stream pb.Cms_GetPostsServer) error 
 
 	for ps.Next() {
 		p := &pb.Post{}
-		ps.Scan(&p.Id, &p.Title, &p.Content, &p.Created, &p.LastEdited)
+		err = ps.Scan(&p.Id, &p.Title, &p.Content, &p.Created, &p.LastEdited, &p.Published, &p.Slug)
+		if err != nil {
+			return err
+		}
 		err := stream.Send(p)
 		if err != nil {
 			return err
