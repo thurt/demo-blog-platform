@@ -2,6 +2,7 @@ package mysqlprovider_helper
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/VividCortex/mysqlerr"
 	"github.com/go-sql-driver/mysql"
@@ -28,12 +29,12 @@ func SqlErrorToGrpcError(err error) error {
 		case mysqlerr.ER_PARSE_ERROR: // tried to execute a sql statement that has syntax error(s)
 			e = status.Error(codes.Internal, err.Error())
 		default: // unknown
-			e = status.Error(codes.Unknown, err.Error())
+			panic(fmt.Sprintf("unhandled sql error #%d: %q", deviceErr.Number, err.Error()))
 		}
 	} else if err == sql.ErrNoRows { // this error is specific only to QueryRow invocations
 		e = status.Error(codes.NotFound, err.Error())
-	} else {
-		e = status.Error(codes.Unknown, err.Error())
+	} else if err != nil {
+		panic(fmt.Sprintf("unknown error: %s", err.Error()))
 	}
 
 	return e
