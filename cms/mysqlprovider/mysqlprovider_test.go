@@ -209,7 +209,6 @@ func TestDeletePost(t *testing.T) {
 			t.Error("expected an error")
 		}
 	})
-
 }
 
 func TestDeleteComment(t *testing.T) {
@@ -256,16 +255,43 @@ func TestCreatePost(t *testing.T) {
 			t.Error("expected an error")
 		}
 	})
-
 }
 
 func TestCreateComment(t *testing.T) {
-	r := &pb.CreateCommentRequest{Content: "content", UserId: "user_id", PostId: 0}
-	mock.ExpectExec(p.q.CreateComment(r)).WillReturnResult(sqlmock.NewResult(1, 1))
+	stubIn := &pb.CreateCommentRequest{}
+	stubOut := &pb.CommentRequest{}
+	f.Fuzz(stubIn)
+	f.Fuzz(stubOut)
+	regexSql := esc(p.q.CreateComment(stubIn))
+	stubResult := sqlmock.NewResult(int64(stubOut.Id), 1)
 
-	_, _ = p.CreateComment(context.Background(), r)
+	t.Run("requires dispatching the correct sql request", func(t *testing.T) {
+		mock.ExpectExec(regexSql)
 
-	checkExpectations(t)
+		_, _ = p.CreateComment(context.Background(), stubIn)
+
+		checkExpectations(t)
+	})
+	t.Run("requires returning result with correct values from sql response", func(t *testing.T) {
+		mock.ExpectExec(regexAny).WillReturnResult(stubResult)
+
+		result, err := p.CreateComment(context.Background(), stubIn)
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+
+		if !reflect.DeepEqual(result, stubOut) {
+			t.Error("result should have same values as stub values")
+		}
+	})
+	t.Run("requires returning error when sql response is an error", func(t *testing.T) {
+		mock.ExpectExec(regexAny).WillReturnError(errors.New(""))
+
+		_, err := p.CreateComment(context.Background(), stubIn)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
 }
 
 func TestCreateUser(t *testing.T) {
