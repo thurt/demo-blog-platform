@@ -5,7 +5,6 @@ import (
 
 	"golang.org/x/net/context"
 
-	helper "github.com/thurt/demo-blog-platform/cms/mysqlprovider_helper"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 )
 
@@ -18,17 +17,13 @@ type sqlQueryI interface {
 	GetUserPassword() string
 }
 
-type sqlQuery struct{}
+type SqlQuery struct{}
 
 func New(db *sql.DB) pb.CmsInternalServer {
-	return &provider_internal{db, &sqlQuery{}}
+	return &provider_internal{db, &SqlQuery{}}
 }
 
-func NewSqlQuery() sqlQueryI {
-	return &sqlQuery{}
-}
-
-func (q *sqlQuery) GetUserPassword() string {
+func (q *SqlQuery) GetUserPassword() string {
 	return "SELECT password FROM users WHERE id=?"
 }
 
@@ -37,7 +32,7 @@ func (p *provider_internal) GetUserPassword(ctx context.Context, r *pb.UserReque
 	err := p.db.QueryRow(p.q.GetUserPassword(), r.GetId()).Scan(&u.Password)
 
 	if err != nil {
-		return nil, helper.SqlErrorToGrpcError(err)
+		return nil, err
 	}
 
 	return u, nil
