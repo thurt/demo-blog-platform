@@ -32,11 +32,28 @@ var regexAny string = ".*"
 type mockCms_GetPostsServer struct {
 	grpc.ServerStream
 	Results []*pb.Post
+	pos     int
+	nextErr map[int]error
+}
+
+func (m *mockCms_GetPostsServer) SetSendError(pos int, err error) *mockCms_GetPostsServer {
+	m.nextErr[pos] = err
+	return m
 }
 
 func (m *mockCms_GetPostsServer) Send(p *pb.Post) error {
+	if err, ok := m.nextErr[m.pos]; ok {
+		return err
+	}
+
 	m.Results = append(m.Results, p)
+
+	m.pos++
 	return nil
+}
+
+func NewMockCms_GetPostsServer() *mockCms_GetPostsServer {
+	return &mockCms_GetPostsServer{nextErr: make(map[int]error)}
 }
 
 type mockCms_GetPostCommentsServer struct {
@@ -365,18 +382,18 @@ func TestGetPosts(t *testing.T) {
 	f.Fuzz(stubIn)
 	f.Fuzz(stubOut[0])
 	f.Fuzz(stubOut[1])
-	mockStreamOut := &mockCms_GetPostsServer{}
-	regexSql := esc(p.q.GetPosts(stubIn))
-	stubRows := sqlmock.NewRows(structs.Names(stubOut[0])).AddRow(makeRowData(structs.Values(stubOut[0]))...).AddRow(makeRowData(structs.Values(stubOut[1]))...)
+	mockStreamOut := NewMockCms_GetPostsServer()
 
 	t.Run("requires dispatching the correct sql request", func(t *testing.T) {
+		regexSql := esc(p.q.GetPosts(stubIn))
 		mock.ExpectQuery(regexSql)
 
 		_ = p.GetPosts(stubIn, mockStreamOut)
 
 		checkExpectations(t)
 	})
-	t.Run("requires returning result with correct values from sql response", func(t *testing.T) {
+	t.Run("requires returning result thru stream with correct values from sql response", func(t *testing.T) {
+		stubRows := sqlmock.NewRows(structs.Names(stubOut[0])).AddRow(makeRowData(structs.Values(stubOut[0]))...).AddRow(makeRowData(structs.Values(stubOut[1]))...)
 		mock.ExpectQuery(regexAny).WillReturnRows(stubRows)
 
 		err := p.GetPosts(stubIn, mockStreamOut)
@@ -390,6 +407,37 @@ func TestGetPosts(t *testing.T) {
 	})
 	t.Run("requires returning error when sql response is an error", func(t *testing.T) {
 		mock.ExpectQuery(regexAny).WillReturnError(errors.New(""))
+
+		err := p.GetPosts(stubIn, mockStreamOut)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
+	t.Run("requires returning error when stream.Send creates an error", func(t *testing.T) {
+		mockStreamOutWithErr := NewMockCms_GetPostsServer().SetSendError(1, errors.New(""))
+		stubRows := sqlmock.NewRows(structs.Names(stubOut[0])).AddRow(makeRowData(structs.Values(stubOut[0]))...).AddRow(makeRowData(structs.Values(stubOut[1]))...)
+		mock.ExpectQuery(regexAny).WillReturnRows(stubRows)
+
+		err := p.GetPosts(stubIn, mockStreamOutWithErr)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
+	t.Run("requires returning error when driver scan creates an error", func(t *testing.T) {
+		// creates badStub with 0 fields in order to setup a situation where *Rows.Scan (called by the func under test) should return an error: "sql: expected 0 destination arguments in Scan, got X"
+		type badStub struct{}
+		badStubRows := sqlmock.NewRows(structs.Names(badStub{})).AddRow(makeRowData(structs.Values(badStub{}))...)
+
+		mock.ExpectQuery(regexAny).WillReturnRows(badStubRows)
+
+		err := p.GetPosts(stubIn, mockStreamOut)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
+	t.Run("requires returning error when driver row creates an error", func(t *testing.T) {
+		stubRowsWithErr := sqlmock.NewRows(structs.Names(stubOut[0])).AddRow(makeRowData(structs.Values(stubOut[0]))...).RowError(0, errors.New(""))
+		mock.ExpectQuery(regexAny).WillReturnRows(stubRowsWithErr)
 
 		err := p.GetPosts(stubIn, mockStreamOut)
 		if err == nil {

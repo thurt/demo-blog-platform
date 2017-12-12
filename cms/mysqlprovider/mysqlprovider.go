@@ -231,7 +231,7 @@ func (p *provider) GetPosts(r *empty.Empty, stream pb.Cms_GetPostsServer) error 
 	}
 
 	if err = ps.Err(); err != nil {
-		return status.Error(codes.Unknown, "Ouch!")
+		return err
 	}
 
 	return nil
