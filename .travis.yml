@@ -1,6 +1,15 @@
+sudo: required
+
 language: go
+
+services:
+    - docker
 
 go:
     - 1.8.5
 
+gobuild_args: -v -tags=integration
+
+before_install:
+    - docker build -t demoblogplatform_db ./cms/mysqlprovider/db
 
