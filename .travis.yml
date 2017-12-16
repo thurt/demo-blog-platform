@@ -11,5 +11,4 @@ go:
 gobuild_args: -v -tags=integration
 
 before_install:
-    - docker build -t demoblogplatform_db ./cms/mysqlprovider/db
-
+    - docker-compose build db
