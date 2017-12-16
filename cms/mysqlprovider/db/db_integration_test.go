@@ -1,6 +1,6 @@
 // +build integration
 
-package db_test
+package dbtest
 
 import (
 	"context"
