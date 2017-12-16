@@ -215,7 +215,8 @@ service Cms {
 // Auth Use-Cases
     rpc AuthUser(AuthUserRequest) returns (AccessToken) {
         option (google.api.http) = {
-            post: "/auth/user"
+            post: "/auth/user",
+            body: "*"
         };
     }
 }

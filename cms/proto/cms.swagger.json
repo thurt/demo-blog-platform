@@ -28,6 +28,16 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cmsAuthUserRequest"
+            }
+          }
+        ],
         "tags": [
           "Cms"
         ]
@@ -404,6 +414,17 @@
         "expires_in": {
           "type": "integer",
           "format": "int64"
+        }
+      }
+    },
+    "cmsAuthUserRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
         }
       }
     },
