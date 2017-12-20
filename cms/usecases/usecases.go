@@ -119,7 +119,7 @@ func (u *useCases) AuthUser(ctx context.Context, r *pb.AuthUserRequest) (*pb.Acc
 
 	err = hashValidatePassword(r.GetPassword(), p.GetPassword())
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Unauthenticated, "The provided password does not match")
 	}
 
 	a, err := u.auth.ActivateNewTokenForUser(ctx, user)
