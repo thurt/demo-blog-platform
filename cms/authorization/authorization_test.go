@@ -73,11 +73,11 @@ func TestUpdateComment(t *testing.T) {
 	t.Run("requires Admin Role has permission", func(t *testing.T) {
 		mock, a := setup(t)
 		ctx := reqContext.NewFromUser(context.Background(), &pb.User{Role: pb.UserRole_ADMIN})
-		r := &pb.UserRequest{}
+		r := &pb.UpdateCommentRequest{}
 
-		mock.EXPECT().DeleteUser(ctx, r)
+		mock.EXPECT().UpdateComment(ctx, r)
 
-		_, err := a.DeleteUser(ctx, r)
+		_, err := a.UpdateComment(ctx, r)
 		if err != nil {
 			t.Error("unexpected error:", err)
 		}
