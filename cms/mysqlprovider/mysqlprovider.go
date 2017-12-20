@@ -240,7 +240,7 @@ func (q *SqlQuery) GetUser(r *pb.UserRequest) string {
 // GetUser gets the user from the db. It returns a zero-value struct if the user is not found.
 func (p *provider) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, error) {
 	u := &pb.User{}
-	err := p.db.QueryRow(p.q.GetUser(r)).Scan(&u, &u.Id, &u.Email, &u.Created, &u.LastActive, &u.Role)
+	err := p.db.QueryRow(p.q.GetUser(r)).Scan(&u.Id, &u.Email, &u.Created, &u.LastActive, &u.Role)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
