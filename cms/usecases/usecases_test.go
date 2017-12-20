@@ -170,4 +170,20 @@ func TestGetUser(t *testing.T) {
 			t.Error("must answer with a grpc error")
 		}
 	})
+	t.Run("must answer with a grpc error when receiving a zero-value User", func(t *testing.T) {
+		mock, _, _, uc := setup(t)
+
+		r := &pb.UserRequest{}
+
+		mock.EXPECT().GetUser(gomock.Any(), r).Return(&pb.User{}, nil)
+
+		_, err := uc.GetUser(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("expected a grpc error")
+		}
+	})
 }
