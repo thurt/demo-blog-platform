@@ -176,8 +176,8 @@ func TestDeleteUser(t *testing.T) {
 	})
 	t.Run("must answer with grpc error when User Role tries to delete other User", func(t *testing.T) {
 		mock, a := setup(t)
-		ctx := reqContext.NewFromUser(context.Background(), &pb.User{Role: pb.UserRole_USER})
-		r := &pb.UserRequest{}
+		ctx := reqContext.NewFromUser(context.Background(), &pb.User{Id: "id", Role: pb.UserRole_USER})
+		r := &pb.UserRequest{Id: "different_id"}
 
 		mock.EXPECT().DeleteUser(ctx, r)
 

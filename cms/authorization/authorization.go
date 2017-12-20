@@ -97,6 +97,12 @@ func (a *authorization) DeleteUser(ctx context.Context, r *pb.UserRequest) (*emp
 	if !hasPermission(ctx, pb.UserRole_ADMIN, pb.UserRole_USER) {
 		return nil, ErrPermissionDenied
 	}
+
+	u, _ := reqContext.GetUser(ctx)
+	if u.GetRole() == pb.UserRole_USER && r.GetId() != u.GetId() {
+		return nil, status.Errorf(codes.PermissionDenied, "Role %q is not allowed to delete other users", u.GetRole(), r.GetId())
+	}
+
 	return a.CmsServer.DeleteUser(ctx, r)
 }
 
