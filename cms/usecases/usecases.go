@@ -57,7 +57,11 @@ func (u *useCases) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*em
 }
 
 func (u *useCases) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, error) {
-	return u.Provider.GetUser(ctx, r)
+	user, err := u.Provider.GetUser(ctx, r)
+	if err != nil {
+		return nil, status.Error(codes.Internal, codes.Internal.String())
+	}
+	return user, nil
 }
 
 func (u *useCases) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb.UserRequest, error) {
@@ -66,6 +70,7 @@ func (u *useCases) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb
 	if err != nil {
 		return nil, status.Error(codes.Internal, codes.Internal.String())
 	}
+
 	if user.GetId() == r.GetId() {
 		return nil, status.Errorf(codes.AlreadyExists, "The provided user id %q already exists", r.GetId())
 	}
