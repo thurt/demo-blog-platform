@@ -56,6 +56,10 @@ func (u *useCases) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*em
 	return u.Provider.UpdatePost(ctx, r)
 }
 
+func (u *useCases) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, error) {
+	return u.Provider.GetUser(ctx, r)
+}
+
 func (u *useCases) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb.UserRequest, error) {
 	// requires that user id does not exist
 	user, err := u.GetUser(ctx, &pb.UserRequest{Id: r.GetId()})

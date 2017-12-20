@@ -1,10 +1,10 @@
 package usecases
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/thurt/demo-blog-platform/cms/domain"
 	"github.com/thurt/demo-blog-platform/cms/mock_proto"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"golang.org/x/net/context"
@@ -14,7 +14,7 @@ import (
 
 var ctx context.Context = context.Background()
 
-func setup(t *testing.T) (*mock_proto.MockCmsServer, *mock_proto.MockCmsInternalServer, *mock_proto.MockCmsAuthServer, domain.UseCases) {
+func setup(t *testing.T) (*mock_proto.MockCmsServer, *mock_proto.MockCmsInternalServer, *mock_proto.MockCmsAuthServer, *useCases) {
 	// create NewMockCmsServer
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -148,6 +148,26 @@ func TestAuthUser(t *testing.T) {
 
 		if err == nil {
 			t.Error("expected an error")
+		}
+	})
+}
+
+func TestGetUser(t *testing.T) {
+	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
+		mock, _, _, uc := setup(t)
+
+		r := &pb.UserRequest{}
+
+		mock.EXPECT().GetUser(gomock.Any(), r).Return(nil, errors.New(""))
+
+		_, err := uc.GetUser(ctx, r)
+
+		if err == nil {
+			t.Error("must anwser with an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
 		}
 	})
 }
