@@ -236,10 +236,12 @@ func (p *provider) GetPosts(r *empty.Empty, stream pb.Cms_GetPostsServer) error 
 func (q *SqlQuery) GetUser(r *pb.UserRequest) string {
 	return fmt.Sprintf("SELECT id, email, created, last_active, role FROM users WHERE id=%q", r.GetId())
 }
+
+// GetUser gets the user from the db. It returns a nil struct if the user is not found.
 func (p *provider) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, error) {
 	u := &pb.User{}
 	err := p.db.QueryRow(p.q.GetUser(r)).Scan(&u, &u.Id, &u.Email, &u.Created, &u.LastActive, &u.Role)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	return u, nil

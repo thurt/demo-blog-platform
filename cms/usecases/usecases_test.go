@@ -63,9 +63,9 @@ func TestCreateUser(t *testing.T) {
 	t.Run("requires that user id does not exist", func(t *testing.T) {
 		mock, _, _, uc := setup(t)
 
-		r := &pb.CreateUserRequest{}
+		r := &pb.CreateUserRequest{Id: "id"}
 
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{}, nil)
+		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: "id"}, nil)
 
 		_, err := uc.CreateUser(ctx, r)
 		if err == nil {
@@ -75,9 +75,9 @@ func TestCreateUser(t *testing.T) {
 	t.Run("requires that password is hashed", func(t *testing.T) {
 		mock, _, _, uc := setup(t)
 
-		r := &pb.CreateUserRequest{Password: "password"}
+		r := &pb.CreateUserRequest{Id: "id", Password: "password"}
 
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(nil, status.Error(codes.NotFound, ""))
+		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(nil, nil)
 		mock.EXPECT().CreateUser(gomock.Any(), gomock.Not(&pb.CreateUserRequest{Password: "password"}))
 
 		_, err := uc.CreateUser(ctx, r)

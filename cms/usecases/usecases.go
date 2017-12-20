@@ -12,8 +12,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var ErrAlreadyExists error = status.Error(codes.AlreadyExists, codes.AlreadyExists.String())
-
 type useCases struct {
 	domain.Provider
 	internal pb.CmsInternalServer
@@ -60,14 +58,12 @@ func (u *useCases) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*em
 
 func (u *useCases) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb.UserRequest, error) {
 	// requires that user id does not exist
-	_, err := u.GetUser(ctx, &pb.UserRequest{Id: r.GetId()})
-	if err == nil {
-		return nil, ErrAlreadyExists
-	} else {
-		s, ok := status.FromError(err)
-		if !ok || s.Code() != codes.NotFound {
-			return nil, err
-		}
+	user, err := u.GetUser(ctx, &pb.UserRequest{Id: r.GetId()})
+	if err != nil {
+		return nil, status.Error(codes.Internal, codes.Internal.String())
+	}
+	if user.GetId() == r.GetId() {
+		return nil, status.Errorf(codes.AlreadyExists, "The provided user id %q already exists", r.GetId())
 	}
 
 	// requires that password is hashed
