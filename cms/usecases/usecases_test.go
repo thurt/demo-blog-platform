@@ -130,7 +130,7 @@ func TestAuthUser(t *testing.T) {
 			t.Error("expected an error")
 		}
 	})
-	t.Run("requires a valid password", func(t *testing.T) {
+	t.Run("must answer with a grpc error when given an invalid password", func(t *testing.T) {
 		mock, mockI, _, uc := setup(t)
 
 		r := &pb.AuthUserRequest{Id: "id", Password: "wrong_password"}
@@ -148,6 +148,10 @@ func TestAuthUser(t *testing.T) {
 
 		if err == nil {
 			t.Error("expected an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
 		}
 	})
 }
