@@ -77,7 +77,7 @@ func TestCreateUser(t *testing.T) {
 
 		r := &pb.CreateUserRequest{Id: "id", Password: "password"}
 
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(nil, nil)
+		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{}, nil)
 		mock.EXPECT().CreateUser(gomock.Any(), gomock.Not(&pb.CreateUserRequest{Password: "password"}))
 
 		_, err := uc.CreateUser(ctx, r)

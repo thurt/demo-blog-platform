@@ -61,17 +61,20 @@ func (u *useCases) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, er
 	if err != nil {
 		return nil, status.Error(codes.Internal, codes.Internal.String())
 	}
+	if *user == (pb.User{}) {
+		return nil, status.Errorf(codes.NotFound, "The provided user id %q does not exist", r.GetId())
+	}
 	return user, nil
 }
 
 func (u *useCases) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb.UserRequest, error) {
 	// requires that user id does not exist
-	user, err := u.GetUser(ctx, &pb.UserRequest{Id: r.GetId()})
+	user, err := u.Provider.GetUser(ctx, &pb.UserRequest{Id: r.GetId()})
 	if err != nil {
 		return nil, status.Error(codes.Internal, codes.Internal.String())
 	}
 
-	if user.GetId() == r.GetId() {
+	if *user != (pb.User{}) {
 		return nil, status.Errorf(codes.AlreadyExists, "The provided user id %q already exists", r.GetId())
 	}
 
@@ -87,7 +90,7 @@ func (u *useCases) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb
 
 func (u *useCases) CreateComment(ctx context.Context, r *pb.CreateCommentRequest) (*pb.CommentRequest, error) {
 	// requires a valid user id
-	_, err := u.GetUser(ctx, &pb.UserRequest{Id: r.GetUserId()})
+	_, err := u.Provider.GetUser(ctx, &pb.UserRequest{Id: r.GetUserId()})
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +107,7 @@ func (u *useCases) CreateComment(ctx context.Context, r *pb.CreateCommentRequest
 func (u *useCases) AuthUser(ctx context.Context, r *pb.AuthUserRequest) (*pb.AccessToken, error) {
 	ur := &pb.UserRequest{r.GetId()}
 
-	user, err := u.GetUser(ctx, ur)
+	user, err := u.Provider.GetUser(ctx, ur)
 	if err != nil {
 		return nil, err
 	}
