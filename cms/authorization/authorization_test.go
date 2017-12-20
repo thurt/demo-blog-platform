@@ -8,6 +8,7 @@ import (
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"github.com/thurt/demo-blog-platform/cms/reqContext"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc/status"
 )
 
 func setup(t *testing.T) (*mock_proto.MockCmsServer, Authorization) {
@@ -171,6 +172,22 @@ func TestDeleteUser(t *testing.T) {
 		_, err := a.DeleteUser(ctx, r)
 		if err != nil {
 			t.Error("unexpected error:", err)
+		}
+	})
+	t.Run("must answer with grpc error when User Role tries to delete other User", func(t *testing.T) {
+		mock, a := setup(t)
+		ctx := reqContext.NewFromUser(context.Background(), &pb.User{Role: pb.UserRole_USER})
+		r := &pb.UserRequest{}
+
+		mock.EXPECT().DeleteUser(ctx, r)
+
+		_, err := a.DeleteUser(ctx, r)
+		if err == nil {
+			t.Error("must be an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must be a grpc error")
 		}
 	})
 }
