@@ -25,16 +25,17 @@ import (
 
 const (
 	PORT    = 10000
-	DBHost  = "db"
 	DBPort  = ":3306"
 	DBUser  = "root"
 	DBDbase = "cms"
 )
 
+var DBHost string
 var DBPass string
 
 func main() {
 	// connect to db
+	DBHost = os.Getenv("DB_HOST")
 	DBPass = os.Getenv("DB_PASS")
 	dbConn := fmt.Sprintf("%s:%s@tcp(%s)/%s", DBUser, DBPass, DBHost, DBDbase)
 	db, err := sql.Open("mysql", dbConn)
