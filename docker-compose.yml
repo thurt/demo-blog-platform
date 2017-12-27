@@ -5,6 +5,7 @@ services:
         ports:
             - "10000:10000" #grpc
             - "8282:8080"   #rest
+            - "8383:8181"   #grpc tracing
         environment:
             - DB_PASS
         depends_on:

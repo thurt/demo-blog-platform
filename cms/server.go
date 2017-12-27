@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 	"github.com/thurt/demo-blog-platform/cms/mysqlprovider_internal"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"github.com/thurt/demo-blog-platform/cms/usecases"
+	trace "golang.org/x/net/trace"
 	"google.golang.org/grpc"
 )
 
@@ -56,6 +58,7 @@ func main() {
 
 	authProvider, authFunc := authentication.New(authentication.TokenHash{}, 8*time.Hour)
 
+	grpc.EnableTracing = true
 	opts := []grpc.ServerOption{
 		grpc.ConnectionTimeout(5 * time.Second),
 		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
@@ -73,6 +76,29 @@ func main() {
 		err = ProxyServe()
 		if err != nil {
 			log.Println("proxy error")
+			panic(err.Error())
+		}
+	}()
+
+	// serve grpc tracing using default mux
+	go func() {
+		trace.AuthRequest = func(req *http.Request) (any, sensitive bool) {
+			// RemoteAddr is commonly in the form "IP" or "IP:port".
+			// If it is in the form "IP:port", split off the port.
+			host, _, err := net.SplitHostPort(req.RemoteAddr)
+			if err != nil {
+				host = req.RemoteAddr
+			}
+			switch host {
+			case "localhost", "127.0.0.1", "::1", "172.18.0.1":
+				return true, true
+			default:
+				return false, false
+			}
+		}
+		err := http.ListenAndServe(":8181", nil)
+		if err != nil {
+			log.Println("grpc tracing server error")
 			panic(err.Error())
 		}
 	}()
