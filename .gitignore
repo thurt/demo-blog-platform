@@ -1,2 +1,5 @@
-*.swp
-.env
+.*.s[a-w][a-z]
+/*.env
+app.yaml
+client-secret.json
+secrets.tar
