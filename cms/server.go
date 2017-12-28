@@ -24,21 +24,15 @@ import (
 )
 
 const (
-	PORT    = 10000
-	DBPort  = ":3306"
-	DBUser  = "root"
-	DBDbase = "cms"
+	PORT = 10000
 )
 
-var DBHost string
-var DBPass string
+var MYSQL_CONNECTION string
 
 func main() {
 	// connect to db
-	DBHost = os.Getenv("DB_HOST")
-	DBPass = os.Getenv("DB_PASS")
-	dbConn := fmt.Sprintf("%s:%s@tcp(%s)/%s", DBUser, DBPass, DBHost, DBDbase)
-	db, err := sql.Open("mysql", dbConn)
+	MYSQL_CONNECTION = os.Getenv("MYSQL_CONNECTION")
+	db, err := sql.Open("mysql", MYSQL_CONNECTION)
 	if err != nil {
 		log.Println("Couldn't connect with mysql connection string")
 		panic(err.Error())
@@ -48,7 +42,7 @@ func main() {
 		log.Println("Couldn't ping database server")
 		panic(err.Error())
 	}
-	log.Println("Connected to db server:" + dbConn)
+	log.Println("Connected to db server")
 
 	// setup grpc server
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", PORT))

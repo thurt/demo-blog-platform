@@ -7,8 +7,7 @@ services:
             - "8282:8080"   #rest
             - "8383:8181"   #grpc tracing
         environment:
-            - DB_HOST
-            - DB_PASS
+            - MYSQL_CONNECTION
         depends_on:
             - db
         command: ["/go/src/app/wait-for-it.sh", "--timeout=120", "db:3306", "--", "go-wrapper", "run"]
@@ -19,7 +18,7 @@ services:
               source: db-data
               target: /var/lib/mysql
         environment:
-            - MYSQL_ROOT_PASSWORD=${DB_PASS}
+            - MYSQL_ROOT_PASSWORD
 
 volumes:
     db-data:
