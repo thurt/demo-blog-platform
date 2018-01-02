@@ -15,21 +15,13 @@ import (
 
 var ErrUnauthenticated = status.Error(codes.Unauthenticated, codes.Unauthenticated.String())
 
-type Identification struct {
-	accessToken *pb.AccessToken
-	user        *pb.User
-	expiryTime  time.Time
-}
-
-type TokenHash map[string]*Identification
-
 type authProvider struct {
-	h           TokenHash
+	mc          Conn
 	tokenExpiry time.Duration
 	tokenType   string
 }
 
-func newAuthFunc(h TokenHash) grpc_auth.AuthFunc {
+func newAuthFunc(mc Conn, tokenExpiry time.Duration) grpc_auth.AuthFunc {
 	return func(ctx context.Context) (context.Context, error) {
 		t, err := reqContext.GetAuthorizationToken(ctx)
 
@@ -40,32 +32,31 @@ func newAuthFunc(h TokenHash) grpc_auth.AuthFunc {
 			return ctx, nil
 		}
 
-		id, ok := h[t]
-		if !ok {
+		// get and touch will reset expiry to the tokenExpiry value
+		// this allows a token to remain active so long as it is still being used
+		userStr, _, _, err := mc.GAT(t, uint32(tokenExpiry.Seconds()))
+		// maybe want to handle some possible errors returned here
+		if err != nil {
 			return nil, ErrUnauthenticated
 		}
 
-		if time.Now().After(id.expiryTime) {
-			delete(h, t)
-			return nil, ErrUnauthenticated
-		}
-
-		return reqContext.NewFromUser(ctx, id.user), nil
+		return reqContext.NewFromUserString(ctx, userStr), nil
 	}
 }
 
-func New(hash TokenHash, tokenExpiry time.Duration) (pb.CmsAuthServer, grpc_auth.AuthFunc) {
-	return &authProvider{hash, tokenExpiry, "Bearer"}, newAuthFunc(hash)
+func New(mc Conn, tokenExpiry time.Duration) (*authProvider, grpc_auth.AuthFunc) {
+	return &authProvider{mc, tokenExpiry, "Bearer"}, newAuthFunc(mc, tokenExpiry)
 }
 
 func (a *authProvider) ActivateNewTokenForUser(ctx context.Context, r *pb.User) (*pb.AccessToken, error) {
 	at := a.genAccessToken()
 
-	a.h[at.GetAccessToken()] = &Identification{
-		accessToken: at,
-		user:        r,
-		expiryTime:  time.Now().Add(a.tokenExpiry),
+	_, err := a.mc.Add(at.GetAccessToken(), r.String(), 0, uint32(a.tokenExpiry.Seconds()))
+	// maybe want to handle some possible errors returned here
+	if err != nil {
+		return nil, err
 	}
+
 	return at, nil
 }
 

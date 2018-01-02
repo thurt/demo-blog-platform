@@ -17,7 +17,11 @@ func NewFromUser(ctx context.Context, u *pb.User) context.Context {
 	newMD := metadata.NewIncomingContext(ctx, md)
 	return newMD
 }
-
+func NewFromUserString(ctx context.Context, u string) context.Context {
+	md := metadata.Pairs("user", u)
+	newMD := metadata.NewIncomingContext(ctx, md)
+	return newMD
+}
 func GetUser(ctx context.Context) (*pb.User, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
