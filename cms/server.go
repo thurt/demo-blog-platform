@@ -13,6 +13,7 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/grpc-ecosystem/go-grpc-middleware/validator"
+	"github.com/memcachier/mc"
 	"github.com/thurt/demo-blog-platform/cms/authentication"
 	"github.com/thurt/demo-blog-platform/cms/authorization"
 	"github.com/thurt/demo-blog-platform/cms/mysqlprovider"
@@ -28,8 +29,29 @@ const (
 )
 
 var MYSQL_CONNECTION string
+var (
+	MEMCACHE_HOST     string
+	MEMCACHE_USER     string
+	MEMCACHE_PASSWORD string
+)
 
 func main() {
+	//connect to memcache
+	MEMCACHE_HOST = os.Getenv("MEMCACHE_HOST")
+	cn, err := mc.Dial("tcp", MEMCACHE_HOST)
+	if err != nil {
+		panic(err)
+	}
+	defer cn.Close()
+
+	MEMCACHE_USER = os.Getenv("MEMCACHE_USER")
+	MEMCACHE_PASSWORD = os.Getenv("MEMCACHE_PASSWORD")
+	err = cn.Auth(MEMCACHE_USER, MEMCACHE_PASSWORD)
+	if err != nil {
+		panic(err)
+	}
+	log.Println("Connected to memcache host")
+
 	// connect to db
 	MYSQL_CONNECTION = os.Getenv("MYSQL_CONNECTION")
 	db, err := sql.Open("mysql", MYSQL_CONNECTION)
@@ -51,7 +73,7 @@ func main() {
 		panic(err.Error())
 	}
 
-	authProvider, authFunc := authentication.New(authentication.TokenHash{}, 8*time.Hour)
+	authProvider, authFunc := authentication.New(cn, 8*time.Hour)
 
 	grpc.EnableTracing = true
 	opts := []grpc.ServerOption{
