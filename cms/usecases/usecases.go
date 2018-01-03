@@ -129,3 +129,7 @@ func (u *useCases) AuthUser(ctx context.Context, r *pb.AuthUserRequest) (*pb.Acc
 
 	return a, nil
 }
+
+func (u *useCases) GetComment(ctx context.Context, r *pb.CommentRequest) (*pb.Comment, error) {
+	return u.Provider.GetComment(ctx, r)
+}

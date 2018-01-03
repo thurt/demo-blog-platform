@@ -191,3 +191,22 @@ func TestGetUser(t *testing.T) {
 		}
 	})
 }
+
+func TestGetComment(t *testing.T) {
+	t.Run("must answer with a grpc error when receiving a zero-value Comment", func(t *testing.T) {
+		mock, _, _, uc := setup(t)
+
+		r := &pb.CommentRequest{}
+
+		mock.EXPECT().GetComment(gomock.Any(), r).Return(&pb.Comment{}, nil)
+
+		_, err := uc.GetComment(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("expected a grpc error")
+		}
+	})
+}
