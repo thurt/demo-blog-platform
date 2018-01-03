@@ -131,5 +131,9 @@ func (u *useCases) AuthUser(ctx context.Context, r *pb.AuthUserRequest) (*pb.Acc
 }
 
 func (u *useCases) GetComment(ctx context.Context, r *pb.CommentRequest) (*pb.Comment, error) {
-	return u.Provider.GetComment(ctx, r)
+	comment, _ := u.Provider.GetComment(ctx, r)
+	if *comment == (pb.Comment{}) {
+		return nil, status.Errorf(codes.NotFound, "The provided comment id %q does not exist", r.GetId())
+	}
+	return comment, nil
 }
