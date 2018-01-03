@@ -30,23 +30,23 @@ const (
 
 var MYSQL_CONNECTION string
 var (
-	MEMCACHE_HOST     string
-	MEMCACHE_USER     string
-	MEMCACHE_PASSWORD string
+	MEMCACHED_HOST     string
+	MEMCACHED_USER     string
+	MEMCACHED_PASSWORD string
 )
 
 func main() {
 	//connect to memcache
-	MEMCACHE_HOST = os.Getenv("MEMCACHE_HOST")
-	cn, err := mc.Dial("tcp", MEMCACHE_HOST)
+	MEMCACHED_HOST = os.Getenv("MEMCACHED_HOST")
+	cn, err := mc.Dial("tcp", MEMCACHED_HOST)
 	if err != nil {
 		panic(err)
 	}
 	defer cn.Close()
 
-	MEMCACHE_USER = os.Getenv("MEMCACHE_USER")
-	MEMCACHE_PASSWORD = os.Getenv("MEMCACHE_PASSWORD")
-	err = cn.Auth(MEMCACHE_USER, MEMCACHE_PASSWORD)
+	MEMCACHED_USER = os.Getenv("MEMCACHED_USER")
+	MEMCACHED_PASSWORD = os.Getenv("MEMCACHED_PASSWORD")
+	err = cn.Auth(MEMCACHED_USER, MEMCACHED_PASSWORD)
 	if err != nil {
 		panic(err)
 	}
@@ -65,6 +65,7 @@ func main() {
 		panic(err.Error())
 	}
 	log.Println("Connected to db server")
+	defer db.Close()
 
 	// setup grpc server
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", PORT))
