@@ -20,4 +20,4 @@ deploy:
   on: develop
   skip_cleanup: true
 notifications:
-    email: false
+  email: false
