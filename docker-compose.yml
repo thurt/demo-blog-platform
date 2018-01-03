@@ -7,10 +7,14 @@ services:
             - "8282:8080"   #rest
             - "8383:8181"   #grpc tracing
         environment:
-            - MYSQL_CONNECTION
+            - MYSQL_CONNECTION=${MYSQL_CONNECTION-root:root@tcp(db)/cms}
+            - MEMCACHED_HOST=${MEMCACHED_HOST-memcached:3000}
+            - MEMCACHED_USER=${MEMCACHED_USER-memcached}
+            - MEMCACHED_PASSWORD=${MEMCACHED_PASSWORD-memcached}
         depends_on:
             - db
-        command: ["/go/src/app/wait-for-it.sh", "--timeout=120", "db:3306", "--", "go-wrapper", "run"]
+            - memcached
+        command: ["/go/src/app/wait-for-it.sh", "--timeout=120", "db:3306", "--", "/go/src/app/wait-for-it.sh", "--timeout=120", "memcached:3000", "--", "go-wrapper", "run"]
     db:
         build: ./cms/mysqlprovider/db 
         volumes:
@@ -18,11 +22,12 @@ services:
               source: db-data
               target: /var/lib/mysql
         environment:
-            - MYSQL_ROOT_PASSWORD
-    memcache:
+            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD-root}
+    memcached:
         image: quay.io/aptible/memcached
         environment:
-            - PASSWORD: ${MEMCACHE_PASSWORD}
+            - PASSWORD=${MEMCACHED_PASSWORD-memcached}
+        command: ["/usr/bin/memcached-sasl"]
 
 volumes:
     db-data:
