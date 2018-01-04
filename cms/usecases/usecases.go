@@ -27,7 +27,7 @@ func slugMake(str string) string {
 	var s string
 
 	if "" == str {
-		s = uuid.NewV4().String()
+		s = uuid.Must(uuid.NewV4()).String()
 	} else {
 		slug.MaxLength = 36
 		s = slug.Make(str)
