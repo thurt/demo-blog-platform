@@ -23,6 +23,7 @@ It has these top-level messages:
 	User
 	UserRequest
 	CreateUserRequest
+	CreateUserWithRole
 	AuthUserRequest
 	AccessToken
 	UserPassword
@@ -36,6 +37,7 @@ import proto "github.com/golang/protobuf/proto"
 import math "math"
 import _ "google.golang.org/genproto/googleapis/api/annotations"
 import _ "github.com/golang/protobuf/ptypes/empty"
+import _ "github.com/golang/protobuf/ptypes/wrappers"
 import _ "github.com/mwitkow/go-proto-validators"
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -157,6 +159,14 @@ func (this *CreateUserRequest) Validate() error {
 	}
 	if !(len(this.Password) < 51) {
 		return go_proto_validators.FieldError("Password", fmt.Errorf(`value '%v' must length be less than '51'`, this.Password))
+	}
+	return nil
+}
+func (this *CreateUserWithRole) Validate() error {
+	if this.User != nil {
+		if err := go_proto_validators.CallValidatorIfExists(this.User); err != nil {
+			return go_proto_validators.FieldError("User", err)
+		}
 	}
 	return nil
 }

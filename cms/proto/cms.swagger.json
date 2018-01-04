@@ -164,6 +164,22 @@
         ]
       }
     },
+    "/is-setup": {
+      "get": {
+        "operationId": "IsSetup",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/protobufBoolValue"
+            }
+          }
+        },
+        "tags": [
+          "Cms"
+        ]
+      }
+    },
     "/posts": {
       "get": {
         "operationId": "GetPosts",
@@ -295,6 +311,33 @@
             "required": true,
             "type": "integer",
             "format": "int64"
+          }
+        ],
+        "tags": [
+          "Cms"
+        ]
+      }
+    },
+    "/setup": {
+      "post": {
+        "summary": "Setup",
+        "operationId": "Setup",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/cmsUserRequest"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cmsCreateUserRequest"
+            }
           }
         ],
         "tags": [
@@ -617,6 +660,17 @@
       ],
       "default": "UNKNOWN",
       "title": "Users"
+    },
+    "protobufBoolValue": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "The bool value."
+        }
+      },
+      "description": "Wrapper message for `bool`.\n\nThe JSON representation for `BoolValue` is JSON `true` and `false`."
     },
     "protobufEmpty": {
       "type": "object",

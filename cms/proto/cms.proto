@@ -7,6 +7,7 @@ package cms;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
 import "github.com/mwitkow/go-proto-validators/validator.proto";
 
 // Posts
@@ -87,6 +88,11 @@ import "github.com/mwitkow/go-proto-validators/validator.proto";
         string password = 3 [(validator.field) = {string_not_empty: true, length_lt:51}];
     }
 
+    message CreateUserWithRole {
+        CreateUserRequest user = 1;
+        UserRole role = 2;
+    }
+
     message AuthUserRequest {
         string id = 1 [(validator.field) = {string_not_empty: true, regex: "^[a-zA-Z]{3,18}$", human_error: "User Id must be 3-18 characters and can only include letters"}];
         string password = 2 [(validator.field) = {string_not_empty: true, length_lt:51}];
@@ -111,6 +117,19 @@ service CmsAuth {
 }
 
 service Cms {
+// Setup
+    rpc Setup(CreateUserRequest) returns (UserRequest) {
+        option (google.api.http) = {
+            post: "/setup"
+            body: "*"
+        };
+    }
+    rpc IsSetup(google.protobuf.Empty) returns (google.protobuf.BoolValue) {
+        option (google.api.http) = {
+            get: "/is-setup"
+        };
+    }
+
 // Post CRUD
     rpc CreatePost(CreatePostRequest) returns (PostRequest) {
         option (google.api.http) = {

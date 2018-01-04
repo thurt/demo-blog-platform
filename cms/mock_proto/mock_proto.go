@@ -7,6 +7,7 @@ package mock_proto
 import (
 	gomock "github.com/golang/mock/gomock"
 	empty "github.com/golang/protobuf/ptypes/empty"
+	wrappers "github.com/golang/protobuf/ptypes/wrappers"
 	proto "github.com/thurt/demo-blog-platform/cms/proto"
 	context "golang.org/x/net/context"
 	reflect "reflect"
@@ -213,6 +214,19 @@ func (mr *MockCmsServerMockRecorder) GetUserComments(arg0, arg1 interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserComments", reflect.TypeOf((*MockCmsServer)(nil).GetUserComments), arg0, arg1)
 }
 
+// IsSetup mocks base method
+func (m *MockCmsServer) IsSetup(arg0 context.Context, arg1 *empty.Empty) (*wrappers.BoolValue, error) {
+	ret := m.ctrl.Call(m, "IsSetup", arg0, arg1)
+	ret0, _ := ret[0].(*wrappers.BoolValue)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsSetup indicates an expected call of IsSetup
+func (mr *MockCmsServerMockRecorder) IsSetup(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsSetup", reflect.TypeOf((*MockCmsServer)(nil).IsSetup), arg0, arg1)
+}
+
 // PublishPost mocks base method
 func (m *MockCmsServer) PublishPost(arg0 context.Context, arg1 *proto.PostRequest) (*empty.Empty, error) {
 	ret := m.ctrl.Call(m, "PublishPost", arg0, arg1)
@@ -224,6 +238,19 @@ func (m *MockCmsServer) PublishPost(arg0 context.Context, arg1 *proto.PostReques
 // PublishPost indicates an expected call of PublishPost
 func (mr *MockCmsServerMockRecorder) PublishPost(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishPost", reflect.TypeOf((*MockCmsServer)(nil).PublishPost), arg0, arg1)
+}
+
+// Setup mocks base method
+func (m *MockCmsServer) Setup(arg0 context.Context, arg1 *proto.CreateUserRequest) (*proto.UserRequest, error) {
+	ret := m.ctrl.Call(m, "Setup", arg0, arg1)
+	ret0, _ := ret[0].(*proto.UserRequest)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Setup indicates an expected call of Setup
+func (mr *MockCmsServerMockRecorder) Setup(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Setup", reflect.TypeOf((*MockCmsServer)(nil).Setup), arg0, arg1)
 }
 
 // UnPublishPost mocks base method
