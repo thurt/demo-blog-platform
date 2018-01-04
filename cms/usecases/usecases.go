@@ -1,6 +1,8 @@
 package usecases
 
 import (
+	"log"
+
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/gosimple/slug"
@@ -131,9 +133,19 @@ func (u *useCases) GetComment(ctx context.Context, r *pb.CommentRequest) (*pb.Co
 }
 
 func (u *useCases) IsSetup(ctx context.Context, r *empty.Empty) (*wrappers.BoolValue, error) {
-	return u.Provider.AdminExists(ctx, r)
+	adminExists, err := u.Provider.AdminExists(ctx, r)
+	if err != nil {
+		log.Println(err)
+		return nil, status.Errorf(codes.Internal, codes.Internal.String())
+	}
+	return adminExists, nil
 }
 
 func (u *useCases) Setup(ctx context.Context, r *pb.CreateUserRequest) (*pb.UserRequest, error) {
-	return u.Provider.CreateUser(ctx, &pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r})
+	user, err := u.Provider.CreateUser(ctx, &pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r})
+	if err != nil {
+		log.Println(err)
+		return nil, status.Errorf(codes.Internal, codes.Internal.String())
+	}
+	return user, nil
 }
