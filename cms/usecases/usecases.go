@@ -142,10 +142,20 @@ func (u *useCases) IsSetup(ctx context.Context, r *empty.Empty) (*wrappers.BoolV
 }
 
 func (u *useCases) Setup(ctx context.Context, r *pb.CreateUserRequest) (*pb.UserRequest, error) {
+	adminExists, err := u.Provider.AdminExists(ctx, &empty.Empty{})
+	if err != nil {
+		log.Println(err)
+		return nil, status.Errorf(codes.Internal, codes.Internal.String())
+	}
+	if adminExists.GetValue() == true {
+		return nil, status.Errorf(codes.Aborted, "Setup can only be performed when an admin account does not already exist")
+	}
+
 	user, err := u.Provider.CreateUser(ctx, &pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r})
 	if err != nil {
 		log.Println(err)
 		return nil, status.Errorf(codes.Internal, codes.Internal.String())
 	}
+
 	return user, nil
 }

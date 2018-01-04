@@ -257,6 +257,7 @@ func TestSetup(t *testing.T) {
 
 		r := &pb.CreateUserRequest{}
 
+		mock.EXPECT().AdminExists(gomock.Any(), gomock.Any()).Return(&wrappers.BoolValue{false}, nil)
 		mock.EXPECT().CreateUser(gomock.Any(), &pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r}).Return(nil, errors.New(""))
 
 		_, err := uc.Setup(ctx, r)
