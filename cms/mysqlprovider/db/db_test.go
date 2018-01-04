@@ -58,7 +58,7 @@ func TestRequestSQLSyntax(t *testing.T) {
 	cpr := &pb.CreatePostRequest{}
 	f.Fuzz(cpr)
 	cuwr := &pb.CreateUserWithRole{}
-	f.Fuzz(cur)
+	f.Fuzz(cuwr)
 	cr := &pb.CommentRequest{}
 	f.Fuzz(cr)
 	pr := &pb.PostRequest{}
@@ -88,4 +88,5 @@ func TestRequestSQLSyntax(t *testing.T) {
 	checkSyntax(q.UnPublishPost(pr), t, true)
 	checkSyntax(q.UpdateComment(ucr), t, true)
 	checkSyntax(q.UpdatePost(upr), t, true)
+	checkSyntax(q.AdminExists(&empty.Empty{}), t, true)
 }
