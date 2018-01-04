@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/thurt/demo-blog-platform/cms/mock_domain"
 	"github.com/thurt/demo-blog-platform/cms/mock_proto"
 	"github.com/thurt/demo-blog-platform/cms/password"
@@ -235,6 +236,22 @@ func TestIsSetup(t *testing.T) {
 }
 
 func TestSetup(t *testing.T) {
+	r := &pb.CreateUserRequest{}
+	t.Run("must answer with a grpc error if Setup condition (admin does not exist) is not satisfied", func(t *testing.T) {
+		mock, _, _, uc := setup(t)
+
+		// return true (admin exists) to test whether function answers properly
+		mock.EXPECT().AdminExists(gomock.Any(), gomock.Any()).Return(&wrappers.BoolValue{true}, nil)
+
+		_, err := uc.Setup(ctx, r)
+		if err == nil {
+			t.Error("must anwser with an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
+		}
+	})
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
 		mock, _, _, uc := setup(t)
 
