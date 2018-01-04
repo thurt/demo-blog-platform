@@ -57,7 +57,7 @@ func TestRequestSQLSyntax(t *testing.T) {
 	f.Fuzz(ccr)
 	cpr := &pb.CreatePostRequest{}
 	f.Fuzz(cpr)
-	cur := &pb.CreateUserRequest{}
+	cuwr := &pb.CreateUserWithRole{}
 	f.Fuzz(cur)
 	cr := &pb.CommentRequest{}
 	f.Fuzz(cr)
@@ -73,7 +73,7 @@ func TestRequestSQLSyntax(t *testing.T) {
 	checkSyntax(q_internal.GetUserPassword(), t, true)
 	checkSyntax(q.CreateComment(ccr), t, true)
 	checkSyntax(q.CreatePost(cpr), t, true)
-	checkSyntax(q.CreateUser(cur), t, true)
+	checkSyntax(q.CreateUser(cuwr), t, true)
 	checkSyntax(q.DeleteComment(cr), t, true)
 	checkSyntax(q.DeletePost(pr), t, true)
 	checkSyntax(q.DeleteUser(ur), t, true)
