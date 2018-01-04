@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/thurt/demo-blog-platform/cms/mock_proto"
+	"github.com/thurt/demo-blog-platform/cms/password"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
@@ -136,7 +137,7 @@ func TestAuthUser(t *testing.T) {
 		r := &pb.AuthUserRequest{Id: "id", Password: "wrong_password"}
 
 		// run my implementation of hashing in order to create mock's stub
-		stubbedHash, err := hashPassword("right_password")
+		stubbedHash, err := password.Hash("right_password")
 		if err != nil {
 			t.Error("unexpected error during stub preparation")
 		}

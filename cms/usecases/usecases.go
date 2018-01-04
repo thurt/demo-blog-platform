@@ -5,8 +5,8 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/satori/go.uuid"
 	"github.com/thurt/demo-blog-platform/cms/domain"
+	"github.com/thurt/demo-blog-platform/cms/password"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
-	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -33,15 +33,6 @@ func slugMake(str string) string {
 		s = slug.Make(str)
 	}
 	return s
-}
-
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
-
-func hashValidatePassword(password string, hash string) error {
-	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 }
 
 func (u *useCases) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb.PostRequest, error) {
@@ -79,7 +70,7 @@ func (u *useCases) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb
 	}
 
 	// requires that password is hashed
-	hashedPassword, err := hashPassword(r.GetPassword())
+	hashedPassword, err := password.Hash(r.GetPassword())
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +108,7 @@ func (u *useCases) AuthUser(ctx context.Context, r *pb.AuthUserRequest) (*pb.Acc
 		return nil, err
 	}
 
-	err = hashValidatePassword(r.GetPassword(), p.GetPassword())
+	err = password.Validate(r.GetPassword(), p.GetPassword())
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, "The provided password does not match")
 	}
