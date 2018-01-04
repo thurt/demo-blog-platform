@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/thurt/demo-blog-platform/cms/mock_domain"
 	"github.com/thurt/demo-blog-platform/cms/mock_proto"
 	"github.com/thurt/demo-blog-platform/cms/password"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
@@ -15,11 +17,11 @@ import (
 
 var ctx context.Context = context.Background()
 
-func setup(t *testing.T) (*mock_proto.MockCmsServer, *mock_proto.MockCmsInternalServer, *mock_proto.MockCmsAuthServer, *useCases) {
+func setup(t *testing.T) (*mock_domain.MockProvider, *mock_proto.MockCmsInternalServer, *mock_proto.MockCmsAuthServer, *useCases) {
 	// create NewMockCmsServer
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	mock := mock_proto.NewMockCmsServer(mockCtrl)
+	mock := mock_domain.NewMockProvider(mockCtrl)
 
 	// create NewMockCmsInternalServer
 	mockCtrlI := gomock.NewController(t)
@@ -208,6 +210,46 @@ func TestGetComment(t *testing.T) {
 		_, ok := status.FromError(err)
 		if !ok {
 			t.Error("expected a grpc error")
+		}
+	})
+}
+
+func TestIsSetup(t *testing.T) {
+	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
+		mock, _, _, uc := setup(t)
+
+		r := &empty.Empty{}
+
+		mock.EXPECT().AdminExists(gomock.Any(), r).Return(nil, errors.New(""))
+
+		_, err := uc.IsSetup(ctx, r)
+
+		if err == nil {
+			t.Error("must anwser with an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
+		}
+	})
+}
+
+func TestSetup(t *testing.T) {
+	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
+		mock, _, _, uc := setup(t)
+
+		r := &pb.CreateUserRequest{}
+
+		mock.EXPECT().CreateUser(gomock.Any(), &pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r}).Return(nil, errors.New(""))
+
+		_, err := uc.Setup(ctx, r)
+
+		if err == nil {
+			t.Error("must anwser with an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
 		}
 	})
 }

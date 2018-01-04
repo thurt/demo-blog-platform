@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/gosimple/slug"
 	"github.com/satori/go.uuid"
 	"github.com/thurt/demo-blog-platform/cms/domain"
@@ -76,7 +77,7 @@ func (u *useCases) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb
 	}
 
 	r.Password = hashedPassword
-	return u.Provider.CreateUser(ctx, r)
+	return u.Provider.CreateUser(ctx, &pb.CreateUserWithRole{User: r, Role: pb.UserRole_USER})
 }
 
 func (u *useCases) CreateComment(ctx context.Context, r *pb.CreateCommentRequest) (*pb.CommentRequest, error) {
@@ -127,4 +128,12 @@ func (u *useCases) GetComment(ctx context.Context, r *pb.CommentRequest) (*pb.Co
 		return nil, status.Errorf(codes.NotFound, "The provided comment id %q does not exist", r.GetId())
 	}
 	return comment, nil
+}
+
+func (u *useCases) IsSetup(ctx context.Context, r *empty.Empty) (*wrappers.BoolValue, error) {
+	return u.Provider.AdminExists(ctx, r)
+}
+
+func (u *useCases) Setup(ctx context.Context, r *pb.CreateUserRequest) (*pb.UserRequest, error) {
+	return u.Provider.CreateUser(ctx, &pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r})
 }
