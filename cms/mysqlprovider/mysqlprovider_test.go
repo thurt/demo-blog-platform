@@ -164,15 +164,6 @@ func TestGetPost(t *testing.T) {
 	})
 }
 
-func TestGetComment(t *testing.T) {
-	r := &pb.CommentRequest{Id: 0}
-	mock.ExpectQuery(p.q.GetComment(r)).WillReturnRows(&sqlmock.Rows{})
-
-	_, _ = p.GetComment(context.Background(), r)
-
-	checkExpectations(t)
-}
-
 func TestGetUser(t *testing.T) {
 	stubIn := &pb.UserRequest{}
 	stubOut := &pb.User{}
@@ -340,8 +331,17 @@ func TestCreateComment(t *testing.T) {
 	})
 }
 
+func TestGetComment(t *testing.T) {
+	r := &pb.CommentRequest{Id: 0}
+	mock.ExpectQuery(p.q.GetComment(r)).WillReturnRows(&sqlmock.Rows{})
+
+	_, _ = p.GetComment(context.Background(), r)
+
+	checkExpectations(t)
+}
+
 func TestCreateUser(t *testing.T) {
-	r := &pb.CreateUserRequest{Id: "id", Email: "email", Password: "password"}
+	r := &pb.CreateUserWithRole{User: &pb.CreateUserRequest{Id: "id", Email: "email", Password: "password"}}
 	mock.ExpectExec(p.q.CreateUser(r)).WillReturnResult(sqlmock.NewResult(1, 1))
 
 	_, _ = p.CreateUser(context.Background(), r)

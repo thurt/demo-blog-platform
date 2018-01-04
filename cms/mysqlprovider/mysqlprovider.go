@@ -5,16 +5,13 @@ import (
 	"fmt"
 
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/thurt/demo-blog-platform/cms/domain"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-)
-
-const (
-	defaultRole uint32 = 2 // User
 )
 
 type provider struct {
@@ -28,7 +25,7 @@ type sqlQueryI interface {
 	CreatePost(*pb.CreatePostRequest) string
 	DeletePost(*pb.PostRequest) string
 	CreateComment(*pb.CreateCommentRequest) string
-	CreateUser(*pb.CreateUserRequest) string
+	CreateUser(*pb.CreateUserWithRole) string
 	DeleteComment(*pb.CommentRequest) string
 	DeleteUser(*pb.UserRequest) string
 	GetComment(*pb.CommentRequest) string
@@ -41,6 +38,7 @@ type sqlQueryI interface {
 	UnPublishPost(*pb.PostRequest) string
 	UpdateComment(*pb.UpdateCommentRequest) string
 	UpdatePost(*pb.UpdatePostRequest) string
+	AdminExists(*empty.Empty) string
 }
 
 func New(db *sql.DB) domain.Provider {
@@ -126,17 +124,17 @@ func (p *provider) CreateComment(ctx context.Context, r *pb.CreateCommentRequest
 	return &pb.CommentRequest{uint32(id)}, nil
 }
 
-func (q *SqlQuery) CreateUser(r *pb.CreateUserRequest) string {
-	return fmt.Sprintf("INSERT INTO users SET id=%q, email=%q, password=%q, role=%d", r.GetId(), r.GetEmail(), r.GetPassword(), defaultRole)
+func (q *SqlQuery) CreateUser(r *pb.CreateUserWithRole) string {
+	return fmt.Sprintf("INSERT INTO users SET id=%q, email=%q, password=%q, role=%d", r.User.GetId(), r.User.GetEmail(), r.User.GetPassword(), r.GetRole())
 }
-func (p *provider) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb.UserRequest, error) {
+func (p *provider) CreateUser(ctx context.Context, r *pb.CreateUserWithRole) (*pb.UserRequest, error) {
 	_, err := p.db.Exec(p.q.CreateUser(r))
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &pb.UserRequest{r.GetId()}, nil
+	return &pb.UserRequest{r.User.GetId()}, nil
 }
 
 func (q *SqlQuery) DeleteComment(r *pb.CommentRequest) string {
@@ -324,4 +322,22 @@ func (p *provider) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*em
 	}
 
 	return &empty.Empty{}, nil
+}
+
+func (q *SqlQuery) AdminExists(r *empty.Empty) string {
+	return fmt.Sprintf("SELECT id FROM users WHERE role=%d", pb.UserRole_ADMIN)
+}
+func (p *provider) AdminExists(ctx context.Context, r *empty.Empty) (*wrappers.BoolValue, error) {
+	adminExists := &wrappers.BoolValue{}
+
+	err := p.db.QueryRow(p.q.AdminExists(r)).Scan(&adminExists.Value)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return adminExists, nil
+		}
+		return nil, err
+	}
+
+	return adminExists, nil
 }
