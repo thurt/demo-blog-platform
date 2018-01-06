@@ -22,7 +22,6 @@ import (
 
 var (
 	db *sql.DB
-	q  *mysqlprovider.SqlQuery
 	p  domain.Provider
 	f  *fuzz.Fuzzer
 )
@@ -34,8 +33,6 @@ func TestMain(m *testing.M) {
 	// create a new fuzzer
 	f = fuzz.New()
 
-	// create SqlQuery
-	q = &mysqlprovider.SqlQuery{}
 	// uses a sensible default on windows (tcp/http) and linux/osx (socket)
 	pool, err := dockertest.NewPool("")
 	if err != nil {
@@ -79,34 +76,6 @@ func TestMain(m *testing.M) {
 	}
 
 	os.Exit(code)
-}
-
-func TestGetComment(t *testing.T) {
-	stubIn := &pb.CommentRequest{}
-	f.Fuzz(stubIn)
-	stmt := q.GetComment(stubIn)
-
-	t.Run("must be a specific error when entity does not exist", func(t *testing.T) {
-		err := db.QueryRow(stmt).Scan()
-
-		if err != sql.ErrNoRows {
-			t.Fail()
-		}
-	})
-}
-
-func TestGetUser(t *testing.T) {
-	stubIn := &pb.UserRequest{}
-	f.Fuzz(stubIn)
-	stmt := q.GetUser(stubIn)
-
-	t.Run("must be a specific error when entity does not exist", func(t *testing.T) {
-		err := db.QueryRow(stmt).Scan()
-
-		if err != sql.ErrNoRows {
-			t.Fail()
-		}
-	})
 }
 
 func TestCRUD_Post(t *testing.T) {
