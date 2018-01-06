@@ -2,11 +2,11 @@ package mysqlprovider
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/thurt/demo-blog-platform/cms/domain"
+	"github.com/thurt/demo-blog-platform/cms/mysqlprovider/query"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 
 	"golang.org/x/net/context"
@@ -16,39 +16,14 @@ import (
 
 type provider struct {
 	db *sql.DB
-	q  sqlQueryI
-}
-
-type SqlQuery struct{}
-type sqlQueryI interface {
-	GetPost(*pb.PostRequest) string
-	CreatePost(*pb.CreatePostRequest) string
-	DeletePost(*pb.PostRequest) string
-	CreateComment(*pb.CreateCommentRequest) string
-	CreateUser(*pb.CreateUserWithRole) string
-	DeleteComment(*pb.CommentRequest) string
-	DeleteUser(*pb.UserRequest) string
-	GetComment(*pb.CommentRequest) string
-	GetPostComments(*pb.PostRequest) string
-	GetComments() string
-	GetPosts(*empty.Empty) string
-	GetUser(*pb.UserRequest) string
-	GetUserComments(*pb.UserRequest) string
-	PublishPost(*pb.PostRequest) string
-	UnPublishPost(*pb.PostRequest) string
-	UpdateComment(*pb.UpdateCommentRequest) string
-	UpdatePost(*pb.UpdatePostRequest) string
-	AdminExists(*empty.Empty) string
+	q  *query.Query
 }
 
 func New(db *sql.DB) domain.Provider {
-	s := &provider{db, &SqlQuery{}}
+	s := &provider{db, &query.Query{}}
 	return s
 }
 
-func (q *SqlQuery) GetPost(r *pb.PostRequest) string {
-	return fmt.Sprintf("SELECT id, title, content, created, last_edited, published, slug FROM posts WHERE id=%d", r.GetId())
-}
 func (p *provider) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
 	po := &pb.Post{}
 	err := p.db.QueryRow(p.q.GetPost(r)).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Published, &po.Slug)
@@ -58,9 +33,6 @@ func (p *provider) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, er
 	return po, nil
 }
 
-func (q *SqlQuery) CreatePost(r *pb.CreatePostRequest) string {
-	return fmt.Sprintf("INSERT INTO posts SET slug=%q, title=%q, content=%q", r.GetSlug(), r.GetTitle(), r.GetContent())
-}
 func (p *provider) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb.PostRequest, error) {
 	rs, err := p.db.Exec(p.q.CreatePost(r))
 	if err != nil {
@@ -71,9 +43,6 @@ func (p *provider) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb
 	return &pb.PostRequest{uint32(id)}, nil
 }
 
-func (q *SqlQuery) DeletePost(r *pb.PostRequest) string {
-	return fmt.Sprintf("DELETE FROM posts WHERE id=%d", r.GetId())
-}
 func (p *provider) DeletePost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
 	_, err := p.db.Exec(p.q.DeletePost(r))
 
@@ -84,9 +53,6 @@ func (p *provider) DeletePost(ctx context.Context, r *pb.PostRequest) (*empty.Em
 	return &empty.Empty{}, nil
 }
 
-func (q *SqlQuery) GetPostComments(r *pb.PostRequest) string {
-	return fmt.Sprintf("SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE post_id=%d", r.GetId())
-}
 func (p *provider) GetPostComments(r *pb.PostRequest, stream pb.Cms_GetPostCommentsServer) error {
 	cs, err := p.db.Query(p.q.GetPostComments(r))
 
@@ -111,9 +77,6 @@ func (p *provider) GetPostComments(r *pb.PostRequest, stream pb.Cms_GetPostComme
 	return nil
 }
 
-func (q *SqlQuery) CreateComment(r *pb.CreateCommentRequest) string {
-	return fmt.Sprintf("INSERT INTO comments SET content=%q, user_id=%q, post_id=%d", r.GetContent(), r.GetUserId(), r.GetPostId())
-}
 func (p *provider) CreateComment(ctx context.Context, r *pb.CreateCommentRequest) (*pb.CommentRequest, error) {
 	rs, err := p.db.Exec(p.q.CreateComment(r))
 	if err != nil {
@@ -124,9 +87,6 @@ func (p *provider) CreateComment(ctx context.Context, r *pb.CreateCommentRequest
 	return &pb.CommentRequest{uint32(id)}, nil
 }
 
-func (q *SqlQuery) CreateUser(r *pb.CreateUserWithRole) string {
-	return fmt.Sprintf("INSERT INTO users SET id=%q, email=%q, password=%q, role=%d", r.User.GetId(), r.User.GetEmail(), r.User.GetPassword(), r.GetRole())
-}
 func (p *provider) CreateUser(ctx context.Context, r *pb.CreateUserWithRole) (*pb.UserRequest, error) {
 	_, err := p.db.Exec(p.q.CreateUser(r))
 
@@ -137,9 +97,6 @@ func (p *provider) CreateUser(ctx context.Context, r *pb.CreateUserWithRole) (*p
 	return &pb.UserRequest{r.User.GetId()}, nil
 }
 
-func (q *SqlQuery) DeleteComment(r *pb.CommentRequest) string {
-	return fmt.Sprintf("DELETE FROM comments WHERE id=%d", r.GetId())
-}
 func (p *provider) DeleteComment(ctx context.Context, r *pb.CommentRequest) (*empty.Empty, error) {
 	_, err := p.db.Exec(p.q.DeleteComment(r))
 
@@ -150,9 +107,6 @@ func (p *provider) DeleteComment(ctx context.Context, r *pb.CommentRequest) (*em
 	return &empty.Empty{}, nil
 }
 
-func (q *SqlQuery) DeleteUser(r *pb.UserRequest) string {
-	return fmt.Sprintf("DELETE FROM users WHERE id=%q", r.GetId())
-}
 func (p *provider) DeleteUser(ctx context.Context, r *pb.UserRequest) (*empty.Empty, error) {
 	_, err := p.db.Exec(p.q.DeleteUser(r))
 
@@ -163,9 +117,6 @@ func (p *provider) DeleteUser(ctx context.Context, r *pb.UserRequest) (*empty.Em
 	return &empty.Empty{}, nil
 }
 
-func (q *SqlQuery) GetComment(r *pb.CommentRequest) string {
-	return fmt.Sprintf("SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE id=%d", r.GetId())
-}
 func (p *provider) GetComment(ctx context.Context, r *pb.CommentRequest) (*pb.Comment, error) {
 	c := &pb.Comment{}
 	err := p.db.QueryRow(p.q.GetComment(r)).Scan(&c.Id, &c.Content, &c.Created, &c.LastEdited, &c.UserId, &c.PostId)
@@ -175,11 +126,8 @@ func (p *provider) GetComment(ctx context.Context, r *pb.CommentRequest) (*pb.Co
 	return c, nil
 }
 
-func (q *SqlQuery) GetComments() string {
-	return "SELECT id, content, created, last_edited, user_id, post_id FROM comments"
-}
-func (p *provider) GetComments(_ *empty.Empty, stream pb.Cms_GetCommentsServer) error {
-	cs, err := p.db.Query(p.q.GetComments())
+func (p *provider) GetComments(r *empty.Empty, stream pb.Cms_GetCommentsServer) error {
+	cs, err := p.db.Query(p.q.GetComments(r))
 
 	if err != nil {
 		return err
@@ -202,9 +150,6 @@ func (p *provider) GetComments(_ *empty.Empty, stream pb.Cms_GetCommentsServer) 
 	return nil
 }
 
-func (q *SqlQuery) GetPosts(_ *empty.Empty) string {
-	return "SELECT id, title, content, created, last_edited, published, slug FROM posts"
-}
 func (p *provider) GetPosts(r *empty.Empty, stream pb.Cms_GetPostsServer) error {
 	ps, err := p.db.Query(p.q.GetPosts(r))
 	if err != nil {
@@ -231,10 +176,6 @@ func (p *provider) GetPosts(r *empty.Empty, stream pb.Cms_GetPostsServer) error 
 	return nil
 }
 
-func (q *SqlQuery) GetUser(r *pb.UserRequest) string {
-	return fmt.Sprintf("SELECT id, email, created, last_active, role FROM users WHERE id=%q", r.GetId())
-}
-
 // GetUser gets the user from the db. It returns a zero-value struct if the user is not found.
 func (p *provider) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, error) {
 	u := &pb.User{}
@@ -245,9 +186,6 @@ func (p *provider) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, er
 	return u, nil
 }
 
-func (q *SqlQuery) GetUserComments(r *pb.UserRequest) string {
-	return fmt.Sprintf("SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE user_id=%q", r.GetId())
-}
 func (p *provider) GetUserComments(r *pb.UserRequest, stream pb.Cms_GetUserCommentsServer) error {
 	cs, err := p.db.Query(p.q.GetUserComments(r))
 
@@ -272,9 +210,6 @@ func (p *provider) GetUserComments(r *pb.UserRequest, stream pb.Cms_GetUserComme
 	return nil
 }
 
-func (q *SqlQuery) PublishPost(r *pb.PostRequest) string {
-	return fmt.Sprintf("UPDATE posts SET published=TRUE WHERE id=%d", r.GetId())
-}
 func (p *provider) PublishPost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
 	_, err := p.db.Exec(p.q.PublishPost(r))
 
@@ -285,9 +220,6 @@ func (p *provider) PublishPost(ctx context.Context, r *pb.PostRequest) (*empty.E
 	return &empty.Empty{}, nil
 }
 
-func (q *SqlQuery) UnPublishPost(r *pb.PostRequest) string {
-	return fmt.Sprintf("UPDATE posts SET published=FALSE WHERE id=%d", r.GetId())
-}
 func (p *provider) UnPublishPost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
 	_, err := p.db.Exec(p.q.UnPublishPost(r))
 
@@ -298,9 +230,6 @@ func (p *provider) UnPublishPost(ctx context.Context, r *pb.PostRequest) (*empty
 	return &empty.Empty{}, nil
 }
 
-func (q *SqlQuery) UpdateComment(r *pb.UpdateCommentRequest) string {
-	return fmt.Sprintf("UPDATE comments SET content=%q WHERE id=%d", r.GetContent(), r.GetId())
-}
 func (p *provider) UpdateComment(ctx context.Context, r *pb.UpdateCommentRequest) (*empty.Empty, error) {
 	_, err := p.db.Exec(p.q.UpdateComment(r))
 
@@ -311,9 +240,6 @@ func (p *provider) UpdateComment(ctx context.Context, r *pb.UpdateCommentRequest
 	return &empty.Empty{}, nil
 }
 
-func (q *SqlQuery) UpdatePost(r *pb.UpdatePostRequest) string {
-	return fmt.Sprintf("UPDATE posts SET slug=%q, title=%q, content=%q WHERE id=%d", r.GetSlug(), r.GetTitle(), r.GetContent(), r.GetId())
-}
 func (p *provider) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*empty.Empty, error) {
 	_, err := p.db.Exec(p.q.UpdatePost(r))
 
@@ -324,9 +250,6 @@ func (p *provider) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*em
 	return &empty.Empty{}, nil
 }
 
-func (q *SqlQuery) AdminExists(r *empty.Empty) string {
-	return fmt.Sprintf("SELECT id FROM users WHERE role=%d", pb.UserRole_ADMIN)
-}
 func (p *provider) AdminExists(ctx context.Context, r *empty.Empty) (*wrappers.BoolValue, error) {
 	adminExists := &wrappers.BoolValue{}
 

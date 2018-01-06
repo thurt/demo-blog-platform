@@ -396,8 +396,8 @@ func TestGetPostComments(t *testing.T) {
 }
 
 func TestGetComments(t *testing.T) {
-	mock.ExpectQuery(esc(p.q.GetComments())).WillReturnRows(&sqlmock.Rows{})
 	r := &empty.Empty{}
+	mock.ExpectQuery(esc(p.q.GetComments(r))).WillReturnRows(&sqlmock.Rows{})
 	s := &mockCms_GetCommentsServer{}
 
 	_ = p.GetComments(r, s)
