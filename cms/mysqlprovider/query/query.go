@@ -17,6 +17,10 @@ func (q *Query) AdminExists(_ *empty.Empty) string {
 	return fmt.Sprintf("SELECT id FROM users WHERE role=%d", pb.UserRole_ADMIN)
 }
 
+func (q *Query) GetUserPassword(r *pb.UserRequest) string {
+	return fmt.Sprintf("SELECT password FROM users WHERE id=%q", r.GetId())
+}
+
 func (q *Query) UpdatePost(r *pb.UpdatePostRequest) string {
 	return fmt.Sprintf("UPDATE posts SET slug=%q, title=%q, content=%q WHERE id=%d", r.GetSlug(), r.GetTitle(), r.GetContent(), r.GetId())
 }

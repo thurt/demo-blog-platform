@@ -41,5 +41,4 @@ protoc \
 
 #generate Cms mocks
 mockgen github.com/thurt/demo-blog-platform/cms/proto CmsServer > ../mock_proto/mock_proto.go
-mockgen github.com/thurt/demo-blog-platform/cms/proto CmsInternalServer > ../mock_proto/mock_proto_internal.go
 mockgen github.com/thurt/demo-blog-platform/cms/proto CmsAuthServer > ../mock_proto/mock_proto_auth.go

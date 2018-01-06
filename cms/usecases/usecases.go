@@ -17,12 +17,11 @@ import (
 
 type useCases struct {
 	domain.Provider
-	internal pb.CmsInternalServer
-	auth     pb.CmsAuthServer
+	auth pb.CmsAuthServer
 }
 
-func New(provider domain.Provider, internalProvider pb.CmsInternalServer, authProvider pb.CmsAuthServer) *useCases {
-	uc := &useCases{provider, internalProvider, authProvider}
+func New(provider domain.Provider, authProvider pb.CmsAuthServer) *useCases {
+	uc := &useCases{provider, authProvider}
 	return uc
 }
 
@@ -106,7 +105,7 @@ func (u *useCases) AuthUser(ctx context.Context, r *pb.AuthUserRequest) (*pb.Acc
 		return nil, err
 	}
 
-	p, err := u.internal.GetUserPassword(ctx, &pb.UserRequest{r.GetId()})
+	p, err := u.Provider.GetUserPassword(ctx, &pb.UserRequest{r.GetId()})
 	if err != nil {
 		return nil, err
 	}

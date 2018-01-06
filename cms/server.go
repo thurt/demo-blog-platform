@@ -17,7 +17,6 @@ import (
 	"github.com/thurt/demo-blog-platform/cms/authentication"
 	"github.com/thurt/demo-blog-platform/cms/authorization"
 	"github.com/thurt/demo-blog-platform/cms/mysqlprovider"
-	"github.com/thurt/demo-blog-platform/cms/mysqlprovider_internal"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"github.com/thurt/demo-blog-platform/cms/usecases"
 	trace "golang.org/x/net/trace"
@@ -85,7 +84,7 @@ func main() {
 		)),
 	}
 	grpcServer := grpc.NewServer(opts...)
-	pb.RegisterCmsServer(grpcServer, authorization.New(usecases.New(mysqlprovider.New(db), mysqlprovider_internal.New(db), authProvider)))
+	pb.RegisterCmsServer(grpcServer, authorization.New(usecases.New(mysqlprovider.New(db), authProvider)))
 	log.Printf("Started grpc server on port %d", PORT)
 
 	// setup rest proxy server

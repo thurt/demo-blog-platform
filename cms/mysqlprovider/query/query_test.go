@@ -124,3 +124,8 @@ func TestGetPosts(t *testing.T) {
 	f.Fuzz(e)
 	checkSyntax(q.GetPosts(e), t)
 }
+func TestGetUserPassword(t *testing.T) {
+	ur := &pb.UserRequest{}
+	f.Fuzz(ur)
+	checkSyntax(q.GetUserPassword(ur), t)
+}

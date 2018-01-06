@@ -24,6 +24,17 @@ func New(db *sql.DB) domain.Provider {
 	return s
 }
 
+func (p *provider) GetUserPassword(ctx context.Context, r *pb.UserRequest) (*pb.UserPassword, error) {
+	u := &pb.UserPassword{}
+	err := p.db.QueryRow(p.q.GetUserPassword(r)).Scan(&u.Password)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return u, nil
+}
+
 func (p *provider) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
 	po := &pb.Post{}
 	err := p.db.QueryRow(p.q.GetPost(r)).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Published, &po.Slug)

@@ -214,6 +214,19 @@ func (mr *MockProviderMockRecorder) GetUserComments(arg0, arg1 interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserComments", reflect.TypeOf((*MockProvider)(nil).GetUserComments), arg0, arg1)
 }
 
+// GetUserPassword mocks base method
+func (m *MockProvider) GetUserPassword(arg0 context.Context, arg1 *proto.UserRequest) (*proto.UserPassword, error) {
+	ret := m.ctrl.Call(m, "GetUserPassword", arg0, arg1)
+	ret0, _ := ret[0].(*proto.UserPassword)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserPassword indicates an expected call of GetUserPassword
+func (mr *MockProviderMockRecorder) GetUserPassword(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPassword", reflect.TypeOf((*MockProvider)(nil).GetUserPassword), arg0, arg1)
+}
+
 // PublishPost mocks base method
 func (m *MockProvider) PublishPost(arg0 context.Context, arg1 *proto.PostRequest) (*empty.Empty, error) {
 	ret := m.ctrl.Call(m, "PublishPost", arg0, arg1)

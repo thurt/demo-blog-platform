@@ -18,29 +18,24 @@ import (
 
 var ctx context.Context = context.Background()
 
-func setup(t *testing.T) (*mock_domain.MockProvider, *mock_proto.MockCmsInternalServer, *mock_proto.MockCmsAuthServer, *useCases) {
+func setup(t *testing.T) (*mock_domain.MockProvider, *mock_proto.MockCmsAuthServer, *useCases) {
 	// create NewMockCmsServer
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mock := mock_domain.NewMockProvider(mockCtrl)
-
-	// create NewMockCmsInternalServer
-	mockCtrlI := gomock.NewController(t)
-	defer mockCtrlI.Finish()
-	mockI := mock_proto.NewMockCmsInternalServer(mockCtrlI)
 
 	// create NewMockCmsAuthServer
 	mockCtrlAuth := gomock.NewController(t)
 	defer mockCtrlAuth.Finish()
 	mockAuth := mock_proto.NewMockCmsAuthServer(mockCtrlAuth)
 
-	uc := New(mock, mockI, mockAuth)
-	return mock, mockI, mockAuth, uc
+	uc := New(mock, mockAuth)
+	return mock, mockAuth, uc
 }
 
 func TestCreatePost(t *testing.T) {
 	t.Run("requires a Slug to be created from the Title and added to the request", func(t *testing.T) {
-		mock, _, _, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		r := &pb.CreatePostRequest{Title: "Hello World!"}
 
@@ -53,7 +48,7 @@ func TestCreatePost(t *testing.T) {
 
 func TestUpdatePost(t *testing.T) {
 	t.Run("requires a Slug to be created from the Title and added to the request", func(t *testing.T) {
-		mock, _, _, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		r := &pb.UpdatePostRequest{Title: "Hello World!"}
 
@@ -65,7 +60,7 @@ func TestUpdatePost(t *testing.T) {
 
 func TestCreateUser(t *testing.T) {
 	t.Run("requires that user id does not exist", func(t *testing.T) {
-		mock, _, _, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		r := &pb.CreateUserRequest{Id: "id"}
 
@@ -77,7 +72,7 @@ func TestCreateUser(t *testing.T) {
 		}
 	})
 	t.Run("requires that password is hashed", func(t *testing.T) {
-		mock, _, _, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		r := &pb.CreateUserRequest{Id: "id", Password: "password"}
 
@@ -93,7 +88,7 @@ func TestCreateUser(t *testing.T) {
 
 func TestCreateComment(t *testing.T) {
 	t.Run("requires a valid user id", func(t *testing.T) {
-		mock, _, _, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		r := &pb.CreateCommentRequest{UserId: "id"}
 
@@ -106,7 +101,7 @@ func TestCreateComment(t *testing.T) {
 		}
 	})
 	t.Run("requires a valid post id", func(t *testing.T) {
-		mock, _, _, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		r := &pb.CreateCommentRequest{PostId: 0}
 
@@ -122,7 +117,7 @@ func TestCreateComment(t *testing.T) {
 
 func TestAuthUser(t *testing.T) {
 	t.Run("requires a valid user id", func(t *testing.T) {
-		mock, _, _, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		r := &pb.AuthUserRequest{Id: "id", Password: "password"}
 
@@ -135,7 +130,7 @@ func TestAuthUser(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when given an invalid password", func(t *testing.T) {
-		mock, mockI, _, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		r := &pb.AuthUserRequest{Id: "id", Password: "wrong_password"}
 
@@ -146,7 +141,7 @@ func TestAuthUser(t *testing.T) {
 		}
 
 		mock.EXPECT().GetUser(gomock.Any(), gomock.Any())
-		mockI.EXPECT().GetUserPassword(gomock.Any(), &pb.UserRequest{Id: r.GetId()}).Return(&pb.UserPassword{stubbedHash}, nil)
+		mock.EXPECT().GetUserPassword(gomock.Any(), &pb.UserRequest{Id: r.GetId()}).Return(&pb.UserPassword{stubbedHash}, nil)
 
 		_, err = uc.AuthUser(ctx, r)
 
@@ -162,7 +157,7 @@ func TestAuthUser(t *testing.T) {
 
 func TestGetUser(t *testing.T) {
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
-		mock, _, _, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		r := &pb.UserRequest{}
 
@@ -179,7 +174,7 @@ func TestGetUser(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when receiving a zero-value User", func(t *testing.T) {
-		mock, _, _, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		r := &pb.UserRequest{}
 
@@ -198,7 +193,7 @@ func TestGetUser(t *testing.T) {
 
 func TestGetComment(t *testing.T) {
 	t.Run("must answer with a grpc error when receiving a zero-value Comment", func(t *testing.T) {
-		mock, _, _, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		r := &pb.CommentRequest{}
 
@@ -217,7 +212,7 @@ func TestGetComment(t *testing.T) {
 
 func TestIsSetup(t *testing.T) {
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
-		mock, _, _, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		r := &empty.Empty{}
 
@@ -238,7 +233,7 @@ func TestIsSetup(t *testing.T) {
 func TestSetup(t *testing.T) {
 	r := &pb.CreateUserRequest{}
 	t.Run("must answer with a grpc error if Setup condition (admin does not exist) is not satisfied", func(t *testing.T) {
-		mock, _, _, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		// return true (admin exists) to test whether function answers properly
 		mock.EXPECT().AdminExists(gomock.Any(), gomock.Any()).Return(&wrappers.BoolValue{true}, nil)
@@ -253,7 +248,7 @@ func TestSetup(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
-		mock, _, _, uc := setup(t)
+		mock, _, uc := setup(t)
 
 		r := &pb.CreateUserRequest{}
 
