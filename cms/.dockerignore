@@ -1,4 +1,14 @@
-.*.s[a-w][a-z]
-docker-compose.yml
-providers/
+authorization/
+authentication/
+domain/
+mock_domain/
+mock_mc/
+mock_proto/
+mysqlprovider/
+mysqlprovider_helper/
+password/
 proto/
+reqContext/
+usecases/
+app.yaml
+.*.s[a-w][a-z]
