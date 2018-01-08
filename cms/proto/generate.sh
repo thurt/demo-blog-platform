@@ -9,7 +9,7 @@ protoc \
     -I$GOPATH/src \
     -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
     --go_out=plugins=grpc:. \
-    ${SERVICE}
+    ${SERVICE} && \
 
 #generate ${SERVICE}.validator.pb.go
 protoc \
@@ -18,8 +18,7 @@ protoc \
     -I$GOPATH/src \
     -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
     --govalidators_out=logtostderr=true:. \
-    ${SERVICE}
-
+    ${SERVICE} && \
 
 #generate ${SERVICE}.pb.gw.go
 protoc \
@@ -28,7 +27,7 @@ protoc \
     -I$GOPATH/src \
     -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
      --grpc-gateway_out=logtostderr=true:. \
-     ${SERVICE}
+     ${SERVICE} && \
 
 #generate ${SERVICE}.swagger.json
 protoc \
@@ -37,8 +36,8 @@ protoc \
     -I$GOPATH/src \
     -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
      --swagger_out=logtostderr=true:. \
-     ${SERVICE}
+     ${SERVICE} && \
 
 #generate Cms mocks
-mockgen github.com/thurt/demo-blog-platform/cms/proto CmsServer > ../mock_proto/mock_proto.go
+mockgen github.com/thurt/demo-blog-platform/cms/proto CmsServer > ../mock_proto/mock_proto.go && \
 mockgen github.com/thurt/demo-blog-platform/cms/proto CmsAuthServer > ../mock_proto/mock_proto_auth.go
