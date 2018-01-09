@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gorilla/handlers"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -18,6 +19,8 @@ func run() error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
+	corsObj := handlers.AllowedOrigins([]string{"*"})
+
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithInsecure()}
 	GrpcHost = fmt.Sprintf("localhost:%d", PORT)
@@ -26,7 +29,7 @@ func run() error {
 		return err
 	}
 
-	return http.ListenAndServe(":8080", mux)
+	return http.ListenAndServe(":8080", handlers.CORS(corsObj)(mux))
 }
 
 func ProxyServe() error {
