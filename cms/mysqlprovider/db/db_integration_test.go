@@ -13,6 +13,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/gofuzz"
 	"github.com/thurt/demo-blog-platform/cms/domain"
 	"github.com/thurt/demo-blog-platform/cms/mysqlprovider"
@@ -120,6 +121,39 @@ func TestCRUD_Post(t *testing.T) {
 	})
 	t.Run("must answer without error when deleting entity that exists", func(t *testing.T) {
 		_, err := p.DeletePost(context.Background(), PostId)
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+	})
+}
+
+func Test_AdminExists(t *testing.T) {
+	t.Run("must answer without error when checking for entity that does not exist", func(t *testing.T) {
+		stubIn := &empty.Empty{}
+		f.Fuzz(stubIn)
+		_, err := p.AdminExists(context.Background(), stubIn)
+
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+	})
+	t.Run("must answer without error when checking for entity that does exist", func(t *testing.T) {
+		stubIn := &empty.Empty{}
+		f.Fuzz(stubIn)
+
+		// prerequisite: must first create an admin
+		preStubIn := &pb.CreateUserWithRole{}
+		f.Fuzz(preStubIn)
+		preStubIn.Role = pb.UserRole_ADMIN
+		_, err := p.CreateUser(context.Background(), preStubIn)
+
+		if err != nil {
+			t.Error("unexpected error in prerequisite:", err.Error())
+		}
+
+		// continue with actual test
+		_, err = p.AdminExists(context.Background(), stubIn)
+
 		if err != nil {
 			t.Error("unexpected error:", err.Error())
 		}
