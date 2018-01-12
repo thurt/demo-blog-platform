@@ -19,7 +19,11 @@ func run() error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	corsObj := handlers.AllowedOrigins([]string{"*"})
+	CORSOptions := []handlers.CORSOption{
+		handlers.AllowedOrigins([]string{"*"}),
+		handlers.AllowedHeaders([]string{"Content-Type"}),
+		handlers.AllowedMethods([]string{"GET", "PUT", "POST", "DELETE"}),
+	}
 
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithInsecure()}
@@ -29,7 +33,7 @@ func run() error {
 		return err
 	}
 
-	return http.ListenAndServe(":8080", handlers.CORS(corsObj)(mux))
+	return http.ListenAndServe(":8080", handlers.CORS(CORSOptions...)(mux))
 }
 
 func ProxyServe() error {
