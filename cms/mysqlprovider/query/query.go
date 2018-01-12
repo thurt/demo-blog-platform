@@ -14,7 +14,7 @@ func (q *Query) GetUser(r *pb.UserRequest) string {
 }
 
 func (q *Query) AdminExists(_ *empty.Empty) string {
-	return fmt.Sprintf("SELECT id FROM users WHERE role=%d", pb.UserRole_ADMIN)
+	return fmt.Sprintf("SELECT EXISTS(SELECT id FROM users WHERE role=%d)", pb.UserRole_ADMIN)
 }
 
 func (q *Query) GetUserPassword(r *pb.UserRequest) string {

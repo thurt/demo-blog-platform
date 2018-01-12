@@ -262,15 +262,19 @@ func (p *provider) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*em
 }
 
 func (p *provider) AdminExists(ctx context.Context, r *empty.Empty) (*wrappers.BoolValue, error) {
+	var exists int
 	adminExists := &wrappers.BoolValue{}
 
-	err := p.db.QueryRow(p.q.AdminExists(r)).Scan(&adminExists.Value)
+	err := p.db.QueryRow(p.q.AdminExists(r)).Scan(&exists)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return adminExists, nil
-		}
 		return nil, err
+	}
+
+	if exists == 0 {
+		adminExists.Value = false
+	} else {
+		adminExists.Value = true
 	}
 
 	return adminExists, nil

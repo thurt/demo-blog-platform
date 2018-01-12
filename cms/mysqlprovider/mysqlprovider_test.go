@@ -484,3 +484,56 @@ func TestGetUserComments(t *testing.T) {
 
 	checkExpectations(t)
 }
+
+func TestAdminExists(t *testing.T) {
+	stubIn := &empty.Empty{}
+	stubRows := sqlmock.NewRows([]string{"EXISTS(query)"})
+
+	t.Run("requires sending the correct sql request", func(t *testing.T) {
+		regexSql := esc(p.q.AdminExists(stubIn))
+		mock.ExpectQuery(regexSql)
+
+		_, _ = p.AdminExists(context.Background(), stubIn)
+
+		checkExpectations(t)
+	})
+	t.Run("requires returning error when sql response is an error", func(t *testing.T) {
+		mock.ExpectQuery(regexAny).WillReturnError(errors.New(""))
+
+		_, err := p.AdminExists(context.Background(), stubIn)
+
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
+	t.Run("requires returning true when sql response is 1", func(t *testing.T) {
+		stubRows.AddRow(1)
+		mock.ExpectQuery(regexAny).WillReturnRows(stubRows)
+
+		res, err := p.AdminExists(context.Background(), stubIn)
+
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+
+		wantValue := true
+		if res.Value != wantValue {
+			t.Errorf("returned wrong value. want %v, got %v", wantValue, res.Value)
+		}
+	})
+	t.Run("requires returning false when sql response is 0", func(t *testing.T) {
+		stubRows.AddRow(0)
+		mock.ExpectQuery(regexAny).WillReturnRows(stubRows)
+
+		res, err := p.AdminExists(context.Background(), stubIn)
+
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+
+		wantValue := false
+		if res.Value != wantValue {
+			t.Errorf("returned wrong value. want %v, got %v", wantValue, res.Value)
+		}
+	})
+}
