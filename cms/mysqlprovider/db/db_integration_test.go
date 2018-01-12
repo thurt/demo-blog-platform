@@ -5,7 +5,6 @@ package dbtest
 import (
 	"context"
 	"database/sql"
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -26,10 +25,13 @@ var (
 	p  domain.Provider
 	f  *fuzz.Fuzzer
 )
-var TCP_PROXY = flag.String("TCP_PROXY", "localhost", "(optional) supply an IP address which this process can use to connect to the docker container it creates for integration testing. This flag will only be useful if you are using the docker unix port of a remote machine other than localhost")
 
 func TestMain(m *testing.M) {
-	flag.Parse()
+	// (optional) supply an IP address which this process can use to connect to the docker container it creates for integration testing. This flag will only be useful if you are using the docker unix port of a remote machine other than localhost
+	TCP_PROXY := os.Getenv("TCP_PROXY")
+	if TCP_PROXY == "" {
+		TCP_PROXY = "localhost"
+	}
 
 	// create a new fuzzer
 	f = fuzz.New()
@@ -57,12 +59,15 @@ func TestMain(m *testing.M) {
 	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
 	if err := pool.Retry(func() error {
 		var err error
-		db, err = sql.Open("mysql", fmt.Sprintf("root:secret@tcp(%s:%s)/cms", *TCP_PROXY, resource.GetPort("3306/tcp")))
+		db, err = sql.Open("mysql", fmt.Sprintf("root:secret@tcp(%s:%s)/cms", TCP_PROXY, resource.GetPort("3306/tcp")))
 		if err != nil {
 			return err
 		}
 		return db.Ping()
 	}); err != nil {
+		if purgeErr := pool.Purge(resource); purgeErr != nil {
+			log.Println("Could not purge resource (you may have to manually):", purgeErr)
+		}
 		log.Fatalf("Could not connect to docker: %s", err)
 	}
 
