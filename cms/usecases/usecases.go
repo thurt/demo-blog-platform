@@ -102,7 +102,7 @@ func (u *useCases) AuthUser(ctx context.Context, r *pb.AuthUserRequest) (*pb.Acc
 
 	user, err := u.Provider.GetUser(ctx, ur)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Unauthenticated, "The provided username or password is incorrect")
 	}
 
 	p, err := u.Provider.GetUserPassword(ctx, &pb.UserRequest{r.GetId()})
@@ -112,7 +112,7 @@ func (u *useCases) AuthUser(ctx context.Context, r *pb.AuthUserRequest) (*pb.Acc
 
 	err = password.Validate(r.GetPassword(), p.GetPassword())
 	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "The provided password does not match")
+		return nil, status.Error(codes.Unauthenticated, "The provided username or password is incorrect")
 	}
 
 	a, err := u.auth.ActivateNewTokenForUser(ctx, user)
