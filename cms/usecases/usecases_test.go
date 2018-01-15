@@ -268,10 +268,12 @@ func TestSetup(t *testing.T) {
 	t.Run("requires that password is hashed", func(t *testing.T) {
 		mock, _, uc := setup(t)
 
-		r := &pb.CreateUserRequest{Id: "id", Password: "password"}
+		r := &pb.CreateUserRequest{Password: "password"}
+		// because the implementation directly mutates the request instance, i need to retain a copy of the request with the original values in order to make an expectation that the password value has actually changed
+		r_orig := &pb.CreateUserRequest{Password: r.GetPassword()}
 
 		mock.EXPECT().AdminExists(gomock.Any(), gomock.Any()).Return(&wrappers.BoolValue{false}, nil)
-		mock.EXPECT().CreateUser(gomock.Any(), gomock.Not(&pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r}))
+		mock.EXPECT().CreateUser(gomock.Any(), gomock.Not(&pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r_orig}))
 
 		_, err := uc.Setup(ctx, r)
 		if err != nil {
