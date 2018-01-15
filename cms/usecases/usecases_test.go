@@ -116,18 +116,23 @@ func TestCreateComment(t *testing.T) {
 }
 
 func TestAuthUser(t *testing.T) {
-	t.Run("requires a valid user id", func(t *testing.T) {
+	t.Run("must answer with a grpc error when given a non-existant user id", func(t *testing.T) {
 		mock, _, uc := setup(t)
 
 		r := &pb.AuthUserRequest{Id: "id", Password: "password"}
 
-		mock.EXPECT().GetUser(gomock.Any(), &pb.UserRequest{Id: r.GetId()}).Return(nil, status.Error(codes.NotFound, ""))
+		mock.EXPECT().GetUser(gomock.Any(), &pb.UserRequest{Id: r.GetId()}).Return(nil, errors.New(""))
 
 		_, err := uc.AuthUser(ctx, r)
 
 		if err == nil {
 			t.Error("expected an error")
 		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
+		}
+
 	})
 	t.Run("must answer with a grpc error when given an invalid password", func(t *testing.T) {
 		mock, _, uc := setup(t)
