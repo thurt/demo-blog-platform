@@ -147,7 +147,7 @@ func (u *useCases) Setup(ctx context.Context, r *pb.CreateUserRequest) (*pb.User
 		return nil, status.Errorf(codes.Internal, codes.Internal.String())
 	}
 	if adminExists.GetValue() == true {
-		return nil, status.Errorf(codes.Aborted, "Setup can only be performed when an admin account does not already exist")
+		return nil, status.Errorf(codes.Aborted, "Setup can only be performed once")
 	}
 
 	user, err := u.Provider.CreateUser(ctx, &pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r})
