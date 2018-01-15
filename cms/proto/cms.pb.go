@@ -711,33 +711,45 @@ var _CmsAuth_serviceDesc = grpc.ServiceDesc{
 // Client API for Cms service
 
 type CmsClient interface {
-	// Setup
+	// Setup the application
 	Setup(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*UserRequest, error)
+	// Check if application is setup
 	IsSetup(ctx context.Context, in *google_protobuf1.Empty, opts ...grpc.CallOption) (*google_protobuf2.BoolValue, error)
-	// Post CRUD
+	// Create a post
 	CreatePost(ctx context.Context, in *CreatePostRequest, opts ...grpc.CallOption) (*PostRequest, error)
+	// Get a post
 	GetPost(ctx context.Context, in *PostRequest, opts ...grpc.CallOption) (*Post, error)
+	// Update a post
 	UpdatePost(ctx context.Context, in *UpdatePostRequest, opts ...grpc.CallOption) (*google_protobuf1.Empty, error)
+	// Delete a post
 	DeletePost(ctx context.Context, in *PostRequest, opts ...grpc.CallOption) (*google_protobuf1.Empty, error)
-	// Post Use-Cases
+	// Get all comments by post
 	GetPostComments(ctx context.Context, in *PostRequest, opts ...grpc.CallOption) (Cms_GetPostCommentsClient, error)
+	// Get all posts
 	GetPosts(ctx context.Context, in *google_protobuf1.Empty, opts ...grpc.CallOption) (Cms_GetPostsClient, error)
+	// Publish a post
 	PublishPost(ctx context.Context, in *PostRequest, opts ...grpc.CallOption) (*google_protobuf1.Empty, error)
+	// UnPublish a post
 	UnPublishPost(ctx context.Context, in *PostRequest, opts ...grpc.CallOption) (*google_protobuf1.Empty, error)
-	// User CRD
+	// Create a user
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*UserRequest, error)
+	// Get a user
 	GetUser(ctx context.Context, in *UserRequest, opts ...grpc.CallOption) (*User, error)
+	// Delete a user
 	DeleteUser(ctx context.Context, in *UserRequest, opts ...grpc.CallOption) (*google_protobuf1.Empty, error)
-	// User Use-Cases
+	// Get all comments by user
 	GetUserComments(ctx context.Context, in *UserRequest, opts ...grpc.CallOption) (Cms_GetUserCommentsClient, error)
-	// Comment CRUD
+	// Create a comment
 	CreateComment(ctx context.Context, in *CreateCommentRequest, opts ...grpc.CallOption) (*CommentRequest, error)
+	// Get a comment
 	GetComment(ctx context.Context, in *CommentRequest, opts ...grpc.CallOption) (*Comment, error)
+	// Update a comment
 	UpdateComment(ctx context.Context, in *UpdateCommentRequest, opts ...grpc.CallOption) (*google_protobuf1.Empty, error)
+	// Delete a comment
 	DeleteComment(ctx context.Context, in *CommentRequest, opts ...grpc.CallOption) (*google_protobuf1.Empty, error)
-	// Comment Use-Cases
+	// Get all comments
 	GetComments(ctx context.Context, in *google_protobuf1.Empty, opts ...grpc.CallOption) (Cms_GetCommentsClient, error)
-	// Auth Use-Cases
+	// Authorize as a user to get an access token
 	AuthUser(ctx context.Context, in *AuthUserRequest, opts ...grpc.CallOption) (*AccessToken, error)
 }
 
@@ -1024,33 +1036,45 @@ func (c *cmsClient) AuthUser(ctx context.Context, in *AuthUserRequest, opts ...g
 // Server API for Cms service
 
 type CmsServer interface {
-	// Setup
+	// Setup the application
 	Setup(context.Context, *CreateUserRequest) (*UserRequest, error)
+	// Check if application is setup
 	IsSetup(context.Context, *google_protobuf1.Empty) (*google_protobuf2.BoolValue, error)
-	// Post CRUD
+	// Create a post
 	CreatePost(context.Context, *CreatePostRequest) (*PostRequest, error)
+	// Get a post
 	GetPost(context.Context, *PostRequest) (*Post, error)
+	// Update a post
 	UpdatePost(context.Context, *UpdatePostRequest) (*google_protobuf1.Empty, error)
+	// Delete a post
 	DeletePost(context.Context, *PostRequest) (*google_protobuf1.Empty, error)
-	// Post Use-Cases
+	// Get all comments by post
 	GetPostComments(*PostRequest, Cms_GetPostCommentsServer) error
+	// Get all posts
 	GetPosts(*google_protobuf1.Empty, Cms_GetPostsServer) error
+	// Publish a post
 	PublishPost(context.Context, *PostRequest) (*google_protobuf1.Empty, error)
+	// UnPublish a post
 	UnPublishPost(context.Context, *PostRequest) (*google_protobuf1.Empty, error)
-	// User CRD
+	// Create a user
 	CreateUser(context.Context, *CreateUserRequest) (*UserRequest, error)
+	// Get a user
 	GetUser(context.Context, *UserRequest) (*User, error)
+	// Delete a user
 	DeleteUser(context.Context, *UserRequest) (*google_protobuf1.Empty, error)
-	// User Use-Cases
+	// Get all comments by user
 	GetUserComments(*UserRequest, Cms_GetUserCommentsServer) error
-	// Comment CRUD
+	// Create a comment
 	CreateComment(context.Context, *CreateCommentRequest) (*CommentRequest, error)
+	// Get a comment
 	GetComment(context.Context, *CommentRequest) (*Comment, error)
+	// Update a comment
 	UpdateComment(context.Context, *UpdateCommentRequest) (*google_protobuf1.Empty, error)
+	// Delete a comment
 	DeleteComment(context.Context, *CommentRequest) (*google_protobuf1.Empty, error)
-	// Comment Use-Cases
+	// Get all comments
 	GetComments(*google_protobuf1.Empty, Cms_GetCommentsServer) error
-	// Auth Use-Cases
+	// Authorize as a user to get an access token
 	AuthUser(context.Context, *AuthUserRequest) (*AccessToken, error)
 }
 

@@ -117,121 +117,134 @@ service CmsAuth {
 }
 
 service Cms {
-// Setup
+    // Setup the application
     rpc Setup(CreateUserRequest) returns (UserRequest) {
         option (google.api.http) = {
             post: "/setup"
             body: "*"
         };
     }
+    // Check if application is setup
     rpc IsSetup(google.protobuf.Empty) returns (google.protobuf.BoolValue) {
         option (google.api.http) = {
             get: "/is-setup"
         };
     }
 
-// Post CRUD
+    // Create a post
     rpc CreatePost(CreatePostRequest) returns (PostRequest) {
         option (google.api.http) = {
             post: "/posts"
             body: "*"
         };
     }
+    // Get a post
    rpc GetPost(PostRequest) returns (Post) {
         option (google.api.http) = {
             get: "/posts/{id}"
         };
     }
+    // Update a post
     rpc UpdatePost(UpdatePostRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             put: "/posts/{id}"
             body: "*"
         };
     }
+    // Delete a post
     rpc DeletePost(PostRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             delete: "/posts/{id}"
         };
     }
-    // Post Use-Cases
+    // Get all comments by post
     rpc GetPostComments(PostRequest) returns (stream Comment) {
         option (google.api.http) = {
             get: "/posts/{id}/comments"
         };
     }
+    // Get all posts
     rpc GetPosts(google.protobuf.Empty) returns (stream Post) {
          option (google.api.http) = {
             get: "/posts"
         };
     }
+    // Publish a post
     rpc PublishPost(PostRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             put: "/posts/{id}"
         };
     }
+    // UnPublish a post
     rpc UnPublishPost(PostRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             put: "/posts/{id}"
         };
     }
     
-
-// User CRD
+    // Create a user
     rpc CreateUser(CreateUserRequest) returns (UserRequest) {
          option (google.api.http) = {
             post: "/users"
             body: "*"
         };
     }
+
+    // Get a user
     rpc GetUser(UserRequest) returns (User) {
         option (google.api.http) = {
             get: "/users/{id}"
         };
     }
+
+    // Delete a user
     rpc DeleteUser(UserRequest) returns (google.protobuf.Empty) {
          option (google.api.http) = {
             delete: "/users/{id}"
         };
     }
     
-// User Use-Cases
+    // Get all comments by user
     rpc GetUserComments(UserRequest) returns (stream Comment) {
          option (google.api.http) = {
             get: "/users/{id}/comments"
         };
     }
 
-// Comment CRUD
+    // Create a comment
     rpc CreateComment(CreateCommentRequest) returns (CommentRequest) {
          option (google.api.http) = {
             post: "/comments"
             body: "*"
         };
     }
+    // Get a comment
     rpc GetComment(CommentRequest) returns (Comment) {
          option (google.api.http) = {
             get: "/comments/{id}"
         };
     }
+    // Update a comment
     rpc UpdateComment(UpdateCommentRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             put: "/comments/{id}"
             body: "*"
         };
     }
+    // Delete a comment
     rpc DeleteComment(CommentRequest) returns (google.protobuf.Empty) {
          option (google.api.http) = {
             delete: "/comments/{id}"
         };
     }
-// Comment Use-Cases
+    // Get all comments
     rpc GetComments(google.protobuf.Empty) returns (stream Comment) {
          option (google.api.http) = {
             get: "/comments"
         };
     }
 
-// Auth Use-Cases
+    // Authorize as a user to get an access token
     rpc AuthUser(AuthUserRequest) returns (AccessToken) {
         option (google.api.http) = {
             post: "/auth/user",

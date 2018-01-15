@@ -18,7 +18,7 @@
   "paths": {
     "/auth/user": {
       "post": {
-        "summary": "Auth Use-Cases",
+        "summary": "Authorize as a user to get an access token",
         "operationId": "AuthUser",
         "responses": {
           "200": {
@@ -45,7 +45,7 @@
     },
     "/comments": {
       "get": {
-        "summary": "Comment Use-Cases",
+        "summary": "Get all comments",
         "operationId": "GetComments",
         "responses": {
           "200": {
@@ -60,7 +60,7 @@
         ]
       },
       "post": {
-        "summary": "Comment CRUD",
+        "summary": "Create a comment",
         "operationId": "CreateComment",
         "responses": {
           "200": {
@@ -87,6 +87,7 @@
     },
     "/comments/{id}": {
       "get": {
+        "summary": "Get a comment",
         "operationId": "GetComment",
         "responses": {
           "200": {
@@ -110,6 +111,7 @@
         ]
       },
       "delete": {
+        "summary": "Delete a comment",
         "operationId": "DeleteComment",
         "responses": {
           "200": {
@@ -133,6 +135,7 @@
         ]
       },
       "put": {
+        "summary": "Update a comment",
         "operationId": "UpdateComment",
         "responses": {
           "200": {
@@ -166,6 +169,7 @@
     },
     "/is-setup": {
       "get": {
+        "summary": "Check if application is setup",
         "operationId": "IsSetup",
         "responses": {
           "200": {
@@ -182,6 +186,7 @@
     },
     "/posts": {
       "get": {
+        "summary": "Get all posts",
         "operationId": "GetPosts",
         "responses": {
           "200": {
@@ -196,7 +201,7 @@
         ]
       },
       "post": {
-        "summary": "Post CRUD",
+        "summary": "Create a post",
         "operationId": "CreatePost",
         "responses": {
           "200": {
@@ -223,6 +228,7 @@
     },
     "/posts/{id}": {
       "get": {
+        "summary": "Get a post",
         "operationId": "GetPost",
         "responses": {
           "200": {
@@ -246,6 +252,7 @@
         ]
       },
       "delete": {
+        "summary": "Delete a post",
         "operationId": "DeletePost",
         "responses": {
           "200": {
@@ -269,6 +276,7 @@
         ]
       },
       "put": {
+        "summary": "UnPublish a post",
         "operationId": "UnPublishPost",
         "responses": {
           "200": {
@@ -294,7 +302,7 @@
     },
     "/posts/{id}/comments": {
       "get": {
-        "summary": "Post Use-Cases",
+        "summary": "Get all comments by post",
         "operationId": "GetPostComments",
         "responses": {
           "200": {
@@ -320,7 +328,7 @@
     },
     "/setup": {
       "post": {
-        "summary": "Setup",
+        "summary": "Setup the application",
         "operationId": "Setup",
         "responses": {
           "200": {
@@ -347,7 +355,7 @@
     },
     "/users": {
       "post": {
-        "summary": "User CRD",
+        "summary": "Create a user",
         "operationId": "CreateUser",
         "responses": {
           "200": {
@@ -374,6 +382,7 @@
     },
     "/users/{id}": {
       "get": {
+        "summary": "Get a user",
         "operationId": "GetUser",
         "responses": {
           "200": {
@@ -396,6 +405,7 @@
         ]
       },
       "delete": {
+        "summary": "Delete a user",
         "operationId": "DeleteUser",
         "responses": {
           "200": {
@@ -420,7 +430,7 @@
     },
     "/users/{id}/comments": {
       "get": {
-        "summary": "User Use-Cases",
+        "summary": "Get all comments by user",
         "operationId": "GetUserComments",
         "responses": {
           "200": {
