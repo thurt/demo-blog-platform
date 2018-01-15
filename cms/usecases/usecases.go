@@ -150,6 +150,13 @@ func (u *useCases) Setup(ctx context.Context, r *pb.CreateUserRequest) (*pb.User
 		return nil, status.Errorf(codes.Aborted, "Setup can only be performed once")
 	}
 
+	// requires that password is hashed
+	hashedPassword, err := password.Hash(r.GetPassword())
+	if err != nil {
+		return nil, err
+	}
+	r.Password = hashedPassword
+
 	user, err := u.Provider.CreateUser(ctx, &pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r})
 	if err != nil {
 		log.Println(err)
