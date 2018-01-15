@@ -265,4 +265,17 @@ func TestSetup(t *testing.T) {
 			t.Error("must answer with a grpc error")
 		}
 	})
+	t.Run("requires that password is hashed", func(t *testing.T) {
+		mock, _, uc := setup(t)
+
+		r := &pb.CreateUserRequest{Id: "id", Password: "password"}
+
+		mock.EXPECT().AdminExists(gomock.Any(), gomock.Any()).Return(&wrappers.BoolValue{false}, nil)
+		mock.EXPECT().CreateUser(gomock.Any(), gomock.Not(&pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r}))
+
+		_, err := uc.Setup(ctx, r)
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+	})
 }
