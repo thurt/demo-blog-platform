@@ -468,7 +468,8 @@
           "type": "integer",
           "format": "int64"
         }
-      }
+      },
+      "title": "AccessToken"
     },
     "cmsAuthUserRequest": {
       "type": "object",
@@ -479,7 +480,8 @@
         "password": {
           "type": "string"
         }
-      }
+      },
+      "title": "AuthUserRequest"
     },
     "cmsComment": {
       "type": "object",
@@ -504,7 +506,7 @@
           "type": "string"
         }
       },
-      "title": "Comments"
+      "title": "Comment"
     },
     "cmsCommentRequest": {
       "type": "object",
@@ -513,7 +515,8 @@
           "type": "integer",
           "format": "int64"
         }
-      }
+      },
+      "title": "CommentRequest"
     },
     "cmsCreateCommentRequest": {
       "type": "object",
@@ -528,7 +531,8 @@
           "type": "integer",
           "format": "int64"
         }
-      }
+      },
+      "title": "CreateCommentRequest"
     },
     "cmsCreatePostRequest": {
       "type": "object",
@@ -542,7 +546,8 @@
         "slug": {
           "type": "string"
         }
-      }
+      },
+      "title": "CreatePostRequest"
     },
     "cmsCreateUserRequest": {
       "type": "object",
@@ -556,7 +561,8 @@
         "password": {
           "type": "string"
         }
-      }
+      },
+      "title": "CreateUserRequest"
     },
     "cmsPost": {
       "type": "object",
@@ -584,7 +590,7 @@
           "type": "string"
         }
       },
-      "title": "Posts"
+      "title": "Post"
     },
     "cmsPostRequest": {
       "type": "object",
@@ -593,7 +599,8 @@
           "type": "integer",
           "format": "int64"
         }
-      }
+      },
+      "title": "PostRequest"
     },
     "cmsUpdateCommentRequest": {
       "type": "object",
@@ -605,7 +612,8 @@
         "content": {
           "type": "string"
         }
-      }
+      },
+      "title": "UpdateCommentRequest"
     },
     "cmsUpdatePostRequest": {
       "type": "object",
@@ -623,7 +631,8 @@
         "slug": {
           "type": "string"
         }
-      }
+      },
+      "title": "UpdatePostRequest"
     },
     "cmsUser": {
       "type": "object",
@@ -643,7 +652,8 @@
         "role": {
           "$ref": "#/definitions/cmsUserRole"
         }
-      }
+      },
+      "title": "User"
     },
     "cmsUserPassword": {
       "type": "object",
@@ -651,7 +661,8 @@
         "password": {
           "type": "string"
         }
-      }
+      },
+      "title": "UserPassword"
     },
     "cmsUserRequest": {
       "type": "object",
@@ -659,7 +670,8 @@
         "id": {
           "type": "string"
         }
-      }
+      },
+      "title": "UserRequest"
     },
     "cmsUserRole": {
       "type": "string",
@@ -669,7 +681,7 @@
         "USER"
       ],
       "default": "UNKNOWN",
-      "title": "Users"
+      "title": "UserRole"
     },
     "protobufBoolValue": {
       "type": "object",

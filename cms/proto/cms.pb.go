@@ -54,7 +54,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
-// Users
+// UserRole
 type UserRole int32
 
 const (
@@ -79,7 +79,7 @@ func (x UserRole) String() string {
 }
 func (UserRole) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
-// Posts
+// Post
 type Post struct {
 	Id         uint32 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
 	Title      string `protobuf:"bytes,2,opt,name=title" json:"title,omitempty"`
@@ -144,6 +144,7 @@ func (m *Post) GetSlug() string {
 	return ""
 }
 
+// PostRequest
 type PostRequest struct {
 	Id uint32 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
 }
@@ -160,6 +161,7 @@ func (m *PostRequest) GetId() uint32 {
 	return 0
 }
 
+// CreatePostRequest
 type CreatePostRequest struct {
 	Title   string `protobuf:"bytes,1,opt,name=title" json:"title,omitempty"`
 	Content string `protobuf:"bytes,2,opt,name=content" json:"content,omitempty"`
@@ -192,6 +194,7 @@ func (m *CreatePostRequest) GetSlug() string {
 	return ""
 }
 
+// UpdatePostRequest
 type UpdatePostRequest struct {
 	Id      uint32 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
 	Title   string `protobuf:"bytes,2,opt,name=title" json:"title,omitempty"`
@@ -232,7 +235,7 @@ func (m *UpdatePostRequest) GetSlug() string {
 	return ""
 }
 
-// Comments
+// Comment
 type Comment struct {
 	Id         uint32 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
 	Content    string `protobuf:"bytes,2,opt,name=content" json:"content,omitempty"`
@@ -289,6 +292,7 @@ func (m *Comment) GetPostId() string {
 	return ""
 }
 
+// CommentRequest
 type CommentRequest struct {
 	Id uint32 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
 }
@@ -305,6 +309,7 @@ func (m *CommentRequest) GetId() uint32 {
 	return 0
 }
 
+// CreateCommentRequest
 type CreateCommentRequest struct {
 	Content string `protobuf:"bytes,1,opt,name=content" json:"content,omitempty"`
 	UserId  string `protobuf:"bytes,2,opt,name=user_id,json=userId" json:"user_id,omitempty"`
@@ -337,6 +342,7 @@ func (m *CreateCommentRequest) GetPostId() uint32 {
 	return 0
 }
 
+// UpdateCommentRequest
 type UpdateCommentRequest struct {
 	Id      uint32 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
 	Content string `protobuf:"bytes,2,opt,name=content" json:"content,omitempty"`
@@ -361,6 +367,7 @@ func (m *UpdateCommentRequest) GetContent() string {
 	return ""
 }
 
+// User
 type User struct {
 	Id         string   `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
 	Email      string   `protobuf:"bytes,2,opt,name=email" json:"email,omitempty"`
@@ -409,6 +416,7 @@ func (m *User) GetRole() UserRole {
 	return UserRole_UNKNOWN
 }
 
+// UserRequest
 type UserRequest struct {
 	Id string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
 }
@@ -425,6 +433,7 @@ func (m *UserRequest) GetId() string {
 	return ""
 }
 
+// CreateUserRequest
 type CreateUserRequest struct {
 	Id       string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
 	Email    string `protobuf:"bytes,2,opt,name=email" json:"email,omitempty"`
@@ -457,6 +466,7 @@ func (m *CreateUserRequest) GetPassword() string {
 	return ""
 }
 
+// CreateUserWithRole
 type CreateUserWithRole struct {
 	User *CreateUserRequest `protobuf:"bytes,1,opt,name=user" json:"user,omitempty"`
 	Role UserRole           `protobuf:"varint,2,opt,name=role,enum=cms.UserRole" json:"role,omitempty"`
@@ -481,6 +491,7 @@ func (m *CreateUserWithRole) GetRole() UserRole {
 	return UserRole_UNKNOWN
 }
 
+// AuthUserRequest
 type AuthUserRequest struct {
 	Id       string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
 	Password string `protobuf:"bytes,2,opt,name=password" json:"password,omitempty"`
@@ -505,6 +516,7 @@ func (m *AuthUserRequest) GetPassword() string {
 	return ""
 }
 
+// AccessToken
 type AccessToken struct {
 	AccessToken string `protobuf:"bytes,1,opt,name=access_token,json=accessToken" json:"access_token,omitempty"`
 	TokenType   string `protobuf:"bytes,2,opt,name=token_type,json=tokenType" json:"token_type,omitempty"`
@@ -537,6 +549,7 @@ func (m *AccessToken) GetExpiresIn() uint32 {
 	return 0
 }
 
+// UserPassword
 type UserPassword struct {
 	Password string `protobuf:"bytes,1,opt,name=password" json:"password,omitempty"`
 }

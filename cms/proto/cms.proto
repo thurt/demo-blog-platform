@@ -10,104 +10,117 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 import "github.com/mwitkow/go-proto-validators/validator.proto";
 
-// Posts
-    message Post {
-        uint32 id = 1;
-        string title = 2;
-        string content = 3;
-        string created = 4;
-        string last_edited = 5;
-        string published = 6;
-        string slug = 7;
-    }
+// Post
+message Post {
+    uint32 id = 1;
+    string title = 2;
+    string content = 3;
+    string created = 4;
+    string last_edited = 5;
+    string published = 6;
+    string slug = 7;
+}
 
-    message PostRequest {
-        uint32 id = 1 [(validator.field) = {int_gt: 0}];
-    }
+// PostRequest
+message PostRequest {
+    uint32 id = 1 [(validator.field) = {int_gt: 0}];
+}
 
-    message CreatePostRequest {
-        string title = 1 [(validator.field) = {length_lt: 256}]; 
-        string content = 2 [(validator.field) = {length_lt: 16777216}];
-        string slug = 3 [(validator.field) = {length_eq: 0, human_error: "Do not include a slug value in your request. This field is only used internally by the server."}];
-    }
+// CreatePostRequest
+message CreatePostRequest {
+    string title = 1 [(validator.field) = {length_lt: 256}]; 
+    string content = 2 [(validator.field) = {length_lt: 16777216}];
+    string slug = 3 [(validator.field) = {length_eq: 0, human_error: "Do not include a slug value in your request. This field is only used internally by the server."}];
+}
 
-    message UpdatePostRequest {
-        uint32 id = 1 [(validator.field) = {int_gt: 0}];
-        string title = 2 [(validator.field) = {length_lt: 256}]; 
-        string content = 3 [(validator.field) = {length_lt: 16777216}];
-        string slug = 4 [(validator.field) = {length_eq: 0, human_error: "Do not include a slug value in your request. This field is only used internally by the server."}]; 
-    }
+// UpdatePostRequest
+message UpdatePostRequest {
+    uint32 id = 1 [(validator.field) = {int_gt: 0}];
+    string title = 2 [(validator.field) = {length_lt: 256}]; 
+    string content = 3 [(validator.field) = {length_lt: 16777216}];
+    string slug = 4 [(validator.field) = {length_eq: 0, human_error: "Do not include a slug value in your request. This field is only used internally by the server."}]; 
+}
 
-// Comments
-    message Comment {
-        uint32 id = 1;
-        string content = 2;
-        string created = 3;
-        string last_edited = 4;
-        string user_id = 5;
-        string post_id = 6;
-    }
+// Comment
+message Comment {
+    uint32 id = 1;
+    string content = 2;
+    string created = 3;
+    string last_edited = 4;
+    string user_id = 5;
+    string post_id = 6;
+}
 
-    message CommentRequest {
-        uint32 id = 1 [(validator.field) = {int_gt: 0}];
-    }
+// CommentRequest
+message CommentRequest {
+    uint32 id = 1 [(validator.field) = {int_gt: 0}];
+}
 
-    message CreateCommentRequest {
-        string content = 1 [(validator.field) = {string_not_empty: true, length_lt: 65536}];
-        string user_id = 2 [(validator.field) = {string_not_empty: true, regex: "^[a-zA-Z]{3,18}$", human_error: "User Id must be 3-18 characters and can only include letters"}];
-        uint32 post_id = 3 [(validator.field) = {int_gt: 0}];
-    }
+// CreateCommentRequest
+message CreateCommentRequest {
+    string content = 1 [(validator.field) = {string_not_empty: true, length_lt: 65536}];
+    string user_id = 2 [(validator.field) = {string_not_empty: true, regex: "^[a-zA-Z]{3,18}$", human_error: "User Id must be 3-18 characters and can only include letters"}];
+    uint32 post_id = 3 [(validator.field) = {int_gt: 0}];
+}
 
-    message UpdateCommentRequest {
-        uint32 id = 1 [(validator.field) = {int_gt: 0}];
-        string content = 2 [(validator.field) = {string_not_empty: true, length_lt: 65536}]; 
-    }
+// UpdateCommentRequest
+message UpdateCommentRequest {
+    uint32 id = 1 [(validator.field) = {int_gt: 0}];
+    string content = 2 [(validator.field) = {string_not_empty: true, length_lt: 65536}]; 
+}
 
-// Users
-    enum UserRole {
-        UNKNOWN = 0;
-        ADMIN = 1;
-        USER = 2;
-    }
+// UserRole
+enum UserRole {
+    UNKNOWN = 0;
+    ADMIN = 1;
+    USER = 2;
+}
 
-    message User {
-        string id = 1;
-        string email = 2;
-        string created = 3;
-        string last_active = 4;
-        UserRole role = 5;
-    }
+// User
+message User {
+    string id = 1;
+    string email = 2;
+    string created = 3;
+    string last_active = 4;
+    UserRole role = 5;
+}
 
-    message UserRequest {
-        string id = 1 [(validator.field) = {string_not_empty: true, regex: "^[a-zA-Z]{3,18}$", human_error: "User Id must be 3-18 characters and can only include letters"}];
-    }
+// UserRequest
+message UserRequest {
+    string id = 1 [(validator.field) = {string_not_empty: true, regex: "^[a-zA-Z]{3,18}$", human_error: "User Id must be 3-18 characters and can only include letters"}];
+}
 
-    message CreateUserRequest {
-        string id = 1 [(validator.field) = {string_not_empty: true, regex: "^[a-zA-Z]{3,18}$", human_error: "User Id must be 3-18 characters and can only include letters"}];
-        string email = 2 [(validator.field) = {string_not_empty: true, length_lt:256}];
-        string password = 3 [(validator.field) = {string_not_empty: true, length_lt:51}];
-    }
+// CreateUserRequest
+message CreateUserRequest {
+    string id = 1 [(validator.field) = {string_not_empty: true, regex: "^[a-zA-Z]{3,18}$", human_error: "User Id must be 3-18 characters and can only include letters"}];
+    string email = 2 [(validator.field) = {string_not_empty: true, length_lt:256}];
+    string password = 3 [(validator.field) = {string_not_empty: true, length_lt:51}];
+}
 
-    message CreateUserWithRole {
-        CreateUserRequest user = 1;
-        UserRole role = 2;
-    }
+// CreateUserWithRole
+message CreateUserWithRole {
+    CreateUserRequest user = 1;
+    UserRole role = 2;
+}
 
-    message AuthUserRequest {
-        string id = 1 [(validator.field) = {string_not_empty: true, regex: "^[a-zA-Z]{3,18}$", human_error: "User Id must be 3-18 characters and can only include letters"}];
-        string password = 2 [(validator.field) = {string_not_empty: true, length_lt:51}];
-    }
+// AuthUserRequest
+message AuthUserRequest {
+    string id = 1 [(validator.field) = {string_not_empty: true, regex: "^[a-zA-Z]{3,18}$", human_error: "User Id must be 3-18 characters and can only include letters"}];
+    string password = 2 [(validator.field) = {string_not_empty: true, length_lt:51}];
+}
 
-    message AccessToken {
-        string access_token = 1;
-        string token_type = 2;
-        uint32 expires_in = 3;
-    }
+// AccessToken
+message AccessToken {
+    string access_token = 1;
+    string token_type = 2;
+    uint32 expires_in = 3;
+}
 
-    message UserPassword {
-        string password = 1;
-    }
-            
+// UserPassword
+message UserPassword {
+    string password = 1;
+}
+        
 service CmsInternal {
     rpc GetUserPassword(UserRequest) returns (UserPassword) {}
 }
