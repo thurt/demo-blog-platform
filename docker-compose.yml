@@ -11,9 +11,11 @@ services:
             - MEMCACHED_HOST=${MEMCACHED_HOST-memcached:3000}
             - MEMCACHED_USER=${MEMCACHED_USER-memcached}
             - MEMCACHED_PASSWORD=${MEMCACHED_PASSWORD-memcached}
+            - STATICHOST_ADDRESS=${STATICHOST_ADDRESS-static}
         depends_on:
             - db
             - memcached
+            - static
         command: ["/go/src/app/wait-for-it.sh", "--timeout=120", "db:3306", "--", "/go/src/app/wait-for-it.sh", "--timeout=120", "memcached:3000", "--", "go-wrapper", "run"]
     db:
         build: ./cms/mysqlprovider/db 
@@ -28,6 +30,10 @@ services:
         environment:
             - PASSWORD=${MEMCACHED_PASSWORD-memcached}
         command: ["/usr/bin/memcached-sasl"]
+    static:
+        image: tahurt/docker-devd
+        ports: - "8484:8000" #static webserver
+        command: ["/=https://storage.googleapis.com/learned-stone-189802.appspot.com/"]
 
 volumes:
     db-data:

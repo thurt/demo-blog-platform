@@ -3,8 +3,13 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
+	"os"
+	"path"
 
 	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -13,6 +18,7 @@ import (
 )
 
 var GrpcHost string
+var STATICHOST_ADDRESS string
 
 func run() error {
 	ctx := context.Background()
@@ -25,15 +31,34 @@ func run() error {
 		handlers.AllowedMethods([]string{"GET", "PUT", "POST", "DELETE"}),
 	}
 
-	mux := runtime.NewServeMux()
+	cms_mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithInsecure()}
 	GrpcHost = fmt.Sprintf("localhost:%d", PORT)
-	err := pb.RegisterCmsHandlerFromEndpoint(ctx, mux, GrpcHost, opts)
+	err := pb.RegisterCmsHandlerFromEndpoint(ctx, cms_mux, GrpcHost, opts)
 	if err != nil {
 		return err
 	}
+	cms_mux_cors := handlers.CORS(CORSOptions...)(cms_mux)
 
-	return http.ListenAndServe(":8080", handlers.CORS(CORSOptions...)(mux))
+	router_mux := mux.NewRouter()
+
+	STATICHOST_ADDRESS = os.Getenv("STATICHOST_ADDRESS")
+	statichost, err := url.Parse(STATICHOST_ADDRESS)
+	if err != nil {
+		panic(err)
+	}
+
+	proxy_statichost := httputil.NewSingleHostReverseProxy(statichost)
+	router_mux.PathPrefix("/api/").Handler(http.StripPrefix("/api/", cms_mux_cors))
+	router_mux.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if ext := path.Ext(r.URL.Path); ext == "" {
+			r.URL.Path = "/index.html"
+		}
+
+		proxy_statichost.ServeHTTP(w, r)
+	})
+
+	return http.ListenAndServe(":8080", router_mux)
 }
 
 func ProxyServe() error {
