@@ -49,7 +49,7 @@ func run() error {
 	}
 
 	proxy_statichost := httputil.NewSingleHostReverseProxy(statichost)
-	router_mux.PathPrefix("/api/").Handler(http.StripPrefix("/api/", cms_mux_cors))
+	router_mux.PathPrefix("/api/").Handler(http.StripPrefix("/api", cms_mux_cors))
 	router_mux.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if ext := path.Ext(r.URL.Path); ext == "" {
 			r.URL.Path = "/index.html"
