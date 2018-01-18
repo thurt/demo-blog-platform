@@ -11,7 +11,7 @@ services:
             - MEMCACHED_HOST=${MEMCACHED_HOST-memcached:3000}
             - MEMCACHED_USER=${MEMCACHED_USER-memcached}
             - MEMCACHED_PASSWORD=${MEMCACHED_PASSWORD-memcached}
-            - STATICHOST_ADDRESS=${STATICHOST_ADDRESS-http://static:8000}
+            - STATICHOST_ADDRESS=${STATICHOST_ADDRESS-https://storage.googleapis.com/learned-stone-189802.appspot.com/}
         depends_on:
             - db
             - memcached
@@ -30,9 +30,6 @@ services:
         environment:
             - PASSWORD=${MEMCACHED_PASSWORD-memcached}
         command: ["/usr/bin/memcached-sasl"]
-    static:
-        image: tahurt/docker-devd
-        command: ["/=https://storage.googleapis.com/learned-stone-189802.appspot.com/"]
 
 volumes:
     db-data:
