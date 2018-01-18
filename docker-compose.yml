@@ -11,7 +11,7 @@ services:
             - MEMCACHED_HOST=${MEMCACHED_HOST-memcached:3000}
             - MEMCACHED_USER=${MEMCACHED_USER-memcached}
             - MEMCACHED_PASSWORD=${MEMCACHED_PASSWORD-memcached}
-            - STATICHOST_ADDRESS=${STATICHOST_ADDRESS-static}
+            - STATICHOST_ADDRESS=${STATICHOST_ADDRESS-http://static:8000}
         depends_on:
             - db
             - memcached
@@ -32,7 +32,6 @@ services:
         command: ["/usr/bin/memcached-sasl"]
     static:
         image: tahurt/docker-devd
-        ports: - "8484:8000" #static webserver
         command: ["/=https://storage.googleapis.com/learned-stone-189802.appspot.com/"]
 
 volumes:
