@@ -89,7 +89,7 @@ func main() {
 
 	// setup rest proxy server
 	go func() {
-		log.Println("Staring up rest-proxy")
+		log.Println("Starting up rest-proxy")
 		err = ProxyServe()
 		if err != nil {
 			log.Println("proxy error")
