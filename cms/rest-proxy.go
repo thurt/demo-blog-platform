@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"os"
 	"path"
@@ -15,6 +14,7 @@ import (
 	"google.golang.org/grpc"
 
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
+	"github.com/thurt/reverseProxyHostRewrite"
 )
 
 var GrpcHost string
@@ -48,11 +48,27 @@ func run() error {
 		panic(err)
 	}
 
-	proxy_statichost := httputil.NewSingleHostReverseProxy(statichost)
+	proxy_statichost := reverseProxyHostRewrite.New(statichost)
+
+	var mainPagePath string
+	// this host does not serve index.html automatically when requesting the root.
+	// it acts more like a fileserver rather than a webserver in this respect, so
+	// the path to mainPage must be absolute.
+	if statichost.Host == "storage.googleapis.com" {
+		mainPagePath = "/index.html"
+	} else { // assume other hosts act like regular webserver, serving index.html automatically when requesting root
+		mainPagePath = "/"
+	}
+
 	router_mux.PathPrefix("/api/").Handler(http.StripPrefix("/api", cms_mux_cors))
 	router_mux.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// when there is no extension (ex .png, .html) at the end of the request path,
+		// reroute it to the mainPagePath. This allows the SPA (located at mainPagePath) to
+		// decide how to handle all the path requests at the application level. meanwhile
+		// request paths w/ extension will skip this block (assuming these are static files
+		// located on statichost)
 		if ext := path.Ext(r.URL.Path); ext == "" {
-			r.URL.Path = "/index.html"
+			r.URL.Path = mainPagePath
 		}
 
 		proxy_statichost.ServeHTTP(w, r)
