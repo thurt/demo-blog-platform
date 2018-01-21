@@ -15,8 +15,8 @@ import (
 	"github.com/fatih/structs"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/gofuzz"
+	"github.com/thurt/demo-blog-platform/cms/mock_proto"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
-	"google.golang.org/grpc"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
 
@@ -28,63 +28,6 @@ var (
 )
 
 var regexAny string = ".*"
-
-type mockCms_GetPostsServer struct {
-	grpc.ServerStream
-	Results []*pb.Post
-	pos     int
-	nextErr map[int]error
-}
-
-func (m *mockCms_GetPostsServer) SetSendError(pos int, err error) *mockCms_GetPostsServer {
-	m.nextErr[pos] = err
-	return m
-}
-
-func (m *mockCms_GetPostsServer) Send(p *pb.Post) error {
-	if err, ok := m.nextErr[m.pos]; ok {
-		return err
-	}
-
-	m.Results = append(m.Results, p)
-
-	m.pos++
-	return nil
-}
-
-func NewMockCms_GetPostsServer() *mockCms_GetPostsServer {
-	return &mockCms_GetPostsServer{nextErr: make(map[int]error)}
-}
-
-type mockCms_GetPostCommentsServer struct {
-	grpc.ServerStream
-	Results []*pb.Comment
-}
-
-func (m *mockCms_GetPostCommentsServer) Send(c *pb.Comment) error {
-	m.Results = append(m.Results, c)
-	return nil
-}
-
-type mockCms_GetCommentsServer struct {
-	grpc.ServerStream
-	Results []*pb.Comment
-}
-
-func (m *mockCms_GetCommentsServer) Send(c *pb.Comment) error {
-	m.Results = append(m.Results, c)
-	return nil
-}
-
-type mockCms_GetUserCommentsServer struct {
-	grpc.ServerStream
-	Results []*pb.Comment
-}
-
-func (m *mockCms_GetUserCommentsServer) Send(c *pb.Comment) error {
-	m.Results = append(m.Results, c)
-	return nil
-}
 
 func TestMain(m *testing.M) {
 	// call flag.Parse() here if TestMain uses flags
@@ -411,7 +354,7 @@ func TestGetPosts(t *testing.T) {
 	f.Fuzz(stubIn)
 	f.Fuzz(stubOut[0])
 	f.Fuzz(stubOut[1])
-	mockStreamOut := NewMockCms_GetPostsServer()
+	mockStreamOut := mock_proto.NewMockCms_GetPostsServer()
 
 	t.Run("requires dispatching the correct sql request", func(t *testing.T) {
 		regexSql := esc(p.q.GetPosts(stubIn))
@@ -443,7 +386,7 @@ func TestGetPosts(t *testing.T) {
 		}
 	})
 	t.Run("requires returning error when stream.Send creates an error", func(t *testing.T) {
-		mockStreamOutWithErr := NewMockCms_GetPostsServer().SetSendError(1, errors.New(""))
+		mockStreamOutWithErr := mock_proto.NewMockCms_GetPostsServer().SetSendError(1, errors.New(""))
 		stubRows := sqlmock.NewRows(structs.Names(stubOut[0])).AddRow(makeRowData(structs.Values(stubOut[0]))...).AddRow(makeRowData(structs.Values(stubOut[1]))...)
 		mock.ExpectQuery(regexAny).WillReturnRows(stubRows)
 
