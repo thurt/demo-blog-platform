@@ -12,6 +12,7 @@ import (
 	"github.com/thurt/demo-blog-platform/cms/password"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -287,14 +288,43 @@ func TestSetup(t *testing.T) {
 	})
 }
 
+type mockCms_GetPostsServer struct {
+	grpc.ServerStream
+	Results []*pb.Post
+	pos     int
+	nextErr map[int]error
+}
+
+func (m *mockCms_GetPostsServer) SetSendError(pos int, err error) *mockCms_GetPostsServer {
+	m.nextErr[pos] = err
+	return m
+}
+
+func (m *mockCms_GetPostsServer) Send(p *pb.Post) error {
+	if err, ok := m.nextErr[m.pos]; ok {
+		return err
+	}
+
+	m.Results = append(m.Results, p)
+
+	m.pos++
+	return nil
+}
+
+func NewMockCms_GetPostsServer() *mockCms_GetPostsServer {
+	return &mockCms_GetPostsServer{nextErr: make(map[int]error)}
+}
+
 func TestGetPosts(t *testing.T) {
 	r := &empty.Empty{}
+	mockStreamOut := NewMockCms_GetPostsServer()
+
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
 		mock, _, uc := setup(t)
 
 		mock.EXPECT().GetPosts(gomock.Any(), gomock.Any()).Return(errors.New(""))
 
-		err := uc.GetPosts(ctx, r)
+		err := uc.GetPosts(r, mockStreamOut)
 		if err == nil {
 			t.Error("must anwser with an error")
 		}
