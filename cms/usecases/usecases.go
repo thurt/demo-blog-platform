@@ -166,6 +166,6 @@ func (u *useCases) Setup(ctx context.Context, r *pb.CreateUserRequest) (*pb.User
 	return user, nil
 }
 
-func (u *useCases) GetPosts(ctx context.Context, r *empty.Empty) error {
+func (u *useCases) GetPosts(r *empty.Empty, stream pb.Cms_GetPostsServer) error {
 	return nil
 }
