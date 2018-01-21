@@ -2,6 +2,7 @@ package mock_proto
 
 import (
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
+	context "golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
 
@@ -10,6 +11,7 @@ type mockCms_GetPostsServer struct {
 	Results []*pb.Post
 	pos     int
 	nextErr map[int]error
+	ctx     context.Context
 }
 
 func (m *mockCms_GetPostsServer) SetSendError(pos int, err error) *mockCms_GetPostsServer {
@@ -26,6 +28,14 @@ func (m *mockCms_GetPostsServer) Send(p *pb.Post) error {
 
 	m.pos++
 	return nil
+}
+
+func (m *mockCms_GetPostsServer) Context() context.Context {
+	return m.ctx
+}
+
+func (m *mockCms_GetPostsServer) SetContext(ctx context.Context) {
+	m.ctx = ctx
 }
 
 func NewMockCms_GetPostsServer() *mockCms_GetPostsServer {
