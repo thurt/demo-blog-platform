@@ -135,5 +135,11 @@ func (a *authorization) DeleteComment(ctx context.Context, r *pb.CommentRequest)
 }
 
 func (a *authorization) GetPosts(r *pb.GetPostsOptions, stream pb.Cms_GetPostsServer) error {
+	if r.GetIncludeUnPublished() == true {
+		// requires Admin Role has permission
+		if !hasPermission(stream.Context(), pb.UserRole_ADMIN) {
+			return ErrPermissionDenied
+		}
+	}
 	return a.CmsServer.GetPosts(r, stream)
 }
