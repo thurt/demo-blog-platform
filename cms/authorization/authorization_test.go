@@ -326,3 +326,33 @@ func TestCreatePost(t *testing.T) {
 		}
 	})
 }
+
+func TestGetPosts(t *testing.T) {
+	r := &pb.GetPostsOptions{IncludeUnPublished: true}
+	mockStream := mock_proto.NewMockCms_GetPostsServer()
+
+	t.Run("(options) requires permission when IncludeUnPublished is true", func(t *testing.T) {
+		mock, a := setup(t)
+		ctx := reqContext.NewFromUser(context.Background(), &pb.User{Role: pb.UserRole_UNKNOWN})
+		mockStream.SetContext(ctx)
+
+		mock.EXPECT().GetPosts(gomock.Any(), gomock.Any())
+
+		err := a.GetPosts(r, mockStream)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
+	t.Run("(options) requires Admin Role has permission when IncludeUnPublished is true", func(t *testing.T) {
+		mock, a := setup(t)
+		ctx := reqContext.NewFromUser(context.Background(), &pb.User{Role: pb.UserRole_ADMIN})
+		mockStream.SetContext(ctx)
+
+		mock.EXPECT().GetPosts(gomock.Any(), gomock.Any())
+
+		err := a.GetPosts(r, mockStream)
+		if err != nil {
+			t.Error("unexpected error:", err)
+		}
+	})
+}

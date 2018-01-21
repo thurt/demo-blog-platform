@@ -25,6 +25,7 @@ type Authorization interface {
 	CreateComment(context.Context, *pb.CreateCommentRequest) (*pb.CommentRequest, error)
 	UpdateComment(context.Context, *pb.UpdateCommentRequest) (*empty.Empty, error)
 	DeleteComment(context.Context, *pb.CommentRequest) (*empty.Empty, error)
+	GetPosts(*pb.GetPostsOptions, pb.Cms_GetPostsServer) error
 }
 
 func New(server pb.CmsServer) pb.CmsServer {
@@ -131,4 +132,8 @@ func (a *authorization) DeleteComment(ctx context.Context, r *pb.CommentRequest)
 		return nil, ErrPermissionDenied
 	}
 	return a.CmsServer.DeleteComment(ctx, r)
+}
+
+func (a *authorization) GetPosts(r *pb.GetPostsOptions, stream pb.Cms_GetPostsServer) error {
+	return a.CmsServer.GetPosts(r, stream)
 }
