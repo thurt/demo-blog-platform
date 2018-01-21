@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -47,6 +48,8 @@ func run() error {
 	if err != nil {
 		panic(err)
 	}
+
+	log.Println("rest proxy is using static host:", STATICHOST_ADDRESS)
 
 	proxy_statichost := reverseProxyHostRewrite.New(statichost)
 
