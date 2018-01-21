@@ -14,6 +14,7 @@ It is generated from these files:
 It has these top-level messages:
 	Post
 	PostRequest
+	GetPostsOptions
 	CreatePostRequest
 	UpdatePostRequest
 	Comment
@@ -52,6 +53,9 @@ func (this *PostRequest) Validate() error {
 	if !(this.Id > 0) {
 		return go_proto_validators.FieldError("Id", fmt.Errorf(`value '%v' must be greater than '0'`, this.Id))
 	}
+	return nil
+}
+func (this *GetPostsOptions) Validate() error {
 	return nil
 }
 func (this *CreatePostRequest) Validate() error {

@@ -161,7 +161,7 @@ func (p *provider) GetComments(r *empty.Empty, stream pb.Cms_GetCommentsServer) 
 	return nil
 }
 
-func (p *provider) GetPosts(r *empty.Empty, stream pb.Cms_GetPostsServer) error {
+func (p *provider) GetPosts(r *pb.GetPostsOptions, stream pb.Cms_GetPostsServer) error {
 	ps, err := p.db.Query(p.q.GetPosts(r))
 	if err != nil {
 		return err

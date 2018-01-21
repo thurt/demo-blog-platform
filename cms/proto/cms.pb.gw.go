@@ -184,9 +184,17 @@ func request_Cms_GetPostComments_0(ctx context.Context, marshaler runtime.Marsha
 
 }
 
+var (
+	filter_Cms_GetPosts_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
 func request_Cms_GetPosts_0(ctx context.Context, marshaler runtime.Marshaler, client CmsClient, req *http.Request, pathParams map[string]string) (Cms_GetPostsClient, runtime.ServerMetadata, error) {
-	var protoReq empty.Empty
+	var protoReq GetPostsOptions
 	var metadata runtime.ServerMetadata
+
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_Cms_GetPosts_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
 
 	stream, err := client.GetPosts(ctx, &protoReq)
 	if err != nil {

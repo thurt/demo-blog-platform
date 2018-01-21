@@ -41,7 +41,7 @@ func (q *Query) GetUserComments(r *pb.UserRequest) string {
 	return fmt.Sprintf("SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE user_id=%q", r.GetId())
 }
 
-func (q *Query) GetPosts(_ *empty.Empty) string {
+func (q *Query) GetPosts(_ *pb.GetPostsOptions) string {
 	return "SELECT id, title, content, created, last_edited, published, slug FROM posts"
 }
 

@@ -288,7 +288,7 @@ func TestSetup(t *testing.T) {
 }
 
 func TestGetPosts(t *testing.T) {
-	r := &empty.Empty{}
+	r := &pb.GetPostsOptions{}
 	mockStreamOut := mock_proto.NewMockCms_GetPostsServer()
 
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {

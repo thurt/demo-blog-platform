@@ -26,6 +26,12 @@ message PostRequest {
     uint32 id = 1 [(validator.field) = {int_gt: 0}];
 }
 
+// GetPostsOptions
+message GetPostsOptions {
+    // when true, includes unpublished Posts in response (note: Authorization token with ADMIN role is required)
+    bool includeUnPublished = 2;
+}
+
 // CreatePostRequest
 message CreatePostRequest {
     string title = 1 [(validator.field) = {length_lt: 256}]; 
@@ -177,7 +183,7 @@ service Cms {
         };
     }
     // Get all posts
-    rpc GetPosts(google.protobuf.Empty) returns (stream Post) {
+    rpc GetPosts(GetPostsOptions) returns (stream Post) {
          option (google.api.http) = {
             get: "/posts"
         };

@@ -331,7 +331,7 @@ func TestUpdatePost(t *testing.T) {
 func TestGetPostComments(t *testing.T) {
 	r := &pb.PostRequest{Id: 0}
 	mock.ExpectQuery(p.q.GetPostComments(r)).WillReturnRows(&sqlmock.Rows{})
-	s := &mockCms_GetPostCommentsServer{}
+	s := &mock_proto.MockCms_GetPostCommentsServer{}
 
 	_ = p.GetPostComments(r, s)
 
@@ -341,7 +341,7 @@ func TestGetPostComments(t *testing.T) {
 func TestGetComments(t *testing.T) {
 	r := &empty.Empty{}
 	mock.ExpectQuery(esc(p.q.GetComments(r))).WillReturnRows(&sqlmock.Rows{})
-	s := &mockCms_GetCommentsServer{}
+	s := &mock_proto.MockCms_GetCommentsServer{}
 
 	_ = p.GetComments(r, s)
 
@@ -349,7 +349,7 @@ func TestGetComments(t *testing.T) {
 }
 
 func TestGetPosts(t *testing.T) {
-	stubIn := &empty.Empty{}
+	stubIn := &pb.GetPostsOptions{}
 	stubOut := []*pb.Post{&pb.Post{}, &pb.Post{}}
 	f.Fuzz(stubIn)
 	f.Fuzz(stubOut[0])
@@ -421,7 +421,7 @@ func TestGetPosts(t *testing.T) {
 func TestGetUserComments(t *testing.T) {
 	r := &pb.UserRequest{Id: "id"}
 	mock.ExpectQuery(p.q.GetUserComments(r)).WillReturnRows(&sqlmock.Rows{})
-	s := &mockCms_GetUserCommentsServer{}
+	s := &mock_proto.MockCms_GetUserCommentsServer{}
 
 	_ = p.GetUserComments(r, s)
 

@@ -178,7 +178,7 @@ func (mr *MockCmsServerMockRecorder) GetPostComments(arg0, arg1 interface{}) *go
 }
 
 // GetPosts mocks base method
-func (m *MockCmsServer) GetPosts(arg0 *empty.Empty, arg1 proto.Cms_GetPostsServer) error {
+func (m *MockCmsServer) GetPosts(arg0 *proto.GetPostsOptions, arg1 proto.Cms_GetPostsServer) error {
 	ret := m.ctrl.Call(m, "GetPosts", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0

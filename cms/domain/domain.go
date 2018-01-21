@@ -14,7 +14,7 @@ type Provider interface {
 	UpdatePost(context.Context, *pb.UpdatePostRequest) (*empty.Empty, error)
 	DeletePost(context.Context, *pb.PostRequest) (*empty.Empty, error)
 	GetPostComments(*pb.PostRequest, pb.Cms_GetPostCommentsServer) error
-	GetPosts(*empty.Empty, pb.Cms_GetPostsServer) error
+	GetPosts(*pb.GetPostsOptions, pb.Cms_GetPostsServer) error
 	PublishPost(context.Context, *pb.PostRequest) (*empty.Empty, error)
 	UnPublishPost(context.Context, *pb.PostRequest) (*empty.Empty, error)
 	CreateUser(context.Context, *pb.CreateUserWithRole) (*pb.UserRequest, error)

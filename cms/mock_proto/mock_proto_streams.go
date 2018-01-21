@@ -32,32 +32,32 @@ func NewMockCms_GetPostsServer() *mockCms_GetPostsServer {
 	return &mockCms_GetPostsServer{nextErr: make(map[int]error)}
 }
 
-type mockCms_GetPostCommentsServer struct {
+type MockCms_GetPostCommentsServer struct {
 	grpc.ServerStream
 	Results []*pb.Comment
 }
 
-func (m *mockCms_GetPostCommentsServer) Send(c *pb.Comment) error {
+func (m *MockCms_GetPostCommentsServer) Send(c *pb.Comment) error {
 	m.Results = append(m.Results, c)
 	return nil
 }
 
-type mockCms_GetCommentsServer struct {
+type MockCms_GetCommentsServer struct {
 	grpc.ServerStream
 	Results []*pb.Comment
 }
 
-func (m *mockCms_GetCommentsServer) Send(c *pb.Comment) error {
+func (m *MockCms_GetCommentsServer) Send(c *pb.Comment) error {
 	m.Results = append(m.Results, c)
 	return nil
 }
 
-type mockCms_GetUserCommentsServer struct {
+type MockCms_GetUserCommentsServer struct {
 	grpc.ServerStream
 	Results []*pb.Comment
 }
 
-func (m *mockCms_GetUserCommentsServer) Send(c *pb.Comment) error {
+func (m *MockCms_GetUserCommentsServer) Send(c *pb.Comment) error {
 	m.Results = append(m.Results, c)
 	return nil
 }

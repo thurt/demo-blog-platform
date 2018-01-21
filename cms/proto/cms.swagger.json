@@ -196,6 +196,16 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "includeUnPublished",
+            "description": "when true, includes unpublished Posts in response (note: Authorization token with ADMIN role is required).",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
+          }
+        ],
         "tags": [
           "Cms"
         ]

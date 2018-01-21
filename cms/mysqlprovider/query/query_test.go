@@ -120,9 +120,9 @@ func TestAdminExists(t *testing.T) {
 	checkSyntax(q.AdminExists(e), t)
 }
 func TestGetPosts(t *testing.T) {
-	e := &empty.Empty{}
-	f.Fuzz(e)
-	checkSyntax(q.GetPosts(e), t)
+	r := &pb.GetPostsOptions{}
+	f.Fuzz(r)
+	checkSyntax(q.GetPosts(r), t)
 }
 func TestGetUserPassword(t *testing.T) {
 	ur := &pb.UserRequest{}
