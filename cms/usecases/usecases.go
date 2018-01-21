@@ -165,3 +165,7 @@ func (u *useCases) Setup(ctx context.Context, r *pb.CreateUserRequest) (*pb.User
 
 	return user, nil
 }
+
+func (u *useCases) GetPosts(ctx context.Context, r *empty.Empty) error {
+	return nil
+}

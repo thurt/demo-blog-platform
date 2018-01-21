@@ -286,3 +286,21 @@ func TestSetup(t *testing.T) {
 		}
 	})
 }
+
+func TestGetPosts(t *testing.T) {
+	r := &empty.Empty{}
+	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
+		mock, _, uc := setup(t)
+
+		mock.EXPECT().GetPosts(gomock.Any(), gomock.Any()).Return(errors.New(""))
+
+		err := uc.GetPosts(ctx, r)
+		if err == nil {
+			t.Error("must anwser with an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
+		}
+	})
+}
