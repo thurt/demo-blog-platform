@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"errors"
+	"log"
 	"reflect"
 
 	"fmt"
@@ -356,8 +357,20 @@ func TestGetPosts(t *testing.T) {
 	f.Fuzz(stubOut[1])
 	mockStreamOut := mock_proto.NewMockCms_GetPostsServer()
 
-	t.Run("requires dispatching the correct sql request", func(t *testing.T) {
-		regexSql := esc(p.q.GetPosts(stubIn))
+	t.Run("(options) requires dispatching the correct sql request when IncludeUnPublished is true", func(t *testing.T) {
+		stubIn.IncludeUnPublished = true
+		regexSql := esc(p.q.GetPosts())
+		log.Println(regexSql)
+		mock.ExpectQuery(regexSql)
+
+		_ = p.GetPosts(stubIn, mockStreamOut)
+
+		checkExpectations(t)
+	})
+	t.Run("(options) requires dispatching the correct sql request when IncludeUnPublished is false", func(t *testing.T) {
+		stubIn.IncludeUnPublished = false
+		regexSql := esc(p.q.GetPublishedPosts())
+		log.Println(regexSql)
 		mock.ExpectQuery(regexSql)
 
 		_ = p.GetPosts(stubIn, mockStreamOut)

@@ -162,7 +162,16 @@ func (p *provider) GetComments(r *empty.Empty, stream pb.Cms_GetCommentsServer) 
 }
 
 func (p *provider) GetPosts(r *pb.GetPostsOptions, stream pb.Cms_GetPostsServer) error {
-	ps, err := p.db.Query(p.q.GetPosts(r))
+	var sql string
+	if r.GetIncludeUnPublished() == true {
+		// (options) requires dispatching the correct sql request when IncludeUnPublished is true
+		sql = p.q.GetPosts()
+	} else {
+		// (options) requires dispatching the correct sql request when IncludeUnPublished is false
+		sql = p.q.GetPublishedPosts()
+	}
+
+	ps, err := p.db.Query(sql)
 	if err != nil {
 		return err
 	}
