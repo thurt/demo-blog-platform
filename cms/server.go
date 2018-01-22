@@ -82,6 +82,10 @@ func main() {
 			grpc_validator.UnaryServerInterceptor(),
 			grpc_auth.UnaryServerInterceptor(authFunc),
 		)),
+		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
+			grpc_validator.StreamServerInterceptor(),
+			grpc_auth.StreamServerInterceptor(authFunc),
+		)),
 	}
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterCmsServer(grpcServer, authorization.New(usecases.New(mysqlprovider.New(db), authProvider)))
