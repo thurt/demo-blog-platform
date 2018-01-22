@@ -107,7 +107,7 @@ func (u *useCases) AuthUser(ctx context.Context, r *pb.AuthUserRequest) (*pb.Acc
 
 	p, err := u.Provider.GetUserPassword(ctx, &pb.UserRequest{r.GetId()})
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, codes.Internal.String())
 	}
 
 	err = password.Validate(r.GetPassword(), p.GetPassword())
