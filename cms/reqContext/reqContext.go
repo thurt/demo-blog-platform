@@ -40,6 +40,22 @@ func GetUser(ctx context.Context) (*pb.User, error) {
 
 	return u, nil
 }
+func HasPermission(ctx context.Context, rolesAllowed ...pb.UserRole) bool {
+	u, err := GetUser(ctx)
+	if err != nil {
+		return false
+	}
+
+	ur := u.GetRole()
+
+	for _, r := range rolesAllowed {
+		if r == ur {
+			return true
+		}
+	}
+
+	return false
+}
 
 func GetAuthorizationToken(ctx context.Context) (string, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
