@@ -158,6 +158,25 @@ func TestAuthUser(t *testing.T) {
 			t.Error("must answer with a grpc error")
 		}
 	})
+	t.Run("must answer with a grpc error when error occurs trying to get user password", func(t *testing.T) {
+		mock, _, uc := setup(t)
+
+		r := &pb.AuthUserRequest{}
+
+		mock.EXPECT().GetUser(gomock.Any(), gomock.Any())
+		mock.EXPECT().GetUserPassword(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
+
+		_, err := uc.AuthUser(ctx, r)
+
+		if err == nil {
+			t.Error("expected an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
+		}
+	})
+
 }
 
 func TestGetUser(t *testing.T) {
