@@ -147,7 +147,7 @@ func Test_AdminExists(t *testing.T) {
 		f.Fuzz(stubIn)
 
 		// prerequisite: must first create an admin
-		preStubIn := &pb.CreateUserWithRole{}
+		preStubIn := &pb.CreateUserWithRole{User: &pb.CreateUserRequest{}}
 		f.Fuzz(preStubIn)
 		preStubIn.Role = pb.UserRole_ADMIN
 		_, err := p.CreateUser(context.Background(), preStubIn)

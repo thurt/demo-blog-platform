@@ -45,7 +45,7 @@ func TestCreatePost(t *testing.T) {
 	checkSyntax(q.CreatePost(cpr), t)
 }
 func TestCreateUser(t *testing.T) {
-	cuwr := &pb.CreateUserWithRole{}
+	cuwr := &pb.CreateUserWithRole{User: &pb.CreateUserRequest{}}
 	f.Fuzz(cuwr)
 	checkSyntax(q.CreateUser(cuwr), t)
 }
