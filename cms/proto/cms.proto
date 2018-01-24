@@ -34,7 +34,7 @@ message GetPostsOptions {
 
 // CreatePostRequest
 message CreatePostRequest {
-    string title = 1 [(validator.field) = {length_lt: 256}]; 
+    string title = 1 [(validator.field) = {length_lt: 256, regex: "^.{0,256}$"}]; 
     string content = 2 [(validator.field) = {length_lt: 16777216}];
     string slug = 3 [(validator.field) = {length_eq: 0, human_error: "Do not include a slug value in your request. This field is only used internally by the server."}];
 }
@@ -42,7 +42,7 @@ message CreatePostRequest {
 // UpdatePostRequest
 message UpdatePostRequest {
     uint32 id = 1 [(validator.field) = {int_gt: 0}];
-    string title = 2 [(validator.field) = {length_lt: 256}]; 
+    string title = 2 [(validator.field) = {length_lt: 256, regex: "^.{0,256}$"}]; 
     string content = 3 [(validator.field) = {length_lt: 16777216}];
     string slug = 4 [(validator.field) = {length_eq: 0, human_error: "Do not include a slug value in your request. This field is only used internally by the server."}]; 
 }
@@ -65,7 +65,7 @@ message CommentRequest {
 // CreateCommentRequest
 message CreateCommentRequest {
     string content = 1 [(validator.field) = {string_not_empty: true, length_lt: 65536}];
-    string user_id = 2 [(validator.field) = {string_not_empty: true, regex: "^[a-zA-Z]{3,18}$", human_error: "User Id must be 3-18 characters and can only include letters"}];
+    string user_id = 2 [(validator.field) = {string_not_empty: true, regex: "^[[:alpha:]]{3,18}$", human_error: "User Id must be 3-18 characters and can only include letters"}];
     uint32 post_id = 3 [(validator.field) = {int_gt: 0}];
 }
 
@@ -93,14 +93,14 @@ message User {
 
 // UserRequest
 message UserRequest {
-    string id = 1 [(validator.field) = {string_not_empty: true, regex: "^[a-zA-Z]{3,18}$", human_error: "User Id must be 3-18 characters and can only include letters"}];
+    string id = 1 [(validator.field) = {string_not_empty: true, regex: "^[[:alpha:]]{3,18}$", human_error: "User Id must be 3-18 characters and can only include letters"}];
 }
 
 // CreateUserRequest
 message CreateUserRequest {
-    string id = 1 [(validator.field) = {string_not_empty: true, regex: "^[a-zA-Z]{3,18}$", human_error: "User Id must be 3-18 characters and can only include letters"}];
-    string email = 2 [(validator.field) = {string_not_empty: true, length_lt:256}];
-    string password = 3 [(validator.field) = {string_not_empty: true, length_lt:51}];
+    string id = 1 [(validator.field) = {string_not_empty: true, regex: "^[[:alpha:]]{3,18}$", human_error: "User Id must be 3-18 characters and can only include letters"}];
+    string email = 2 [(validator.field) = {string_not_empty: true, length_lt:256, regex: "^[[:alnum:]][-_.a-zA-Z0-9]{0,63}@[-_.a-zA-Z0-9]{1,190}$", human_error: "Email must be valid"}];
+    string password = 3 [(validator.field) = {string_not_empty: true, length_lt:51, regex: "^[[:graph:]]{6,50}$", human_error: "Password must be at least 6 printable characters without whitespaces or control characters"}];
 }
 
 // CreateUserWithRole
@@ -111,8 +111,8 @@ message CreateUserWithRole {
 
 // AuthUserRequest
 message AuthUserRequest {
-    string id = 1 [(validator.field) = {string_not_empty: true, regex: "^[a-zA-Z]{3,18}$", human_error: "User Id must be 3-18 characters and can only include letters"}];
-    string password = 2 [(validator.field) = {string_not_empty: true, length_lt:51}];
+    string id = 1 [(validator.field) = {string_not_empty: true, regex: "^[[:alpha:]]{3,18}$", human_error: "User Id must be 3-18 characters and can only include letters"}];
+    string password = 2 [(validator.field) = {string_not_empty: true, length_lt:51, regex: "^[[:graph:]]{6,50}$", human_error: "Password must be at least 6 printable characters without whitespaces or control characters"}];
 }
 
 // AccessToken
@@ -124,7 +124,7 @@ message AccessToken {
 
 // UserPassword
 message UserPassword {
-    string password = 1;
+    string password = 1; 
 }
         
 service CmsInternal {
