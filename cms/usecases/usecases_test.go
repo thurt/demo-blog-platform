@@ -176,6 +176,31 @@ func TestAuthUser(t *testing.T) {
 			t.Error("must answer with a grpc error")
 		}
 	})
+	t.Run("must answer with a grpc error when error occurs trying to activate new token for user", func(t *testing.T) {
+		mock, mockAuth, uc := setup(t)
+
+		r := &pb.AuthUserRequest{Id: "id", Password: "right_password"}
+
+		// run my implementation of hashing in order to create mock's stub
+		stubbedHash, err := password.Hash("right_password")
+		if err != nil {
+			t.Error("unexpected error during stub preparation")
+		}
+
+		mock.EXPECT().GetUser(gomock.Any(), gomock.Any())
+		mock.EXPECT().GetUserPassword(gomock.Any(), gomock.Any()).Return(&pb.UserPassword{stubbedHash}, nil)
+		mockAuth.EXPECT().ActivateNewTokenForUser(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
+
+		_, err = uc.AuthUser(ctx, r)
+
+		if err == nil {
+			t.Error("expected an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
+		}
+	})
 
 }
 
