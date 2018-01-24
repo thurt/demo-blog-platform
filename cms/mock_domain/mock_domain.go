@@ -63,7 +63,7 @@ func (mr *MockProviderMockRecorder) CreateComment(arg0, arg1 interface{}) *gomoc
 }
 
 // CreatePost mocks base method
-func (m *MockProvider) CreatePost(arg0 context.Context, arg1 *proto.CreatePostRequest) (*proto.PostRequest, error) {
+func (m *MockProvider) CreatePost(arg0 context.Context, arg1 *proto.CreatePostWithSlug) (*proto.PostRequest, error) {
 	ret := m.ctrl.Call(m, "CreatePost", arg0, arg1)
 	ret0, _ := ret[0].(*proto.PostRequest)
 	ret1, _ := ret[1].(error)
@@ -267,7 +267,7 @@ func (mr *MockProviderMockRecorder) UpdateComment(arg0, arg1 interface{}) *gomoc
 }
 
 // UpdatePost mocks base method
-func (m *MockProvider) UpdatePost(arg0 context.Context, arg1 *proto.UpdatePostRequest) (*empty.Empty, error) {
+func (m *MockProvider) UpdatePost(arg0 context.Context, arg1 *proto.UpdatePostWithSlug) (*empty.Empty, error) {
 	ret := m.ctrl.Call(m, "UpdatePost", arg0, arg1)
 	ret0, _ := ret[0].(*empty.Empty)
 	ret1, _ := ret[1].(error)

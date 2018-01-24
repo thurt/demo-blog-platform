@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"errors"
-	"log"
 	"reflect"
 
 	"fmt"
@@ -202,7 +201,7 @@ func TestDeleteComment(t *testing.T) {
 }
 
 func TestCreatePost(t *testing.T) {
-	stubIn := &pb.CreatePostRequest{}
+	stubIn := &pb.CreatePostWithSlug{Post: &pb.CreatePostRequest{}}
 	stubOut := &pb.PostRequest{}
 	f.Fuzz(stubIn)
 	f.Fuzz(stubOut)
@@ -321,7 +320,7 @@ func TestUpdateComment(t *testing.T) {
 }
 
 func TestUpdatePost(t *testing.T) {
-	r := &pb.UpdatePostRequest{Title: "A Great Title!", Content: "content", Id: 0, Slug: "a-great-title"}
+	r := &pb.UpdatePostWithSlug{Post: &pb.UpdatePostRequest{Title: "A Great Title!", Content: "content", Id: 0}, Slug: "a-great-title"}
 	mock.ExpectExec(p.q.UpdatePost(r)).WillReturnResult(sqlmock.NewResult(1, 1))
 
 	_, _ = p.UpdatePost(context.Background(), r)
@@ -360,7 +359,6 @@ func TestGetPosts(t *testing.T) {
 	t.Run("(options) requires dispatching the correct sql request when IncludeUnPublished is true", func(t *testing.T) {
 		stubIn.IncludeUnPublished = true
 		regexSql := esc(p.q.GetPosts())
-		log.Println(regexSql)
 		mock.ExpectQuery(regexSql)
 
 		_ = p.GetPosts(stubIn, mockStreamOut)
@@ -370,7 +368,6 @@ func TestGetPosts(t *testing.T) {
 	t.Run("(options) requires dispatching the correct sql request when IncludeUnPublished is false", func(t *testing.T) {
 		stubIn.IncludeUnPublished = false
 		regexSql := esc(p.q.GetPublishedPosts())
-		log.Println(regexSql)
 		mock.ExpectQuery(regexSql)
 
 		_ = p.GetPosts(stubIn, mockStreamOut)

@@ -552,9 +552,6 @@
         },
         "content": {
           "type": "string"
-        },
-        "slug": {
-          "type": "string"
         }
       },
       "title": "CreatePostRequest"
@@ -636,9 +633,6 @@
           "type": "string"
         },
         "content": {
-          "type": "string"
-        },
-        "slug": {
           "type": "string"
         }
       },

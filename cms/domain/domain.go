@@ -9,9 +9,9 @@ import (
 )
 
 type Provider interface {
-	CreatePost(context.Context, *pb.CreatePostRequest) (*pb.PostRequest, error)
+	CreatePost(context.Context, *pb.CreatePostWithSlug) (*pb.PostRequest, error)
 	GetPost(context.Context, *pb.PostRequest) (*pb.Post, error)
-	UpdatePost(context.Context, *pb.UpdatePostRequest) (*empty.Empty, error)
+	UpdatePost(context.Context, *pb.UpdatePostWithSlug) (*empty.Empty, error)
 	DeletePost(context.Context, *pb.PostRequest) (*empty.Empty, error)
 	GetPostComments(*pb.PostRequest, pb.Cms_GetPostCommentsServer) error
 	GetPosts(*pb.GetPostsOptions, pb.Cms_GetPostsServer) error
@@ -28,12 +28,4 @@ type Provider interface {
 	DeleteComment(context.Context, *pb.CommentRequest) (*empty.Empty, error)
 	GetComments(*empty.Empty, pb.Cms_GetCommentsServer) error
 	GetUserPassword(context.Context, *pb.UserRequest) (*pb.UserPassword, error)
-}
-
-type UseCases interface {
-	CreatePost(context.Context, *pb.CreatePostRequest) (*pb.PostRequest, error)
-	UpdatePost(context.Context, *pb.UpdatePostRequest) (*empty.Empty, error)
-	CreateUser(context.Context, *pb.CreateUserRequest) (*pb.UserRequest, error)
-	CreateComment(context.Context, *pb.CreateCommentRequest) (*pb.CommentRequest, error)
-	AuthUser(context.Context, *pb.AuthUserRequest) (*pb.AccessToken, error)
 }

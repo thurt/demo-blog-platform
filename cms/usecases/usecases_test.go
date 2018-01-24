@@ -39,7 +39,7 @@ func TestCreatePost(t *testing.T) {
 
 		r := &pb.CreatePostRequest{Title: "Hello World!"}
 
-		mock.EXPECT().CreatePost(ctx, &pb.CreatePostRequest{Slug: "hello-world", Title: "Hello World!"})
+		mock.EXPECT().CreatePost(ctx, &pb.CreatePostWithSlug{Slug: "hello-world", Post: r})
 
 		_, _ = uc.CreatePost(ctx, r)
 	})
@@ -52,7 +52,7 @@ func TestUpdatePost(t *testing.T) {
 
 		r := &pb.UpdatePostRequest{Title: "Hello World!"}
 
-		mock.EXPECT().UpdatePost(ctx, &pb.UpdatePostRequest{Slug: "hello-world", Title: "Hello World!"})
+		mock.EXPECT().UpdatePost(ctx, &pb.UpdatePostWithSlug{Slug: "hello-world", Post: r})
 
 		_, _ = uc.UpdatePost(ctx, r)
 	})

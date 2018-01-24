@@ -36,7 +36,12 @@ message GetPostsOptions {
 message CreatePostRequest {
     string title = 1 [(validator.field) = {length_lt: 256, regex: "^.{0,256}$"}]; 
     string content = 2 [(validator.field) = {length_lt: 16777216}];
-    string slug = 3 [(validator.field) = {length_eq: 0, human_error: "Do not include a slug value in your request. This field is only used internally by the server."}];
+}
+
+// CreatePostWithSlug
+message CreatePostWithSlug {
+    CreatePostRequest post = 1;
+    string slug = 2;
 }
 
 // UpdatePostRequest
@@ -44,7 +49,12 @@ message UpdatePostRequest {
     uint32 id = 1 [(validator.field) = {int_gt: 0}];
     string title = 2 [(validator.field) = {length_lt: 256, regex: "^.{0,256}$"}]; 
     string content = 3 [(validator.field) = {length_lt: 16777216}];
-    string slug = 4 [(validator.field) = {length_eq: 0, human_error: "Do not include a slug value in your request. This field is only used internally by the server."}]; 
+}
+
+// UpdatePostWithSlug
+message UpdatePostWithSlug {
+    UpdatePostRequest post = 1;
+    string slug = 2;
 }
 
 // Comment

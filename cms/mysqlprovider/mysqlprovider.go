@@ -44,7 +44,7 @@ func (p *provider) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, er
 	return po, nil
 }
 
-func (p *provider) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb.PostRequest, error) {
+func (p *provider) CreatePost(ctx context.Context, r *pb.CreatePostWithSlug) (*pb.PostRequest, error) {
 	rs, err := p.db.Exec(p.q.CreatePost(r))
 	if err != nil {
 		return nil, err
@@ -260,7 +260,7 @@ func (p *provider) UpdateComment(ctx context.Context, r *pb.UpdateCommentRequest
 	return &empty.Empty{}, nil
 }
 
-func (p *provider) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*empty.Empty, error) {
+func (p *provider) UpdatePost(ctx context.Context, r *pb.UpdatePostWithSlug) (*empty.Empty, error) {
 	_, err := p.db.Exec(p.q.UpdatePost(r))
 
 	if err != nil {

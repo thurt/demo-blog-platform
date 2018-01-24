@@ -21,8 +21,8 @@ func (q *Query) GetUserPassword(r *pb.UserRequest) string {
 	return fmt.Sprintf("SELECT password FROM users WHERE id=%q", r.GetId())
 }
 
-func (q *Query) UpdatePost(r *pb.UpdatePostRequest) string {
-	return fmt.Sprintf("UPDATE posts SET slug=%q, title=%q, content=%q WHERE id=%d", r.GetSlug(), r.GetTitle(), r.GetContent(), r.GetId())
+func (q *Query) UpdatePost(r *pb.UpdatePostWithSlug) string {
+	return fmt.Sprintf("UPDATE posts SET slug=%q, title=%q, content=%q WHERE id=%d", r.GetSlug(), r.Post.GetTitle(), r.Post.GetContent(), r.Post.GetId())
 }
 
 func (q *Query) UpdateComment(r *pb.UpdateCommentRequest) string {
@@ -81,8 +81,8 @@ func (q *Query) DeletePost(r *pb.PostRequest) string {
 	return fmt.Sprintf("DELETE FROM posts WHERE id=%d", r.GetId())
 }
 
-func (q *Query) CreatePost(r *pb.CreatePostRequest) string {
-	return fmt.Sprintf("INSERT INTO posts SET slug=%q, title=%q, content=%q", r.GetSlug(), r.GetTitle(), r.GetContent())
+func (q *Query) CreatePost(r *pb.CreatePostWithSlug) string {
+	return fmt.Sprintf("INSERT INTO posts SET slug=%q, title=%q, content=%q", r.GetSlug(), r.Post.GetTitle(), r.Post.GetContent())
 }
 
 func (q *Query) GetPost(r *pb.PostRequest) string {

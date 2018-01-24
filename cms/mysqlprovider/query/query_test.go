@@ -40,9 +40,9 @@ func TestCreateComment(t *testing.T) {
 	checkSyntax(q.CreateComment(ccr), t)
 }
 func TestCreatePost(t *testing.T) {
-	cpr := &pb.CreatePostRequest{}
-	f.Fuzz(cpr)
-	checkSyntax(q.CreatePost(cpr), t)
+	cpws := &pb.CreatePostWithSlug{Post: &pb.CreatePostRequest{}}
+	f.Fuzz(cpws)
+	checkSyntax(q.CreatePost(cpws), t)
 }
 func TestCreateUser(t *testing.T) {
 	cuwr := &pb.CreateUserWithRole{User: &pb.CreateUserRequest{}}
@@ -110,9 +110,9 @@ func TestUpdateComment(t *testing.T) {
 	checkSyntax(q.UpdateComment(ucr), t)
 }
 func TestUpdatePost(t *testing.T) {
-	upr := &pb.UpdatePostRequest{}
-	f.Fuzz(upr)
-	checkSyntax(q.UpdatePost(upr), t)
+	upws := &pb.UpdatePostWithSlug{Post: &pb.UpdatePostRequest{}}
+	f.Fuzz(upws)
+	checkSyntax(q.UpdatePost(upws), t)
 }
 func TestAdminExists(t *testing.T) {
 	e := &empty.Empty{}

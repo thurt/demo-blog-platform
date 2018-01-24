@@ -97,7 +97,7 @@ func TestCRUD_Post(t *testing.T) {
 		}
 	})
 	t.Run("must answer without error when creating entity", func(t *testing.T) {
-		stubIn := &pb.CreatePostRequest{}
+		stubIn := &pb.CreatePostWithSlug{Post: &pb.CreatePostRequest{}}
 		f.Fuzz(stubIn)
 
 		pid, err := p.CreatePost(context.Background(), stubIn)
@@ -114,9 +114,9 @@ func TestCRUD_Post(t *testing.T) {
 		}
 	})
 	t.Run("must answer without error when updating entity that exists", func(t *testing.T) {
-		stubIn := &pb.UpdatePostRequest{}
+		stubIn := &pb.UpdatePostWithSlug{Post: &pb.UpdatePostRequest{}}
 		f.Fuzz(stubIn)
-		stubIn.Id = PostId.GetId()
+		stubIn.Post.Id = PostId.GetId()
 
 		_, err := p.UpdatePost(context.Background(), stubIn)
 

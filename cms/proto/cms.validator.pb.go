@@ -16,7 +16,9 @@ It has these top-level messages:
 	PostRequest
 	GetPostsOptions
 	CreatePostRequest
+	CreatePostWithSlug
 	UpdatePostRequest
+	UpdatePostWithSlug
 	Comment
 	CommentRequest
 	CreateCommentRequest
@@ -88,9 +90,6 @@ func (this *CreatePostRequest) Validate() error {
 	if !(len(this.Content) < 16777216) {
 		return go_proto_validators.FieldError("Content", fmt.Errorf(`value '%v' must length be less than '16777216'`, this.Content))
 	}
-	if !(len(this.Slug) == 0) {
-		return go_proto_validators.FieldError("Slug", fmt.Errorf(`Do not include a slug value in your request. This field is only used internally by the server.`))
-	}
 	return nil
 }
 func (this *CreatePostRequest) Fuzz(c gofuzz.Continue) {
@@ -101,6 +100,19 @@ func (this *CreatePostRequest) Fuzz(c gofuzz.Continue) {
 		RngSource: c,
 	})
 	this.Title = g.Generate()
+}
+func (this *CreatePostWithSlug) Validate() error {
+	if this.Post != nil {
+		if err := go_proto_validators.CallValidatorIfExists(this.Post); err != nil {
+			return go_proto_validators.FieldError("Post", err)
+		}
+	}
+	return nil
+}
+func (this *CreatePostWithSlug) Fuzz(c gofuzz.Continue) {
+	c.FuzzNoCustom(this)
+	var g goregen.Generator
+	var _ = g // Reference g to suppress errors if it is not otherwise used.
 }
 
 var Regex_UpdatePostRequest_Title = regexp.MustCompile("^.{0,256}$")
@@ -118,9 +130,6 @@ func (this *UpdatePostRequest) Validate() error {
 	if !(len(this.Content) < 16777216) {
 		return go_proto_validators.FieldError("Content", fmt.Errorf(`value '%v' must length be less than '16777216'`, this.Content))
 	}
-	if !(len(this.Slug) == 0) {
-		return go_proto_validators.FieldError("Slug", fmt.Errorf(`Do not include a slug value in your request. This field is only used internally by the server.`))
-	}
 	return nil
 }
 func (this *UpdatePostRequest) Fuzz(c gofuzz.Continue) {
@@ -131,6 +140,19 @@ func (this *UpdatePostRequest) Fuzz(c gofuzz.Continue) {
 		RngSource: c,
 	})
 	this.Title = g.Generate()
+}
+func (this *UpdatePostWithSlug) Validate() error {
+	if this.Post != nil {
+		if err := go_proto_validators.CallValidatorIfExists(this.Post); err != nil {
+			return go_proto_validators.FieldError("Post", err)
+		}
+	}
+	return nil
+}
+func (this *UpdatePostWithSlug) Fuzz(c gofuzz.Continue) {
+	c.FuzzNoCustom(this)
+	var g goregen.Generator
+	var _ = g // Reference g to suppress errors if it is not otherwise used.
 }
 func (this *Comment) Validate() error {
 	return nil

@@ -39,14 +39,16 @@ func slugMake(str string) string {
 
 func (u *useCases) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb.PostRequest, error) {
 	// requires a Slug to be created from the Title and added to the request
-	r.Slug = slugMake(r.GetTitle())
-	return u.Provider.CreatePost(ctx, r)
+	cpws := &pb.CreatePostWithSlug{Post: r}
+	cpws.Slug = slugMake(r.GetTitle())
+	return u.Provider.CreatePost(ctx, cpws)
 }
 
 func (u *useCases) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*empty.Empty, error) {
 	// requires a Slug to be created from the Title and added to the request
-	r.Slug = slugMake(r.GetTitle())
-	return u.Provider.UpdatePost(ctx, r)
+	upws := &pb.UpdatePostWithSlug{Post: r}
+	upws.Slug = slugMake(r.GetTitle())
+	return u.Provider.UpdatePost(ctx, upws)
 }
 
 func (u *useCases) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, error) {
