@@ -117,7 +117,7 @@ func (u *useCases) AuthUser(ctx context.Context, r *pb.AuthUserRequest) (*pb.Acc
 
 	a, err := u.auth.ActivateNewTokenForUser(ctx, user)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, "Could not process your request, please try again later")
 	}
 
 	return a, nil
