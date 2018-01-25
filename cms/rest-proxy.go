@@ -33,13 +33,19 @@ func run() error {
 	}
 
 	cms_mux := runtime.NewServeMux()
+	cms_mux_wrapper := mux.NewRouter()
+	cms_mux_wrapper.Path("/_swagger").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./cms.swagger.json")
+	})
+	cms_mux_wrapper.PathPrefix("/").Handler(cms_mux)
+
 	opts := []grpc.DialOption{grpc.WithInsecure()}
 	GrpcHost = fmt.Sprintf("localhost:%d", PORT)
 	err := pb.RegisterCmsHandlerFromEndpoint(ctx, cms_mux, GrpcHost, opts)
 	if err != nil {
 		return err
 	}
-	cms_mux_cors := handlers.CORS(CORSOptions...)(cms_mux)
+	cms_mux_cors := handlers.CORS(CORSOptions...)(cms_mux_wrapper)
 
 	router_mux := mux.NewRouter()
 
@@ -64,9 +70,6 @@ func run() error {
 	}
 
 	router_mux.PathPrefix("/api/").Handler(http.StripPrefix("/api", cms_mux_cors))
-	router_mux.PathPrefix("/api").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./cms.swagger.json")
-	})
 	router_mux.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// when there is no extension (ex .png, .html) at the end of the request path,
 		// reroute it to the mainPagePath. This allows the SPA (located at mainPagePath) to
