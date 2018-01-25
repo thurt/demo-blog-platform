@@ -64,6 +64,9 @@ func run() error {
 	}
 
 	router_mux.PathPrefix("/api/").Handler(http.StripPrefix("/api", cms_mux_cors))
+	router_mux.PathPrefix("/api").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./cms.swagger.json")
+	})
 	router_mux.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// when there is no extension (ex .png, .html) at the end of the request path,
 		// reroute it to the mainPagePath. This allows the SPA (located at mainPagePath) to
