@@ -230,26 +230,6 @@ func (p *provider) GetUserComments(r *pb.UserRequest, stream pb.Cms_GetUserComme
 	return nil
 }
 
-func (p *provider) PublishPost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
-	_, err := p.db.Exec(p.q.PublishPost(r))
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &empty.Empty{}, nil
-}
-
-func (p *provider) UnPublishPost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
-	_, err := p.db.Exec(p.q.UnPublishPost(r))
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &empty.Empty{}, nil
-}
-
 func (p *provider) UpdateComment(ctx context.Context, r *pb.UpdateCommentRequest) (*empty.Empty, error) {
 	_, err := p.db.Exec(p.q.UpdateComment(r))
 

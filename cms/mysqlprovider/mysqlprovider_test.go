@@ -292,24 +292,6 @@ func TestCreateUser(t *testing.T) {
 	checkExpectations(t)
 }
 
-func TestPublishPost(t *testing.T) {
-	r := &pb.PostRequest{Id: 0}
-	mock.ExpectExec(p.q.PublishPost(r)).WillReturnResult(sqlmock.NewResult(1, 1))
-
-	_, _ = p.PublishPost(context.Background(), r)
-
-	checkExpectations(t)
-}
-
-func TestUnPublishPost(t *testing.T) {
-	r := &pb.PostRequest{Id: 0}
-	mock.ExpectExec(p.q.UnPublishPost(r)).WillReturnResult(sqlmock.NewResult(1, 1))
-
-	_, _ = p.UnPublishPost(context.Background(), r)
-
-	checkExpectations(t)
-}
-
 func TestUpdateComment(t *testing.T) {
 	r := &pb.UpdateCommentRequest{Content: "content", Id: 0}
 	mock.ExpectExec(p.q.UpdateComment(r)).WillReturnResult(sqlmock.NewResult(1, 1))

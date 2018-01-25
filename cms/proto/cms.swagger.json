@@ -286,8 +286,8 @@
         ]
       },
       "put": {
-        "summary": "UnPublish a post",
-        "operationId": "UnPublishPost",
+        "summary": "Update a post",
+        "operationId": "UpdatePost",
         "responses": {
           "200": {
             "description": "",
@@ -303,6 +303,14 @@
             "required": true,
             "type": "integer",
             "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cmsUpdatePostRequest"
+            }
           }
         ],
         "tags": [
@@ -591,7 +599,8 @@
           "type": "string"
         },
         "published": {
-          "type": "string"
+          "type": "boolean",
+          "format": "boolean"
         },
         "slug": {
           "type": "string"
@@ -634,6 +643,10 @@
         },
         "content": {
           "type": "string"
+        },
+        "published": {
+          "type": "boolean",
+          "format": "boolean"
         }
       },
       "title": "UpdatePostRequest"

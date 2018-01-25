@@ -94,16 +94,6 @@ func TestGetUserComments(t *testing.T) {
 	f.Fuzz(ur)
 	checkSyntax(q.GetUserComments(ur), t)
 }
-func TestPublishPost(t *testing.T) {
-	pr := &pb.PostRequest{}
-	f.Fuzz(pr)
-	checkSyntax(q.PublishPost(pr), t)
-}
-func TestUnPublishPost(t *testing.T) {
-	pr := &pb.PostRequest{}
-	f.Fuzz(pr)
-	checkSyntax(q.UnPublishPost(pr), t)
-}
 func TestUpdateComment(t *testing.T) {
 	ucr := &pb.UpdateCommentRequest{}
 	f.Fuzz(ucr)

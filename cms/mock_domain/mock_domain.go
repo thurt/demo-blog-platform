@@ -227,32 +227,6 @@ func (mr *MockProviderMockRecorder) GetUserPassword(arg0, arg1 interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPassword", reflect.TypeOf((*MockProvider)(nil).GetUserPassword), arg0, arg1)
 }
 
-// PublishPost mocks base method
-func (m *MockProvider) PublishPost(arg0 context.Context, arg1 *proto.PostRequest) (*empty.Empty, error) {
-	ret := m.ctrl.Call(m, "PublishPost", arg0, arg1)
-	ret0, _ := ret[0].(*empty.Empty)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// PublishPost indicates an expected call of PublishPost
-func (mr *MockProviderMockRecorder) PublishPost(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishPost", reflect.TypeOf((*MockProvider)(nil).PublishPost), arg0, arg1)
-}
-
-// UnPublishPost mocks base method
-func (m *MockProvider) UnPublishPost(arg0 context.Context, arg1 *proto.PostRequest) (*empty.Empty, error) {
-	ret := m.ctrl.Call(m, "UnPublishPost", arg0, arg1)
-	ret0, _ := ret[0].(*empty.Empty)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UnPublishPost indicates an expected call of UnPublishPost
-func (mr *MockProviderMockRecorder) UnPublishPost(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnPublishPost", reflect.TypeOf((*MockProvider)(nil).UnPublishPost), arg0, arg1)
-}
-
 // UpdateComment mocks base method
 func (m *MockProvider) UpdateComment(arg0 context.Context, arg1 *proto.UpdateCommentRequest) (*empty.Empty, error) {
 	ret := m.ctrl.Call(m, "UpdateComment", arg0, arg1)

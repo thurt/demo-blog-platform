@@ -227,19 +227,6 @@ func (mr *MockCmsServerMockRecorder) IsSetup(arg0, arg1 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsSetup", reflect.TypeOf((*MockCmsServer)(nil).IsSetup), arg0, arg1)
 }
 
-// PublishPost mocks base method
-func (m *MockCmsServer) PublishPost(arg0 context.Context, arg1 *proto.PostRequest) (*empty.Empty, error) {
-	ret := m.ctrl.Call(m, "PublishPost", arg0, arg1)
-	ret0, _ := ret[0].(*empty.Empty)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// PublishPost indicates an expected call of PublishPost
-func (mr *MockCmsServerMockRecorder) PublishPost(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishPost", reflect.TypeOf((*MockCmsServer)(nil).PublishPost), arg0, arg1)
-}
-
 // Setup mocks base method
 func (m *MockCmsServer) Setup(arg0 context.Context, arg1 *proto.CreateUserRequest) (*proto.UserRequest, error) {
 	ret := m.ctrl.Call(m, "Setup", arg0, arg1)
@@ -251,19 +238,6 @@ func (m *MockCmsServer) Setup(arg0 context.Context, arg1 *proto.CreateUserReques
 // Setup indicates an expected call of Setup
 func (mr *MockCmsServerMockRecorder) Setup(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Setup", reflect.TypeOf((*MockCmsServer)(nil).Setup), arg0, arg1)
-}
-
-// UnPublishPost mocks base method
-func (m *MockCmsServer) UnPublishPost(arg0 context.Context, arg1 *proto.PostRequest) (*empty.Empty, error) {
-	ret := m.ctrl.Call(m, "UnPublishPost", arg0, arg1)
-	ret0, _ := ret[0].(*empty.Empty)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UnPublishPost indicates an expected call of UnPublishPost
-func (mr *MockCmsServerMockRecorder) UnPublishPost(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnPublishPost", reflect.TypeOf((*MockCmsServer)(nil).UnPublishPost), arg0, arg1)
 }
 
 // UpdateComment mocks base method

@@ -19,8 +19,6 @@ type Authorization interface {
 	CreatePost(context.Context, *pb.CreatePostRequest) (*pb.PostRequest, error)
 	UpdatePost(context.Context, *pb.UpdatePostRequest) (*empty.Empty, error)
 	DeletePost(context.Context, *pb.PostRequest) (*empty.Empty, error)
-	PublishPost(context.Context, *pb.PostRequest) (*empty.Empty, error)
-	UnPublishPost(context.Context, *pb.PostRequest) (*empty.Empty, error)
 	DeleteUser(context.Context, *pb.UserRequest) (*empty.Empty, error)
 	CreateComment(context.Context, *pb.CreateCommentRequest) (*pb.CommentRequest, error)
 	UpdateComment(context.Context, *pb.UpdateCommentRequest) (*empty.Empty, error)
@@ -57,22 +55,6 @@ func (a *authorization) DeletePost(ctx context.Context, r *pb.PostRequest) (*emp
 		return nil, ErrPermissionDenied
 	}
 	return a.CmsServer.DeletePost(ctx, r)
-}
-
-func (a *authorization) PublishPost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
-	// requires Admin Role has permission
-	if !reqContext.HasPermission(ctx, pb.UserRole_ADMIN) {
-		return nil, ErrPermissionDenied
-	}
-	return a.CmsServer.PublishPost(ctx, r)
-}
-
-func (a *authorization) UnPublishPost(ctx context.Context, r *pb.PostRequest) (*empty.Empty, error) {
-	// requires Admin Role has permission
-	if !reqContext.HasPermission(ctx, pb.UserRole_ADMIN) {
-		return nil, ErrPermissionDenied
-	}
-	return a.CmsServer.UnPublishPost(ctx, r)
 }
 
 func (a *authorization) DeleteUser(ctx context.Context, r *pb.UserRequest) (*empty.Empty, error) {

@@ -22,19 +22,11 @@ func (q *Query) GetUserPassword(r *pb.UserRequest) string {
 }
 
 func (q *Query) UpdatePost(r *pb.UpdatePostWithSlug) string {
-	return fmt.Sprintf("UPDATE posts SET slug=%q, title=%q, content=%q WHERE id=%d", r.GetSlug(), r.Post.GetTitle(), r.Post.GetContent(), r.Post.GetId())
+	return fmt.Sprintf("UPDATE posts SET slug=%q, title=%q, content=%q, published=%t WHERE id=%d", r.GetSlug(), r.Post.GetTitle(), r.Post.GetContent(), r.Post.GetPublished(), r.Post.GetId())
 }
 
 func (q *Query) UpdateComment(r *pb.UpdateCommentRequest) string {
 	return fmt.Sprintf("UPDATE comments SET content=%q WHERE id=%d", r.GetContent(), r.GetId())
-}
-
-func (q *Query) UnPublishPost(r *pb.PostRequest) string {
-	return fmt.Sprintf("UPDATE posts SET published=FALSE WHERE id=%d", r.GetId())
-}
-
-func (q *Query) PublishPost(r *pb.PostRequest) string {
-	return fmt.Sprintf("UPDATE posts SET published=TRUE WHERE id=%d", r.GetId())
 }
 
 func (q *Query) GetUserComments(r *pb.UserRequest) string {

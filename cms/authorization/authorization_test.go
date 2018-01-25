@@ -192,60 +192,6 @@ func TestDeleteUser(t *testing.T) {
 	})
 }
 
-func TestUnPublishPost(t *testing.T) {
-	t.Run("requires permission", func(t *testing.T) {
-		mock, a := setup(t)
-		ctx := reqContext.NewFromUser(context.Background(), &pb.User{Role: pb.UserRole_UNKNOWN})
-		r := &pb.PostRequest{}
-
-		mock.EXPECT().UnPublishPost(ctx, r)
-
-		_, err := a.UnPublishPost(ctx, r)
-		if err == nil {
-			t.Error("expected an error")
-		}
-	})
-	t.Run("requires Admin Role has permission", func(t *testing.T) {
-		mock, a := setup(t)
-		ctx := reqContext.NewFromUser(context.Background(), &pb.User{Role: pb.UserRole_ADMIN})
-		r := &pb.PostRequest{}
-
-		mock.EXPECT().UnPublishPost(ctx, r)
-
-		_, err := a.UnPublishPost(ctx, r)
-		if err != nil {
-			t.Error("unexpected error:", err)
-		}
-	})
-}
-
-func TestPublishPost(t *testing.T) {
-	t.Run("requires permission", func(t *testing.T) {
-		mock, a := setup(t)
-		ctx := reqContext.NewFromUser(context.Background(), &pb.User{Role: pb.UserRole_UNKNOWN})
-		r := &pb.PostRequest{}
-
-		mock.EXPECT().PublishPost(ctx, r)
-
-		_, err := a.PublishPost(ctx, r)
-		if err == nil {
-			t.Error("expected an error")
-		}
-	})
-	t.Run("requires Admin Role has permission", func(t *testing.T) {
-		mock, a := setup(t)
-		ctx := reqContext.NewFromUser(context.Background(), &pb.User{Role: pb.UserRole_ADMIN})
-		r := &pb.PostRequest{}
-
-		mock.EXPECT().PublishPost(ctx, r)
-
-		_, err := a.PublishPost(ctx, r)
-		if err != nil {
-			t.Error("unexpected error:", err)
-		}
-	})
-}
-
 func TestDeletePost(t *testing.T) {
 	t.Run("requires permission", func(t *testing.T) {
 		mock, a := setup(t)
