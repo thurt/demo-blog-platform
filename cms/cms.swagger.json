@@ -3,10 +3,10 @@
   "info": {
     "title": "CMS",
     "description": "CMS Service API provides access to CMS entities and supports CMS use-cases",
-    "version": "version not set"
+    "version": "1.0.0"
   },
+  "basePath": "/api",
   "schemes": [
-    "http",
     "https"
   ],
   "consumes": [

@@ -147,6 +147,14 @@ service CmsAuth {
     rpc ActivateNewTokenForUser(User) returns (AccessToken) {}
 }
 
+option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
+    base_path: "/api" 
+    schemes: [HTTPS]
+    info {
+        version: "1.0.0"
+    }
+};
+
 service Cms {
     // Setup the application
     rpc Setup(CreateUserRequest) returns (UserRequest) {
