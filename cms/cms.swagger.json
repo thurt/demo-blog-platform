@@ -39,7 +39,7 @@
           }
         ],
         "tags": [
-          "Cms"
+          "Auth"
         ]
       }
     },
@@ -56,7 +56,7 @@
           }
         },
         "tags": [
-          "Cms"
+          "Comments"
         ]
       },
       "post": {
@@ -81,7 +81,7 @@
           }
         ],
         "tags": [
-          "Cms"
+          "Comments"
         ]
       }
     },
@@ -107,7 +107,7 @@
           }
         ],
         "tags": [
-          "Cms"
+          "Comments"
         ]
       },
       "delete": {
@@ -131,7 +131,7 @@
           }
         ],
         "tags": [
-          "Cms"
+          "Comments"
         ]
       },
       "put": {
@@ -163,7 +163,7 @@
           }
         ],
         "tags": [
-          "Cms"
+          "Comments"
         ]
       }
     },
@@ -180,7 +180,7 @@
           }
         },
         "tags": [
-          "Cms"
+          "Setup"
         ]
       }
     },
@@ -207,7 +207,7 @@
           }
         ],
         "tags": [
-          "Cms"
+          "Posts"
         ]
       },
       "post": {
@@ -232,7 +232,7 @@
           }
         ],
         "tags": [
-          "Cms"
+          "Posts"
         ]
       }
     },
@@ -258,7 +258,7 @@
           }
         ],
         "tags": [
-          "Cms"
+          "Posts"
         ]
       },
       "delete": {
@@ -282,7 +282,7 @@
           }
         ],
         "tags": [
-          "Cms"
+          "Posts"
         ]
       },
       "put": {
@@ -314,7 +314,7 @@
           }
         ],
         "tags": [
-          "Cms"
+          "Posts"
         ]
       }
     },
@@ -340,7 +340,7 @@
           }
         ],
         "tags": [
-          "Cms"
+          "Posts"
         ]
       }
     },
@@ -367,7 +367,7 @@
           }
         ],
         "tags": [
-          "Cms"
+          "Setup"
         ]
       }
     },
@@ -394,7 +394,7 @@
           }
         ],
         "tags": [
-          "Cms"
+          "Users"
         ]
       }
     },
@@ -419,7 +419,7 @@
           }
         ],
         "tags": [
-          "Cms"
+          "Users"
         ]
       },
       "delete": {
@@ -442,7 +442,7 @@
           }
         ],
         "tags": [
-          "Cms"
+          "Users"
         ]
       }
     },
@@ -467,7 +467,7 @@
           }
         ],
         "tags": [
-          "Cms"
+          "Users"
         ]
       }
     }
