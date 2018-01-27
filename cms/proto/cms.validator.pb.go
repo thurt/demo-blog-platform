@@ -44,6 +44,7 @@ import _ "google.golang.org/genproto/googleapis/api/annotations"
 import _ "github.com/golang/protobuf/ptypes/empty"
 import _ "github.com/golang/protobuf/ptypes/wrappers"
 import _ "github.com/mwitkow/go-proto-validators"
+import _ "github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger/options"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal

@@ -9,6 +9,7 @@ import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 import "github.com/mwitkow/go-proto-validators/validator.proto";
+import "protoc-gen-swagger/options/annotations.proto";
 
 // Post
 message Post {
@@ -149,6 +150,9 @@ service CmsAuth {
 service Cms {
     // Setup the application
     rpc Setup(CreateUserRequest) returns (UserRequest) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Setup"]
+        };
         option (google.api.http) = {
             post: "/setup"
             body: "*"
@@ -156,6 +160,9 @@ service Cms {
     }
     // Check if application is setup
     rpc IsSetup(google.protobuf.Empty) returns (google.protobuf.BoolValue) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Setup"]
+        };
         option (google.api.http) = {
             get: "/is-setup"
         };
@@ -163,6 +170,9 @@ service Cms {
 
     // Create a post
     rpc CreatePost(CreatePostRequest) returns (PostRequest) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Posts"]
+        };
         option (google.api.http) = {
             post: "/posts"
             body: "*"
@@ -170,12 +180,18 @@ service Cms {
     }
     // Get a post
    rpc GetPost(PostRequest) returns (Post) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Posts"]
+        };
         option (google.api.http) = {
             get: "/posts/{id}"
         };
     }
     // Update a post
     rpc UpdatePost(UpdatePostRequest) returns (google.protobuf.Empty) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Posts"]
+        };
         option (google.api.http) = {
             put: "/posts/{id}"
             body: "*"
@@ -183,18 +199,27 @@ service Cms {
     }
     // Delete a post
     rpc DeletePost(PostRequest) returns (google.protobuf.Empty) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Posts"]
+        };
         option (google.api.http) = {
             delete: "/posts/{id}"
         };
     }
     // Get all comments by post
     rpc GetPostComments(PostRequest) returns (stream Comment) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Posts"]
+        };
         option (google.api.http) = {
             get: "/posts/{id}/comments"
         };
     }
     // Get all posts
     rpc GetPosts(GetPostsOptions) returns (stream Post) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Posts"]
+        };
          option (google.api.http) = {
             get: "/posts"
         };
@@ -202,6 +227,9 @@ service Cms {
    
     // Create a user
     rpc CreateUser(CreateUserRequest) returns (UserRequest) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Users"]
+        };
          option (google.api.http) = {
             post: "/users"
             body: "*"
@@ -210,6 +238,9 @@ service Cms {
 
     // Get a user
     rpc GetUser(UserRequest) returns (User) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Users"]
+        };
         option (google.api.http) = {
             get: "/users/{id}"
         };
@@ -217,6 +248,9 @@ service Cms {
 
     // Delete a user
     rpc DeleteUser(UserRequest) returns (google.protobuf.Empty) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Users"]
+        };
          option (google.api.http) = {
             delete: "/users/{id}"
         };
@@ -224,6 +258,9 @@ service Cms {
     
     // Get all comments by user
     rpc GetUserComments(UserRequest) returns (stream Comment) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Users"]
+        };
          option (google.api.http) = {
             get: "/users/{id}/comments"
         };
@@ -231,6 +268,9 @@ service Cms {
 
     // Create a comment
     rpc CreateComment(CreateCommentRequest) returns (CommentRequest) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Comments"]
+        };
          option (google.api.http) = {
             post: "/comments"
             body: "*"
@@ -238,12 +278,18 @@ service Cms {
     }
     // Get a comment
     rpc GetComment(CommentRequest) returns (Comment) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Comments"]
+        };
          option (google.api.http) = {
             get: "/comments/{id}"
         };
     }
     // Update a comment
     rpc UpdateComment(UpdateCommentRequest) returns (google.protobuf.Empty) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Comments"]
+        };
         option (google.api.http) = {
             put: "/comments/{id}"
             body: "*"
@@ -251,12 +297,18 @@ service Cms {
     }
     // Delete a comment
     rpc DeleteComment(CommentRequest) returns (google.protobuf.Empty) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Comments"]
+        };
          option (google.api.http) = {
             delete: "/comments/{id}"
         };
     }
     // Get all comments
     rpc GetComments(google.protobuf.Empty) returns (stream Comment) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Comments"]
+        };
          option (google.api.http) = {
             get: "/comments"
         };
@@ -264,6 +316,9 @@ service Cms {
 
     // Authorize as a user to get an access token
     rpc AuthUser(AuthUserRequest) returns (AccessToken) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Auth"]
+        };
         option (google.api.http) = {
             post: "/auth/user",
             body: "*"
