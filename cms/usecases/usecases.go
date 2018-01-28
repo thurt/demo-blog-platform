@@ -177,9 +177,17 @@ func (u *useCases) GetPosts(r *pb.GetPostsOptions, stream pb.Cms_GetPostsServer)
 }
 
 func (u *useCases) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
-	return u.Provider.GetPost(ctx, r)
+	post, err := u.Provider.GetPost(ctx, r)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, codes.Internal.String())
+	}
+	return post, nil
 }
 
 func (u *useCases) GetPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (*pb.Post, error) {
-	return u.Provider.GetPostBySlug(ctx, r)
+	post, err := u.Provider.GetPostBySlug(ctx, r)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, codes.Internal.String())
+	}
+	return post, nil
 }
