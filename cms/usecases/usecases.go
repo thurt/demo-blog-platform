@@ -181,6 +181,9 @@ func (u *useCases) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, er
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, codes.Internal.String())
 	}
+	if *post == (pb.Post{}) {
+		return nil, status.Errorf(codes.NotFound, "The provided post id %q does not exist", r.GetId())
+	}
 	return post, nil
 }
 
@@ -188,6 +191,9 @@ func (u *useCases) GetPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (
 	post, err := u.Provider.GetPostBySlug(ctx, r)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, codes.Internal.String())
+	}
+	if *post == (pb.Post{}) {
+		return nil, status.Errorf(codes.NotFound, "The provided post slug %q does not exist", r.GetSlug())
 	}
 	return post, nil
 }
