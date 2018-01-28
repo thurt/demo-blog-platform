@@ -1,6 +1,7 @@
 package authorization
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -304,6 +305,18 @@ func TestGetPosts(t *testing.T) {
 }
 
 func TestGetPost(t *testing.T) {
+	t.Run("must return error when CmsServer.GetPost returns error", func(t *testing.T) {
+		mock, a := setup(t)
+		ctx := reqContext.NewFromUser(context.Background(), &pb.User{Role: pb.UserRole_ADMIN})
+		r := &pb.PostRequest{}
+
+		mock.EXPECT().GetPost(ctx, r).Return(nil, errors.New(""))
+
+		_, err := a.GetPost(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
 	t.Run("requires permission when returned Post is unpublished", func(t *testing.T) {
 		mock, a := setup(t)
 		ctx := reqContext.NewFromUser(context.Background(), &pb.User{Role: pb.UserRole_UNKNOWN})
@@ -315,11 +328,33 @@ func TestGetPost(t *testing.T) {
 		if err == nil {
 			t.Error("expected an error")
 		}
+	})
+	t.Run("requires Admin Role has permission when returned Post is unpublished", func(t *testing.T) {
+		mock, a := setup(t)
+		ctx := reqContext.NewFromUser(context.Background(), &pb.User{Role: pb.UserRole_ADMIN})
+		r := &pb.PostRequest{}
 
+		mock.EXPECT().GetPost(ctx, r)
+
+		_, err := a.GetPost(ctx, r)
+		if err != nil {
+			t.Error("unexpected error:", err)
+		}
 	})
 }
 
 func TestGetPostBySlug(t *testing.T) {
+	t.Run("must return error when CmsServer.GetPostBySlug returns error", func(t *testing.T) {
+		mock, a := setup(t)
+		r := &pb.PostBySlugRequest{}
+
+		mock.EXPECT().GetPostBySlug(gomock.Any(), r).Return(nil, errors.New(""))
+
+		_, err := a.GetPostBySlug(context.Background(), r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
 	t.Run("requires permission when returned Post is unpublished", func(t *testing.T) {
 		mock, a := setup(t)
 		ctx := reqContext.NewFromUser(context.Background(), &pb.User{Role: pb.UserRole_UNKNOWN})
@@ -332,5 +367,17 @@ func TestGetPostBySlug(t *testing.T) {
 			t.Error("expected an error")
 		}
 
+	})
+	t.Run("requires Admin Role has permission when returned Post is unpublished", func(t *testing.T) {
+		mock, a := setup(t)
+		ctx := reqContext.NewFromUser(context.Background(), &pb.User{Role: pb.UserRole_ADMIN})
+		r := &pb.PostBySlugRequest{}
+
+		mock.EXPECT().GetPostBySlug(ctx, r)
+
+		_, err := a.GetPostBySlug(ctx, r)
+		if err != nil {
+			t.Error("unexpected error:", err)
+		}
 	})
 }
