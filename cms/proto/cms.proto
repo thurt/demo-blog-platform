@@ -27,6 +27,11 @@ message PostRequest {
     uint32 id = 1 [(validator.field) = {int_gt: 0}];
 }
 
+// PostRequestBySlug
+message PostBySlugRequest {
+    string slug = 1 [(validator.field) = {string_not_empty: true, length_lt: 37}];
+}
+
 // GetPostsOptions
 message GetPostsOptions {
     // when true, includes unpublished Posts in response (note: Authorization token with ADMIN role is required)
@@ -35,7 +40,7 @@ message GetPostsOptions {
 
 // CreatePostRequest
 message CreatePostRequest {
-    string title = 1 [(validator.field) = {length_lt: 256, regex: "^.{0,256}$"}]; 
+    string title = 1 [(validator.field) = {length_lt: 257, regex: "^.{0,256}$"}]; 
     string content = 2 [(validator.field) = {length_lt: 16777216}];
 }
 
@@ -194,6 +199,15 @@ service Cms {
         };
         option (google.api.http) = {
             get: "/posts/{id}"
+        };
+    }
+    // Get a post (by slug)
+    rpc GetPostBySlug(PostBySlugRequest) returns (Post) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Posts"]
+        };
+        option (google.api.http) = {
+            get: "/posts/slug/{slug}"
         };
     }
     // Update a post

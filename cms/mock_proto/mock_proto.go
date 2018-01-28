@@ -165,6 +165,19 @@ func (mr *MockCmsServerMockRecorder) GetPost(arg0, arg1 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPost", reflect.TypeOf((*MockCmsServer)(nil).GetPost), arg0, arg1)
 }
 
+// GetPostBySlug mocks base method
+func (m *MockCmsServer) GetPostBySlug(arg0 context.Context, arg1 *proto.PostBySlugRequest) (*proto.Post, error) {
+	ret := m.ctrl.Call(m, "GetPostBySlug", arg0, arg1)
+	ret0, _ := ret[0].(*proto.Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPostBySlug indicates an expected call of GetPostBySlug
+func (mr *MockCmsServerMockRecorder) GetPostBySlug(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostBySlug", reflect.TypeOf((*MockCmsServer)(nil).GetPostBySlug), arg0, arg1)
+}
+
 // GetPostComments mocks base method
 func (m *MockCmsServer) GetPostComments(arg0 *proto.PostRequest, arg1 proto.Cms_GetPostCommentsServer) error {
 	ret := m.ctrl.Call(m, "GetPostComments", arg0, arg1)

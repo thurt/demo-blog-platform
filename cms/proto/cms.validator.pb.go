@@ -14,6 +14,7 @@ It is generated from these files:
 It has these top-level messages:
 	Post
 	PostRequest
+	PostBySlugRequest
 	GetPostsOptions
 	CreatePostRequest
 	CreatePostWithSlug
@@ -70,6 +71,20 @@ func (this *PostRequest) Fuzz(c gofuzz.Continue) {
 	var g goregen.Generator
 	var _ = g // Reference g to suppress errors if it is not otherwise used.
 }
+func (this *PostBySlugRequest) Validate() error {
+	if this.Slug == "" {
+		return go_proto_validators.FieldError("Slug", fmt.Errorf(`value '%v' must not be an empty string`, this.Slug))
+	}
+	if !(len(this.Slug) < 37) {
+		return go_proto_validators.FieldError("Slug", fmt.Errorf(`value '%v' must length be less than '37'`, this.Slug))
+	}
+	return nil
+}
+func (this *PostBySlugRequest) Fuzz(c gofuzz.Continue) {
+	c.FuzzNoCustom(this)
+	var g goregen.Generator
+	var _ = g // Reference g to suppress errors if it is not otherwise used.
+}
 func (this *GetPostsOptions) Validate() error {
 	return nil
 }
@@ -85,8 +100,8 @@ func (this *CreatePostRequest) Validate() error {
 	if !Regex_CreatePostRequest_Title.MatchString(this.Title) {
 		return go_proto_validators.FieldError("Title", fmt.Errorf(`value '%v' must be a string conforming to regex "^.{0,256}$"`, this.Title))
 	}
-	if !(len(this.Title) < 256) {
-		return go_proto_validators.FieldError("Title", fmt.Errorf(`value '%v' must length be less than '256'`, this.Title))
+	if !(len(this.Title) < 257) {
+		return go_proto_validators.FieldError("Title", fmt.Errorf(`value '%v' must length be less than '257'`, this.Title))
 	}
 	if !(len(this.Content) < 16777216) {
 		return go_proto_validators.FieldError("Content", fmt.Errorf(`value '%v' must length be less than '16777216'`, this.Content))

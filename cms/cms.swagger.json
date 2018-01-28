@@ -237,6 +237,31 @@
         ]
       }
     },
+    "/posts/slug/{slug}": {
+      "get": {
+        "summary": "Get a post (by slug)",
+        "operationId": "GetPostBySlug",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/cmsPost"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Posts"
+        ]
+      }
+    },
     "/posts/{id}": {
       "get": {
         "summary": "Get a post",
