@@ -112,9 +112,17 @@ func (a *authorization) GetPosts(r *pb.GetPostsOptions, stream pb.Cms_GetPostsSe
 }
 
 func (a *authorization) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
-	return a.CmsServer.GetPost(ctx, r)
+	post, _ := a.CmsServer.GetPost(ctx, r)
+	if post.GetPublished() == false && !reqContext.HasPermission(ctx, pb.UserRole_ADMIN) {
+		return nil, ErrPermissionDenied
+	}
+	return post, nil
 }
 
 func (a *authorization) GetPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (*pb.Post, error) {
-	return a.CmsServer.GetPostBySlug(ctx, r)
+	post, _ := a.CmsServer.GetPostBySlug(ctx, r)
+	if post.GetPublished() == false && !reqContext.HasPermission(ctx, pb.UserRole_ADMIN) {
+		return nil, ErrPermissionDenied
+	}
+	return post, nil
 }
