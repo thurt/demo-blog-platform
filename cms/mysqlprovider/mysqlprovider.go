@@ -44,6 +44,15 @@ func (p *provider) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, er
 	return po, nil
 }
 
+func (p *provider) GetPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (*pb.Post, error) {
+	po := &pb.Post{}
+	err := p.db.QueryRow(p.q.GetPostBySlug(r)).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Published, &po.Slug)
+	if err != nil {
+		return nil, err
+	}
+	return po, nil
+}
+
 func (p *provider) CreatePost(ctx context.Context, r *pb.CreatePostWithSlug) (*pb.PostRequest, error) {
 	rs, err := p.db.Exec(p.q.CreatePost(r))
 	if err != nil {

@@ -11,6 +11,7 @@ import (
 type Provider interface {
 	CreatePost(context.Context, *pb.CreatePostWithSlug) (*pb.PostRequest, error)
 	GetPost(context.Context, *pb.PostRequest) (*pb.Post, error)
+	GetPostBySlug(context.Context, *pb.PostBySlugRequest) (*pb.Post, error)
 	UpdatePost(context.Context, *pb.UpdatePostWithSlug) (*empty.Empty, error)
 	DeletePost(context.Context, *pb.PostRequest) (*empty.Empty, error)
 	GetPostComments(*pb.PostRequest, pb.Cms_GetPostCommentsServer) error

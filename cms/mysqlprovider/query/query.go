@@ -80,3 +80,7 @@ func (q *Query) CreatePost(r *pb.CreatePostWithSlug) string {
 func (q *Query) GetPost(r *pb.PostRequest) string {
 	return fmt.Sprintf("SELECT id, title, content, created, last_edited, published, slug FROM posts WHERE id=%d", r.GetId())
 }
+
+func (q *Query) GetPostBySlug(r *pb.PostBySlugRequest) string {
+	return fmt.Sprintf("SELECT id, title, content, created, last_edited, published, slug FROM posts WHERE slug=%q", r.GetSlug())
+}
