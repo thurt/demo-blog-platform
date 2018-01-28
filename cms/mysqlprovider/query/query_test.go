@@ -79,6 +79,11 @@ func TestGetPost(t *testing.T) {
 	f.Fuzz(pr)
 	checkSyntax(q.GetPost(pr), t)
 }
+func TestGetPostBySlug(t *testing.T) {
+	pbsr := &pb.PostBySlugRequest{}
+	f.Fuzz(pbsr)
+	checkSyntax(q.GetPostBySlug(pbsr), t)
+}
 func TestGetPostComments(t *testing.T) {
 	pr := &pb.PostRequest{}
 	f.Fuzz(pr)
