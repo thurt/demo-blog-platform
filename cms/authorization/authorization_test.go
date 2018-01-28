@@ -302,3 +302,35 @@ func TestGetPosts(t *testing.T) {
 		}
 	})
 }
+
+func TestGetPost(t *testing.T) {
+	t.Run("requires permission when returned Post is unpublished", func(t *testing.T) {
+		mock, a := setup(t)
+		ctx := reqContext.NewFromUser(context.Background(), &pb.User{Role: pb.UserRole_UNKNOWN})
+		r := &pb.PostRequest{}
+
+		mock.EXPECT().GetPost(ctx, r)
+
+		_, err := a.GetPost(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+
+	})
+}
+
+func TestGetPostBySlug(t *testing.T) {
+	t.Run("requires permission when returned Post is unpublished", func(t *testing.T) {
+		mock, a := setup(t)
+		ctx := reqContext.NewFromUser(context.Background(), &pb.User{Role: pb.UserRole_UNKNOWN})
+		r := &pb.PostBySlugRequest{}
+
+		mock.EXPECT().GetPostBySlug(ctx, r)
+
+		_, err := a.GetPostBySlug(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+
+	})
+}
