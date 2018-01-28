@@ -91,7 +91,7 @@ func (u *useCases) CreateComment(ctx context.Context, r *pb.CreateCommentRequest
 	}
 
 	// requires a valid post id
-	_, err = u.GetPost(ctx, &pb.PostRequest{Id: r.GetPostId()})
+	_, err = u.Provider.GetPost(ctx, &pb.PostRequest{Id: r.GetPostId()})
 	if err != nil {
 		return nil, err
 	}
@@ -174,4 +174,12 @@ func (u *useCases) GetPosts(r *pb.GetPostsOptions, stream pb.Cms_GetPostsServer)
 		return status.Errorf(codes.Internal, codes.Internal.String())
 	}
 	return nil
+}
+
+func (u *useCases) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
+	return u.Provider.GetPost(ctx, r)
+}
+
+func (u *useCases) GetPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (*pb.Post, error) {
+	return u.Provider.GetPostBySlug(ctx, r)
 }

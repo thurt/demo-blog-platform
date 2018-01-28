@@ -350,3 +350,43 @@ func TestGetPosts(t *testing.T) {
 		}
 	})
 }
+
+func TestGetPost(t *testing.T) {
+	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
+		mock, _, uc := setup(t)
+
+		r := &pb.PostRequest{}
+
+		mock.EXPECT().GetPost(gomock.Any(), r).Return(nil, errors.New(""))
+
+		_, err := uc.GetPost(ctx, r)
+
+		if err == nil {
+			t.Error("must anwser with an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
+		}
+	})
+}
+
+func TestGetPostBySlug(t *testing.T) {
+	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
+		mock, _, uc := setup(t)
+
+		r := &pb.PostBySlugRequest{}
+
+		mock.EXPECT().GetPostBySlug(gomock.Any(), r).Return(nil, errors.New(""))
+
+		_, err := uc.GetPostBySlug(ctx, r)
+
+		if err == nil {
+			t.Error("must anwser with an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
+		}
+	})
+}
