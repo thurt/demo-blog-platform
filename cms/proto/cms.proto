@@ -148,6 +148,7 @@ service CmsAuth {
 }
 
 option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
+    host: "learned-stone-189802.appspot.com"
     base_path: "/api" 
     schemes: [HTTPS]
     info {

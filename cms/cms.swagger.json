@@ -5,6 +5,7 @@
     "description": "CMS Service API provides access to CMS entities and supports CMS use-cases",
     "version": "1.0.0"
   },
+  "host": "learned-stone-189802.appspot.com",
   "basePath": "/api",
   "schemes": [
     "https"
