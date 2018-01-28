@@ -369,6 +369,22 @@ func TestGetPost(t *testing.T) {
 			t.Error("must answer with a grpc error")
 		}
 	})
+	t.Run("must answer with a grpc error when receiving a zero-value Post", func(t *testing.T) {
+		mock, _, uc := setup(t)
+
+		r := &pb.PostRequest{}
+
+		mock.EXPECT().GetPost(gomock.Any(), r).Return(&pb.Post{}, nil)
+
+		_, err := uc.GetPost(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("expected a grpc error")
+		}
+	})
 }
 
 func TestGetPostBySlug(t *testing.T) {
@@ -389,4 +405,21 @@ func TestGetPostBySlug(t *testing.T) {
 			t.Error("must answer with a grpc error")
 		}
 	})
+	t.Run("must answer with a grpc error when receiving a zero-value Post", func(t *testing.T) {
+		mock, _, uc := setup(t)
+
+		r := &pb.PostBySlugRequest{}
+
+		mock.EXPECT().GetPostBySlug(gomock.Any(), r).Return(&pb.Post{}, nil)
+
+		_, err := uc.GetPostBySlug(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("expected a grpc error")
+		}
+	})
+
 }
