@@ -98,10 +98,10 @@ var Regex_CreatePostRequest_Title = regexp.MustCompile("^.{0,256}$")
 
 func (this *CreatePostRequest) Validate() error {
 	if !Regex_CreatePostRequest_Title.MatchString(this.Title) {
-		return go_proto_validators.FieldError("Title", fmt.Errorf(`value '%v' must be a string conforming to regex "^.{0,256}$"`, this.Title))
+		return go_proto_validators.FieldError("Title", fmt.Errorf(`title must be 256 characters or less`))
 	}
 	if !(len(this.Title) < 257) {
-		return go_proto_validators.FieldError("Title", fmt.Errorf(`value '%v' must length be less than '257'`, this.Title))
+		return go_proto_validators.FieldError("Title", fmt.Errorf(`title must be 256 characters or less`))
 	}
 	if !(len(this.Content) < 16777216) {
 		return go_proto_validators.FieldError("Content", fmt.Errorf(`value '%v' must length be less than '16777216'`, this.Content))
@@ -138,10 +138,10 @@ func (this *UpdatePostRequest) Validate() error {
 		return go_proto_validators.FieldError("Id", fmt.Errorf(`value '%v' must be greater than '0'`, this.Id))
 	}
 	if !Regex_UpdatePostRequest_Title.MatchString(this.Title) {
-		return go_proto_validators.FieldError("Title", fmt.Errorf(`value '%v' must be a string conforming to regex "^.{0,256}$"`, this.Title))
+		return go_proto_validators.FieldError("Title", fmt.Errorf(`title must be 256 characters or less`))
 	}
-	if !(len(this.Title) < 256) {
-		return go_proto_validators.FieldError("Title", fmt.Errorf(`value '%v' must length be less than '256'`, this.Title))
+	if !(len(this.Title) < 257) {
+		return go_proto_validators.FieldError("Title", fmt.Errorf(`title must be 256 characters or less`))
 	}
 	if !(len(this.Content) < 16777216) {
 		return go_proto_validators.FieldError("Content", fmt.Errorf(`value '%v' must length be less than '16777216'`, this.Content))

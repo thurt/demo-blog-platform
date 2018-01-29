@@ -40,7 +40,7 @@ message GetPostsOptions {
 
 // CreatePostRequest
 message CreatePostRequest {
-    string title = 1 [(validator.field) = {length_lt: 257, regex: "^.{0,256}$"}]; 
+    string title = 1 [(validator.field) = {length_lt: 257, regex: "^.{0,256}$", human_error: "title must be 256 characters or less"}]; 
     string content = 2 [(validator.field) = {length_lt: 16777216}];
 }
 
@@ -53,7 +53,7 @@ message CreatePostWithSlug {
 // UpdatePostRequest
 message UpdatePostRequest {
     uint32 id = 1 [(validator.field) = {int_gt: 0}];
-    string title = 2 [(validator.field) = {length_lt: 256, regex: "^.{0,256}$"}]; 
+    string title = 2 [(validator.field) = {length_lt: 257, regex: "^.{0,256}$", human_error: "title must be 256 characters or less"}]; 
     string content = 3 [(validator.field) = {length_lt: 16777216}];
     bool published = 4;
 }
