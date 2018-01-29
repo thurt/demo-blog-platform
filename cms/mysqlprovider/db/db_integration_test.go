@@ -87,13 +87,16 @@ func TestMain(m *testing.M) {
 func TestCRUD_Post(t *testing.T) {
 	var PostId *pb.PostRequest
 
-	t.Run("must answer with specified error when getting entity that does not exist", func(t *testing.T) {
+	t.Run("must answer with zero-value Post when getting entity that does not exist", func(t *testing.T) {
 		stubIn := &pb.PostRequest{}
 		f.Fuzz(stubIn)
-		_, err := p.GetPost(context.Background(), stubIn)
+		p, err := p.GetPost(context.Background(), stubIn)
 
-		if err != sql.ErrNoRows {
-			t.Fail()
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+		if *p != (pb.Post{}) {
+			t.Errorf("expected a zero-value Post, instead got %+v", p)
 		}
 	})
 	t.Run("must answer without error when creating entity", func(t *testing.T) {

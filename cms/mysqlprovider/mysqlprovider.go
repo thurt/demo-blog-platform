@@ -38,7 +38,7 @@ func (p *provider) GetUserPassword(ctx context.Context, r *pb.UserRequest) (*pb.
 func (p *provider) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
 	po := &pb.Post{}
 	err := p.db.QueryRow(p.q.GetPost(r)).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Published, &po.Slug)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	return po, nil
@@ -47,7 +47,7 @@ func (p *provider) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, er
 func (p *provider) GetPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (*pb.Post, error) {
 	po := &pb.Post{}
 	err := p.db.QueryRow(p.q.GetPostBySlug(r)).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Published, &po.Slug)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	return po, nil
