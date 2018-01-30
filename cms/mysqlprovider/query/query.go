@@ -66,7 +66,7 @@ func (q *Query) CreateComment(r *pb.CreateCommentRequest) string {
 }
 
 func (q *Query) GetPostComments(r *pb.PostRequest) string {
-	return fmt.Sprintf("SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE post_id=%d", r.GetId())
+	return fmt.Sprintf("SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE post_id=%d ORDER BY created DESC", r.GetId())
 }
 
 func (q *Query) DeletePost(r *pb.PostRequest) string {
