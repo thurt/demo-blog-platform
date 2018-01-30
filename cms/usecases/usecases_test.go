@@ -56,6 +56,16 @@ func TestUpdatePost(t *testing.T) {
 
 		_, _ = uc.UpdatePost(ctx, r)
 	})
+	t.Run("requires that published Posts contain a title", func(t *testing.T) {
+		_, _, uc := setup(t)
+		r := &pb.UpdatePostRequest{Title: "", Published: true}
+
+		_, err := uc.UpdatePost(ctx, r)
+
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
 }
 
 func TestCreateUser(t *testing.T) {
