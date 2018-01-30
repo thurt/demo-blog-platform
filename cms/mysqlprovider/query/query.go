@@ -34,7 +34,7 @@ func (q *Query) GetUserComments(r *pb.UserRequest) string {
 }
 
 func (q *Query) GetPosts() string {
-	return "SELECT id, title, content, created, last_edited, published, slug FROM posts"
+	return "SELECT id, title, content, created, last_edited, published, slug FROM posts ORDER BY created DESC"
 }
 
 func (q *Query) GetPublishedPosts() string {
