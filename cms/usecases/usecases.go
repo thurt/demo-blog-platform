@@ -94,9 +94,17 @@ func (u *useCases) CreateComment(ctx context.Context, r *pb.CreateCommentRequest
 	}
 
 	// requires a valid post id
-	_, err = u.Provider.GetPost(ctx, &pb.PostRequest{Id: r.GetPostId()})
+	post, err := u.Provider.GetPost(ctx, &pb.PostRequest{Id: r.GetPostId()})
 	if err != nil {
 		return nil, err
+	}
+	if *post == (pb.Post{}) {
+		return nil, status.Errorf(codes.NotFound, "The provided post id %q does not exist", r.GetPostId())
+	}
+
+	// Comment cannot be created for a Post that is not published
+	if post.GetPublished() == false {
+		return nil, status.Error(codes.InvalidArgument, "A Comment cannot be created for a Post that is not published")
 	}
 
 	return u.Provider.CreateComment(ctx, r)
