@@ -123,6 +123,19 @@ func TestCreateComment(t *testing.T) {
 			t.Error("expected an error")
 		}
 	})
+	t.Run("Comment cannot be created for a Post that is not published", func(t *testing.T) {
+		mock, _, uc := setup(t)
+
+		r := &pb.CreateCommentRequest{}
+
+		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{}, nil)
+		mock.EXPECT().GetPost(gomock.Any(), gomock.Any()).Return(&pb.Post{Id: 1, Published: false}, nil)
+
+		_, err := uc.CreateComment(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
 }
 
 func TestAuthUser(t *testing.T) {
