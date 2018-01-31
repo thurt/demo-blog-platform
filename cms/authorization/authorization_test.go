@@ -50,11 +50,24 @@ func TestDeleteComment(t *testing.T) {
 		ctx := reqContext.NewFromUser(context.Background(), &pb.User{Role: pb.UserRole_USER})
 		r := &pb.CommentRequest{}
 
+		mock.EXPECT().GetComment(ctx, r).Return(&pb.Comment{}, nil)
 		mock.EXPECT().DeleteComment(ctx, r)
 
 		_, err := a.DeleteComment(ctx, r)
 		if err != nil {
 			t.Error("unexpected error:", err)
+		}
+	})
+	t.Run("User Role is not allowed to delete comments by other users", func(t *testing.T) {
+		mock, a := setup(t)
+		ctx := reqContext.NewFromUser(context.Background(), &pb.User{Role: pb.UserRole_USER, Id: "user"})
+		r := &pb.CommentRequest{}
+
+		mock.EXPECT().GetComment(ctx, r).Return(&pb.Comment{UserId: "not_user"}, nil)
+
+		_, err := a.DeleteComment(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
 		}
 	})
 }
