@@ -10,6 +10,7 @@ import (
 )
 
 var ErrPermissionDenied = status.Error(codes.PermissionDenied, codes.PermissionDenied.String())
+var ErrInternal = status.Error(codes.Internal, codes.Internal.String())
 
 type authorization struct {
 	pb.CmsServer
@@ -97,6 +98,20 @@ func (a *authorization) DeleteComment(ctx context.Context, r *pb.CommentRequest)
 	// requires User Role has permission
 	if !reqContext.HasPermission(ctx, pb.UserRole_ADMIN, pb.UserRole_USER) {
 		return nil, ErrPermissionDenied
+	}
+	// User Role is not allowed to delete comments by other users
+	u, err := reqContext.GetUser(ctx)
+	if err != nil {
+		return nil, ErrInternal
+	}
+	if u.GetRole() == pb.UserRole_USER {
+		c, err := a.CmsServer.GetComment(ctx, r)
+		if err != nil {
+			return nil, ErrInternal
+		}
+		if c.GetUserId() != u.GetId() {
+			return nil, ErrPermissionDenied
+		}
 	}
 	return a.CmsServer.DeleteComment(ctx, r)
 }
