@@ -1,4 +1,4 @@
-package main
+package main // import "github.com/thurt/demo-blog-platform/cms"
 
 import (
 	"database/sql"
