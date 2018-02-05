@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var ErrPermissionDenied = status.Error(codes.PermissionDenied, codes.PermissionDenied.String())
+var ErrPermissionDenied = status.Error(codes.PermissionDenied, "You do not have sufficient privileges.")
 var ErrInternal = status.Error(codes.Internal, codes.Internal.String())
 
 type authorization struct {
@@ -69,7 +69,7 @@ func (a *authorization) DeleteUser(ctx context.Context, r *pb.UserRequest) (*emp
 
 	u, _ := reqContext.GetUser(ctx)
 	if u.GetRole() == pb.UserRole_USER && r.GetId() != u.GetId() {
-		return nil, status.Errorf(codes.PermissionDenied, "Role %q is not allowed to delete other users", u.GetRole(), r.GetId())
+		return nil, ErrPermissionDenied
 	}
 
 	return a.CmsServer.DeleteUser(ctx, r)
