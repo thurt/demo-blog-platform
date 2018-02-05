@@ -57,7 +57,8 @@ func (u *useCases) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*em
 func (u *useCases) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, error) {
 	user, err := u.Provider.GetUser(ctx, r)
 	if err != nil {
-		return nil, status.Error(codes.Internal, codes.Internal.String())
+		log.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	if *user == (pb.User{}) {
 		return nil, status.Errorf(codes.NotFound, "The provided user id %q does not exist", r.GetId())
@@ -69,7 +70,8 @@ func (u *useCases) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb
 	// requires that user id does not exist
 	user, err := u.Provider.GetUser(ctx, &pb.UserRequest{Id: r.GetId()})
 	if err != nil {
-		return nil, status.Error(codes.Internal, codes.Internal.String())
+		log.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	if *user != (pb.User{}) {
@@ -111,26 +113,29 @@ func (u *useCases) CreateComment(ctx context.Context, r *pb.CreateCommentRequest
 }
 
 func (u *useCases) AuthUser(ctx context.Context, r *pb.AuthUserRequest) (*pb.AccessToken, error) {
+	var ErrUnauthenticated = status.Error(codes.Unauthenticated, "The provided username or password is incorrect")
 	ur := &pb.UserRequest{r.GetId()}
 
 	user, err := u.Provider.GetUser(ctx, ur)
 	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "The provided username or password is incorrect")
+		return nil, ErrUnauthenticated
 	}
 
 	p, err := u.Provider.GetUserPassword(ctx, &pb.UserRequest{r.GetId()})
 	if err != nil {
-		return nil, status.Error(codes.Internal, codes.Internal.String())
+		log.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	err = password.Validate(r.GetPassword(), p.GetPassword())
 	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "The provided username or password is incorrect")
+		return nil, ErrUnauthenticated
 	}
 
 	a, err := u.auth.ActivateNewTokenForUser(ctx, user)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "Could not process your request, please try again later")
+		log.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return a, nil
@@ -148,7 +153,7 @@ func (u *useCases) IsSetup(ctx context.Context, r *empty.Empty) (*wrappers.BoolV
 	adminExists, err := u.Provider.AdminExists(ctx, r)
 	if err != nil {
 		log.Println(err)
-		return nil, status.Errorf(codes.Internal, codes.Internal.String())
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 	return adminExists, nil
 }
@@ -157,7 +162,7 @@ func (u *useCases) Setup(ctx context.Context, r *pb.CreateUserRequest) (*pb.User
 	adminExists, err := u.Provider.AdminExists(ctx, &empty.Empty{})
 	if err != nil {
 		log.Println(err)
-		return nil, status.Errorf(codes.Internal, codes.Internal.String())
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 	if adminExists.GetValue() == true {
 		return nil, status.Errorf(codes.Aborted, "Setup can only be performed once")
@@ -173,7 +178,7 @@ func (u *useCases) Setup(ctx context.Context, r *pb.CreateUserRequest) (*pb.User
 	user, err := u.Provider.CreateUser(ctx, &pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r})
 	if err != nil {
 		log.Println(err)
-		return nil, status.Errorf(codes.Internal, codes.Internal.String())
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return user, nil
@@ -182,7 +187,8 @@ func (u *useCases) Setup(ctx context.Context, r *pb.CreateUserRequest) (*pb.User
 func (u *useCases) GetPosts(r *pb.GetPostsOptions, stream pb.Cms_GetPostsServer) error {
 	err := u.Provider.GetPosts(r, stream)
 	if err != nil {
-		return status.Errorf(codes.Internal, codes.Internal.String())
+		log.Println(err)
+		return status.Error(codes.Internal, err.Error())
 	}
 	return nil
 }
@@ -190,7 +196,8 @@ func (u *useCases) GetPosts(r *pb.GetPostsOptions, stream pb.Cms_GetPostsServer)
 func (u *useCases) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
 	post, err := u.Provider.GetPost(ctx, r)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, codes.Internal.String())
+		log.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	if *post == (pb.Post{}) {
 		return nil, status.Errorf(codes.NotFound, "The provided post id %q does not exist", r.GetId())
@@ -201,7 +208,8 @@ func (u *useCases) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, er
 func (u *useCases) GetPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (*pb.Post, error) {
 	post, err := u.Provider.GetPostBySlug(ctx, r)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, codes.Internal.String())
+		log.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	if *post == (pb.Post{}) {
 		return nil, status.Errorf(codes.NotFound, "The provided post slug %q does not exist", r.GetSlug())

@@ -12,6 +12,8 @@ import (
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 )
 
+var ErrUnauthenticated = status.Error(codes.Unauthenticated, "Your credentials are malformed and invalid. Try to authenticate again.")
+
 func NewFromUser(ctx context.Context, u *pb.User) context.Context {
 	md := metadata.Pairs("user", u.String())
 	newMD := metadata.NewIncomingContext(ctx, md)
@@ -60,7 +62,7 @@ func HasPermission(ctx context.Context, rolesAllowed ...pb.UserRole) bool {
 func GetAuthorizationToken(ctx context.Context) (string, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return "", status.Error(codes.InvalidArgument, "malformed metadata from incoming context")
+		return "", status.Error(codes.Internal, "malformed metadata from incoming context")
 	}
 
 	if md["authorization"] == nil || len(md["authorization"][0]) == 0 {
@@ -71,7 +73,7 @@ func GetAuthorizationToken(ctx context.Context) (string, error) {
 
 	strParts := strings.Split(authStr, " ")
 	if len(strParts) != 2 || strParts[0] != "Bearer" {
-		return "", status.Error(codes.Unauthenticated, "malformed authorization header")
+		return "", ErrUnauthenticated
 	}
 	token := strParts[1]
 

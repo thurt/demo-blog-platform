@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var ErrUnauthenticated = status.Error(codes.Unauthenticated, codes.Unauthenticated.String())
+var ErrUnauthenticated = status.Error(codes.Unauthenticated, "Your credentials are expired or invalid. Try to authenticate again.")
 
 type authProvider struct {
 	mc          Conn
@@ -54,6 +54,7 @@ func (a *authProvider) ActivateNewTokenForUser(ctx context.Context, r *pb.User) 
 	_, err := a.mc.Add(at.GetAccessToken(), r.String(), 0, uint32(a.tokenExpiry.Seconds()))
 	// maybe want to handle some possible errors returned here
 	if err != nil {
+		fmt.Println("error trying to add token to mc:", err)
 		return nil, err
 	}
 
