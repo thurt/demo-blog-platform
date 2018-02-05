@@ -30,7 +30,7 @@ func (q *Query) UpdateComment(r *pb.UpdateCommentRequest) string {
 }
 
 func (q *Query) GetUserComments(r *pb.UserRequest) string {
-	return fmt.Sprintf("SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE user_id=%q", r.GetId())
+	return fmt.Sprintf("SELECT id, content, created, last_edited, user_id, post_id FROM comments WHERE user_id=%q ORDER BY created DESC", r.GetId())
 }
 
 func (q *Query) GetPosts() string {
@@ -38,11 +38,11 @@ func (q *Query) GetPosts() string {
 }
 
 func (q *Query) GetPublishedPosts() string {
-	return "SELECT id, title, content, created, last_edited, published, slug FROM posts WHERE published=1"
+	return "SELECT id, title, content, created, last_edited, published, slug FROM posts WHERE published=1 ORDER BY created DESC"
 }
 
 func (q *Query) GetComments(_ *empty.Empty) string {
-	return "SELECT id, content, created, last_edited, user_id, post_id FROM comments"
+	return "SELECT id, content, created, last_edited, user_id, post_id FROM comments ORDER BY created DESC"
 }
 
 func (q *Query) GetComment(r *pb.CommentRequest) string {
