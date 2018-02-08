@@ -29,7 +29,7 @@ func run() error {
 	CORSOptions := []handlers.CORSOption{
 		handlers.AllowedOrigins([]string{"*"}),
 		handlers.AllowedHeaders([]string{"Content-Type"}),
-		handlers.AllowedMethods([]string{"GET", "PUT", "POST", "DELETE"}),
+		handlers.AllowedMethods([]string{"GET", "PUT", "POST", "DELETE", "OPTIONS"}),
 	}
 
 	cms_mux := runtime.NewServeMux()
