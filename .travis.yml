@@ -9,7 +9,7 @@ before_install:
   -in secrets.tar.enc -out secrets.tar -d
 - docker-compose build
 install: true
-script: go test -v -tags=integration $(go list ./... | grep -v /vendor/)
+script: go test -v -tags=integration $(go list ./... | grep -v /vendor/) # see @rsc final answer https://github.com/golang/go/issues/11659
 before_deploy:
 - tar xvf secrets.tar
 deploy:
