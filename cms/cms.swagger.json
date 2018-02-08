@@ -83,6 +83,11 @@
         ],
         "tags": [
           "Comments"
+        ],
+        "security": [
+          {
+            "APIKey": []
+          }
         ]
       }
     },
@@ -133,6 +138,11 @@
         ],
         "tags": [
           "Comments"
+        ],
+        "security": [
+          {
+            "APIKey": []
+          }
         ]
       },
       "put": {
@@ -165,6 +175,11 @@
         ],
         "tags": [
           "Comments"
+        ],
+        "security": [
+          {
+            "APIKey": []
+          }
         ]
       }
     },
@@ -209,6 +224,11 @@
         ],
         "tags": [
           "Posts"
+        ],
+        "security": [
+          {
+            "APIKey": []
+          }
         ]
       },
       "post": {
@@ -234,6 +254,11 @@
         ],
         "tags": [
           "Posts"
+        ],
+        "security": [
+          {
+            "APIKey": []
+          }
         ]
       }
     },
@@ -259,6 +284,11 @@
         ],
         "tags": [
           "Posts"
+        ],
+        "security": [
+          {
+            "APIKey": []
+          }
         ]
       }
     },
@@ -285,6 +315,11 @@
         ],
         "tags": [
           "Posts"
+        ],
+        "security": [
+          {
+            "APIKey": []
+          }
         ]
       },
       "delete": {
@@ -309,6 +344,11 @@
         ],
         "tags": [
           "Posts"
+        ],
+        "security": [
+          {
+            "APIKey": []
+          }
         ]
       },
       "put": {
@@ -341,6 +381,11 @@
         ],
         "tags": [
           "Posts"
+        ],
+        "security": [
+          {
+            "APIKey": []
+          }
         ]
       }
     },
@@ -469,6 +514,11 @@
         ],
         "tags": [
           "Users"
+        ],
+        "security": [
+          {
+            "APIKey": []
+          }
         ]
       }
     },
@@ -698,15 +748,6 @@
       },
       "title": "User"
     },
-    "cmsUserPassword": {
-      "type": "object",
-      "properties": {
-        "password": {
-          "type": "string"
-        }
-      },
-      "title": "UserPassword"
-    },
     "cmsUserRequest": {
       "type": "object",
       "properties": {
@@ -741,6 +782,13 @@
       "type": "object",
       "description": "service Foo {\n      rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);\n    }\n\nThe JSON representation for `Empty` is empty JSON object `{}`.",
       "title": "A generic empty message that you can re-use to avoid defining duplicated\nempty messages in your APIs. A typical example is to use it as the request\nor the response type of an API method. For instance:"
+    }
+  },
+  "securityDefinitions": {
+    "APIKey": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "Authorization"
     }
   }
 }
