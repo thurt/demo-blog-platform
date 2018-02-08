@@ -4,12 +4,12 @@ services:
 - docker
 go:
 - 1.8.5
-gobuild_args: "-v -tags=integration"
 before_install:
 - openssl aes-256-cbc -K $encrypted_5f6b54967430_key -iv $encrypted_5f6b54967430_iv
   -in secrets.tar.enc -out secrets.tar -d
 - docker-compose build
 install: true
+script: go test -v -tags=integration $(go list ./... | grep -v /vendor/)
 before_deploy:
 - tar xvf secrets.tar
 deploy:
