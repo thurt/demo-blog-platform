@@ -444,5 +444,4 @@ func TestGetPostBySlug(t *testing.T) {
 			t.Error("expected a grpc error")
 		}
 	})
-
 }
