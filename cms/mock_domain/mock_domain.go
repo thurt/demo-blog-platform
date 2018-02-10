@@ -5,12 +5,13 @@
 package mock_domain
 
 import (
-	gomock "github.com/golang/mock/gomock"
-	proto "github.com/thurt/demo-blog-platform/cms/proto"
-	empty "github.com/thurt/demo-blog-platform/cms/vendor/github.com/golang/protobuf/ptypes/empty"
-	wrappers "github.com/thurt/demo-blog-platform/cms/vendor/github.com/golang/protobuf/ptypes/wrappers"
-	context "github.com/thurt/demo-blog-platform/cms/vendor/golang.org/x/net/context"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+	empty "github.com/golang/protobuf/ptypes/empty"
+	wrappers "github.com/golang/protobuf/ptypes/wrappers"
+	proto "github.com/thurt/demo-blog-platform/cms/proto"
+	context "golang.org/x/net/context"
 )
 
 // MockProvider is a mock of Provider interface
