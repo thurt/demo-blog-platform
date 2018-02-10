@@ -27,4 +27,5 @@ type Provider interface {
 	DeleteComment(context.Context, *pb.CommentRequest) (*empty.Empty, error)
 	GetComments(*empty.Empty, pb.Cms_GetCommentsServer) error
 	GetUserPassword(context.Context, *pb.UserRequest) (*pb.UserPassword, error)
+	UpdateUserLastActive(context.Context, *pb.UserRequest) (*empty.Empty, error)
 }

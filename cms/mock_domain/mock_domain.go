@@ -6,10 +6,10 @@ package mock_domain
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	empty "github.com/golang/protobuf/ptypes/empty"
-	wrappers "github.com/golang/protobuf/ptypes/wrappers"
 	proto "github.com/thurt/demo-blog-platform/cms/proto"
-	context "golang.org/x/net/context"
+	empty "github.com/thurt/demo-blog-platform/cms/vendor/github.com/golang/protobuf/ptypes/empty"
+	wrappers "github.com/thurt/demo-blog-platform/cms/vendor/github.com/golang/protobuf/ptypes/wrappers"
+	context "github.com/thurt/demo-blog-platform/cms/vendor/golang.org/x/net/context"
 	reflect "reflect"
 )
 
@@ -264,4 +264,17 @@ func (m *MockProvider) UpdatePost(arg0 context.Context, arg1 *proto.UpdatePostWi
 // UpdatePost indicates an expected call of UpdatePost
 func (mr *MockProviderMockRecorder) UpdatePost(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePost", reflect.TypeOf((*MockProvider)(nil).UpdatePost), arg0, arg1)
+}
+
+// UpdateUserLastActive mocks base method
+func (m *MockProvider) UpdateUserLastActive(arg0 context.Context, arg1 *proto.UserRequest) (*empty.Empty, error) {
+	ret := m.ctrl.Call(m, "UpdateUserLastActive", arg0, arg1)
+	ret0, _ := ret[0].(*empty.Empty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateUserLastActive indicates an expected call of UpdateUserLastActive
+func (mr *MockProviderMockRecorder) UpdateUserLastActive(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserLastActive", reflect.TypeOf((*MockProvider)(nil).UpdateUserLastActive), arg0, arg1)
 }
