@@ -121,7 +121,7 @@ func (u *useCases) AuthUser(ctx context.Context, r *pb.AuthUserRequest) (*pb.Acc
 		return nil, ErrUnauthenticated
 	}
 
-	p, err := u.Provider.GetUserPassword(ctx, &pb.UserRequest{r.GetId()})
+	p, err := u.Provider.GetUserPassword(ctx, ur)
 	if err != nil {
 		log.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())
@@ -133,6 +133,12 @@ func (u *useCases) AuthUser(ctx context.Context, r *pb.AuthUserRequest) (*pb.Acc
 	}
 
 	a, err := u.auth.ActivateNewTokenForUser(ctx, user)
+	if err != nil {
+		log.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	_, err = u.Provider.UpdateUserLastActive(ctx, ur)
 	if err != nil {
 		log.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())
