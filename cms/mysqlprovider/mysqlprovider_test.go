@@ -510,3 +510,17 @@ func TestAdminExists(t *testing.T) {
 		}
 	})
 }
+
+func TestUpdateUserLastActive(t *testing.T) {
+	stubIn := &pb.UserRequest{}
+	f.Fuzz(stubIn)
+
+	t.Run("requires sending the correct sql request", func(t *testing.T) {
+		regexSql := esc(p.q.UpdateUserLastActive(stubIn))
+		mock.ExpectQuery(regexSql)
+
+		_, _ = p.UpdateUserLastActive(context.Background(), stubIn)
+
+		checkExpectations(t)
+	})
+}
