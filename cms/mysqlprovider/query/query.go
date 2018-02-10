@@ -84,3 +84,7 @@ func (q *Query) GetPost(r *pb.PostRequest) string {
 func (q *Query) GetPostBySlug(r *pb.PostBySlugRequest) string {
 	return fmt.Sprintf("SELECT id, title, content, created, last_edited, published, slug FROM posts WHERE slug=%q", r.GetSlug())
 }
+
+func (q *Query) UpdateUserLastActive(r *pb.UserRequest) string {
+	return fmt.Sprintf("UPDATE users SET last_active=CURRENT_TIMESTAMP WHERE id=%q", r.GetId())
+}

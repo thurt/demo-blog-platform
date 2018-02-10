@@ -125,3 +125,8 @@ func TestGetUserPassword(t *testing.T) {
 	f.Fuzz(ur)
 	checkSyntax(q.GetUserPassword(ur), t)
 }
+func TestUpdateUserLastActive(t *testing.T) {
+	ur := &pb.UserRequest{}
+	f.Fuzz(ur)
+	checkSyntax(q.UpdateUserLastActive(ur), t)
+}
