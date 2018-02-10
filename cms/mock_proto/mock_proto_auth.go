@@ -5,10 +5,11 @@
 package mock_proto
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	proto "github.com/thurt/demo-blog-platform/cms/proto"
 	context "golang.org/x/net/context"
-	reflect "reflect"
 )
 
 // MockCmsAuthServer is a mock of CmsAuthServer interface

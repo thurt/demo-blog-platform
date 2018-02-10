@@ -145,7 +145,10 @@ message UserPassword {
 }
         
 service CmsInternal {
+    // Gets the password of the provided User
     rpc GetUserPassword(UserRequest) returns (UserPassword) {}
+    // Updates the LastActive field of the provided User
+    rpc UpdateUserLastActive(UserRequest) returns (google.protobuf.Empty) {}
 }
 
 service CmsAuth {
