@@ -9,6 +9,7 @@ import (
 )
 
 type Provider interface {
+	pb.CmsInternalServer
 	CreatePost(context.Context, *pb.CreatePostWithSlug) (*pb.PostRequest, error)
 	GetPost(context.Context, *pb.PostRequest) (*pb.Post, error)
 	GetPostBySlug(context.Context, *pb.PostBySlugRequest) (*pb.Post, error)
@@ -26,6 +27,4 @@ type Provider interface {
 	UpdateComment(context.Context, *pb.UpdateCommentRequest) (*empty.Empty, error)
 	DeleteComment(context.Context, *pb.CommentRequest) (*empty.Empty, error)
 	GetComments(*empty.Empty, pb.Cms_GetCommentsServer) error
-	GetUserPassword(context.Context, *pb.UserRequest) (*pb.UserPassword, error)
-	UpdateUserLastActive(context.Context, *pb.UserRequest) (*empty.Empty, error)
 }
