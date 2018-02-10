@@ -522,5 +522,14 @@ func TestUpdateUserLastActive(t *testing.T) {
 		_, _ = p.UpdateUserLastActive(context.Background(), stubIn)
 
 		checkExpectations(t)
+
+	})
+	t.Run("requires returning error when sql response is an error", func(t *testing.T) {
+		mock.ExpectExec(regexAny).WillReturnError(errors.New(""))
+
+		_, err := p.UpdateUserLastActive(context.Background(), stubIn)
+		if err == nil {
+			t.Error("expected an error")
+		}
 	})
 }
