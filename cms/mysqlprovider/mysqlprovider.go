@@ -2,7 +2,6 @@ package mysqlprovider
 
 import (
 	"database/sql"
-	"errors"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/golang/protobuf/ptypes/wrappers"
@@ -280,5 +279,6 @@ func (p *provider) AdminExists(ctx context.Context, r *empty.Empty) (*wrappers.B
 }
 
 func (p *provider) UpdateUserLastActive(ctx context.Context, r *pb.UserRequest) (*empty.Empty, error) {
-	return nil, errors.New("")
+	_, _ = p.db.Exec(p.q.UpdateUserLastActive(r))
+	return &empty.Empty{}, nil
 }

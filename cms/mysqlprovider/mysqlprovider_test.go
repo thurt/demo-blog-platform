@@ -517,7 +517,7 @@ func TestUpdateUserLastActive(t *testing.T) {
 
 	t.Run("requires sending the correct sql request", func(t *testing.T) {
 		regexSql := esc(p.q.UpdateUserLastActive(stubIn))
-		mock.ExpectQuery(regexSql)
+		mock.ExpectExec(regexSql)
 
 		_, _ = p.UpdateUserLastActive(context.Background(), stubIn)
 
