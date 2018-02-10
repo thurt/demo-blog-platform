@@ -279,6 +279,9 @@ func (p *provider) AdminExists(ctx context.Context, r *empty.Empty) (*wrappers.B
 }
 
 func (p *provider) UpdateUserLastActive(ctx context.Context, r *pb.UserRequest) (*empty.Empty, error) {
-	_, _ = p.db.Exec(p.q.UpdateUserLastActive(r))
+	_, err := p.db.Exec(p.q.UpdateUserLastActive(r))
+	if err != nil {
+		return nil, err
+	}
 	return &empty.Empty{}, nil
 }
