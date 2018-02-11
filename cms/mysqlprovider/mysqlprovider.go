@@ -29,7 +29,11 @@ func (p *provider) GetUserPassword(ctx context.Context, r *pb.UserRequest) (*pb.
 	err := p.db.QueryRow(p.q.GetUserPassword(r)).Scan(&u.Password)
 
 	if err != nil {
-		return nil, err
+		if err == sql.ErrNoRows {
+			// no-op -- this line is for checking test coverage of this rule
+		} else {
+			return nil, err
+		}
 	}
 
 	return u, nil
@@ -38,8 +42,12 @@ func (p *provider) GetUserPassword(ctx context.Context, r *pb.UserRequest) (*pb.
 func (p *provider) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
 	po := &pb.Post{}
 	err := p.db.QueryRow(p.q.GetPost(r)).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Published, &po.Slug)
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// no-op -- this line is for checking test coverage of this rule
+		} else {
+			return nil, err
+		}
 	}
 	return po, nil
 }
@@ -47,8 +55,12 @@ func (p *provider) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, er
 func (p *provider) GetPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (*pb.Post, error) {
 	po := &pb.Post{}
 	err := p.db.QueryRow(p.q.GetPostBySlug(r)).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Published, &po.Slug)
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// no-op -- this line is for checking test coverage of this rule
+		} else {
+			return nil, err
+		}
 	}
 	return po, nil
 }
@@ -141,7 +153,11 @@ func (p *provider) GetComment(ctx context.Context, r *pb.CommentRequest) (*pb.Co
 	c := &pb.Comment{}
 	err := p.db.QueryRow(p.q.GetComment(r)).Scan(&c.Id, &c.Content, &c.Created, &c.LastEdited, &c.UserId, &c.PostId)
 	if err != nil {
-		return nil, err
+		if err == sql.ErrNoRows {
+			// no-op -- this line is for checking test coverage of this rule
+		} else {
+			return nil, err
+		}
 	}
 	return c, nil
 }
@@ -209,9 +225,14 @@ func (p *provider) GetPosts(r *pb.GetPostsOptions, stream pb.Cms_GetPostsServer)
 func (p *provider) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, error) {
 	u := &pb.User{}
 	err := p.db.QueryRow(p.q.GetUser(r)).Scan(&u.Id, &u.Email, &u.Created, &u.LastActive, &u.Role)
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// no-op -- this line is for checking test coverage of this rule
+		} else {
+			return nil, err
+		}
 	}
+
 	return u, nil
 }
 
