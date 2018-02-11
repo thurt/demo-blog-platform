@@ -372,6 +372,18 @@ func TestGetComment(t *testing.T) {
 			t.Error("expected an error")
 		}
 	})
+	t.Run("requires returning zero-value struct when sql response is a sql.ErrNoRows", func(t *testing.T) {
+		mock.ExpectQuery(regexAny).WillReturnError(sql.ErrNoRows)
+
+		comment, err := p.GetComment(context.Background(), stubIn)
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+
+		if *comment != (pb.Comment{}) {
+			t.Error("expected a zero-value struct")
+		}
+	})
 }
 
 func TestCreateUser(t *testing.T) {
