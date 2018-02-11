@@ -168,7 +168,7 @@ func TestAuthUser(t *testing.T) {
 			t.Error("unexpected error during stub preparation")
 		}
 
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any())
+		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: r.GetId()}, nil)
 		mock.EXPECT().GetUserPassword(gomock.Any(), &pb.UserRequest{Id: r.GetId()}).Return(&pb.UserPassword{stubbedHash}, nil)
 
 		_, err = uc.AuthUser(ctx, r)
@@ -184,9 +184,9 @@ func TestAuthUser(t *testing.T) {
 	t.Run("must answer with a grpc error when error occurs trying to get user password", func(t *testing.T) {
 		mock, _, uc := setup(t)
 
-		r := &pb.AuthUserRequest{}
+		r := &pb.AuthUserRequest{Id: "id", Password: "right_password"}
 
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any())
+		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: r.GetId()}, nil)
 		mock.EXPECT().GetUserPassword(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
 
 		_, err := uc.AuthUser(ctx, r)
@@ -210,7 +210,7 @@ func TestAuthUser(t *testing.T) {
 			t.Error("unexpected error during stub preparation")
 		}
 
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any())
+		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: r.GetId()}, nil)
 		mock.EXPECT().GetUserPassword(gomock.Any(), gomock.Any()).Return(&pb.UserPassword{stubbedHash}, nil)
 		mockAuth.EXPECT().ActivateNewTokenForUser(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
 
@@ -235,7 +235,7 @@ func TestAuthUser(t *testing.T) {
 			t.Error("unexpected error during stub preparation")
 		}
 
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any())
+		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: r.GetId()}, nil)
 		mock.EXPECT().GetUserPassword(gomock.Any(), gomock.Any()).Return(&pb.UserPassword{stubbedHash}, nil)
 		mockAuth.EXPECT().ActivateNewTokenForUser(gomock.Any(), gomock.Any()).Return(&pb.AccessToken{}, nil)
 		mock.EXPECT().UpdateUserLastActive(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
