@@ -33,7 +33,7 @@ func GetPost(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.Marsh
 
 func GetUser(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.Marshaler, w http.ResponseWriter, req *http.Request, resp proto.Message, opts ...func(context.Context, http.ResponseWriter, proto.Message) error) {
 	// add cache-control rules for this proxy endpoint
-	w.Header().Add("Cache-Control", "public,max-age=60")
+	w.Header().Add("Cache-Control", "no-cache,public")
 	if maybeRespondNotModified(req, w, resp.(*User).GetLastActive()) == false {
 		runtime.ForwardResponseMessage(ctx, mux, marshaler, w, req, resp, opts...)
 	}
