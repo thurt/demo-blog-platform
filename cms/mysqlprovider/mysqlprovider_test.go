@@ -352,6 +352,18 @@ func TestGetComment(t *testing.T) {
 
 		checkExpectations(t)
 	})
+	t.Run("requires returning result with correct values from sql response", func(t *testing.T) {
+		mock.ExpectQuery(regexAny).WillReturnRows(stubRows)
+
+		result, err := p.GetComment(context.Background(), stubIn)
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+
+		if !reflect.DeepEqual(result, stubOut) {
+			t.Error("result should have same values as stub values")
+		}
+	})
 }
 
 func TestCreateUser(t *testing.T) {
