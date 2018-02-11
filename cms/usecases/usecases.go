@@ -116,7 +116,7 @@ func (u *useCases) AuthUser(ctx context.Context, r *pb.AuthUserRequest) (*pb.Acc
 	var ErrUnauthenticated = status.Error(codes.Unauthenticated, "The provided username or password is incorrect")
 	ur := &pb.UserRequest{r.GetId()}
 
-	user, err := u.Provider.GetUser(ctx, ur)
+	user, err := u.GetUser(ctx, ur)
 	if err != nil {
 		return nil, ErrUnauthenticated
 	}
