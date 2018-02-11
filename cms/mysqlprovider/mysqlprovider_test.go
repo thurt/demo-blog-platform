@@ -205,6 +205,18 @@ func TestGetUser(t *testing.T) {
 			t.Error("expected an error")
 		}
 	})
+	t.Run("requires returning zero-value struct when sql response is a sql.ErrNoRows", func(t *testing.T) {
+		mock.ExpectQuery(regexAny).WillReturnError(sql.ErrNoRows)
+
+		user, err := p.GetUser(context.Background(), stubIn)
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+
+		if *user != (pb.User{}) {
+			t.Error("expected a zero-value struct")
+		}
+	})
 }
 
 func TestDeleteUser(t *testing.T) {
