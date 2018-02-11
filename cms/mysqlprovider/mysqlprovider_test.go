@@ -105,6 +105,18 @@ func TestGetPost(t *testing.T) {
 			t.Error("expected an error")
 		}
 	})
+	t.Run("requires returning zero-value struct when sql response is a sql.ErrNoRows", func(t *testing.T) {
+		mock.ExpectQuery(regexAny).WillReturnError(sql.ErrNoRows)
+
+		post, err := p.GetPost(context.Background(), stubIn)
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+
+		if *post != (pb.Post{}) {
+			t.Error("expected a zero-value struct")
+		}
+	})
 }
 
 func TestGetPostBySlug(t *testing.T) {
@@ -141,6 +153,18 @@ func TestGetPostBySlug(t *testing.T) {
 		_, err := p.GetPostBySlug(context.Background(), stubIn)
 		if err == nil {
 			t.Error("expected an error")
+		}
+	})
+	t.Run("requires returning zero-value struct when sql response is a sql.ErrNoRows", func(t *testing.T) {
+		mock.ExpectQuery(regexAny).WillReturnError(sql.ErrNoRows)
+
+		post, err := p.GetPostBySlug(context.Background(), stubIn)
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+
+		if *post != (pb.Post{}) {
+			t.Error("expected a zero-value struct")
 		}
 	})
 }
@@ -313,12 +337,21 @@ func TestCreateComment(t *testing.T) {
 }
 
 func TestGetComment(t *testing.T) {
-	r := &pb.CommentRequest{Id: 0}
-	mock.ExpectQuery(p.q.GetComment(r)).WillReturnRows(&sqlmock.Rows{})
+	stubIn := &pb.CommentRequest{}
+	stubOut := &pb.Comment{}
+	f.Fuzz(stubIn)
+	f.Fuzz(stubOut)
+	regexSql := esc(p.q.GetComment(stubIn))
+	stubRows := sqlmock.NewRows(structs.Names(stubOut))
+	stubRows.AddRow(makeRowData(structs.Values(stubOut))...)
 
-	_, _ = p.GetComment(context.Background(), r)
+	t.Run("requires dispatching the correct sql request", func(t *testing.T) {
+		mock.ExpectQuery(regexSql)
 
-	checkExpectations(t)
+		_, _ = p.GetComment(context.Background(), stubIn)
+
+		checkExpectations(t)
+	})
 }
 
 func TestCreateUser(t *testing.T) {
