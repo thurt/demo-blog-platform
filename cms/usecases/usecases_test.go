@@ -69,6 +69,21 @@ func TestUpdatePost(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
+	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
+		mock, _, uc := setup(t)
+		r := &pb.CreateUserRequest{Id: "id"}
+
+		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
+
+		_, err := uc.CreateUser(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
+		}
+	})
 	t.Run("must answer with a grpc error when receiving a user id that already exists", func(t *testing.T) {
 		mock, _, uc := setup(t)
 
