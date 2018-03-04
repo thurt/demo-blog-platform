@@ -9,7 +9,6 @@ import (
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/thurt/demo-blog-platform/cms/mock_domain"
 	"github.com/thurt/demo-blog-platform/cms/mock_proto"
-	"github.com/thurt/demo-blog-platform/cms/password"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
@@ -105,11 +104,12 @@ func TestCreateUser(t *testing.T) {
 		}
 	})
 	t.Run("requires that password is hashed", func(t *testing.T) {
-		mock, _, _, uc := setup(t)
+		mock, _, mockHasher, uc := setup(t)
 
 		r := &pb.CreateUserRequest{Id: "id", Password: "password"}
 
 		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{}, nil)
+		mockHasher.EXPECT().Hash(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{"hashed_password"}, nil)
 		mock.EXPECT().CreateUser(gomock.Any(), gomock.Not(&pb.CreateUserRequest{Password: "password"}))
 
 		_, err := uc.CreateUser(ctx, r)
@@ -181,20 +181,15 @@ func TestAuthUser(t *testing.T) {
 
 	})
 	t.Run("must answer with a grpc error when given an invalid password", func(t *testing.T) {
-		mock, _, _, uc := setup(t)
+		mock, _, mockHasher, uc := setup(t)
 
 		r := &pb.AuthUserRequest{Id: "id", Password: "wrong_password"}
 
-		// run my implementation of hashing in order to create mock's stub
-		stubbedHash, err := password.Hash("right_password")
-		if err != nil {
-			t.Error("unexpected error during stub preparation")
-		}
-
 		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: r.GetId()}, nil)
-		mock.EXPECT().GetUserPassword(gomock.Any(), &pb.UserRequest{Id: r.GetId()}).Return(&pb.UserPassword{stubbedHash}, nil)
+		mock.EXPECT().GetUserPassword(gomock.Any(), &pb.UserRequest{Id: r.GetId()}).Return(&pb.UserPassword{"hashed_password"}, nil)
+		mockHasher.EXPECT().Validate(gomock.Any(), &pb.StrAndHash{"wrong_password", "hashed_password"}).Return(nil, errors.New(""))
 
-		_, err = uc.AuthUser(ctx, r)
+		_, err := uc.AuthUser(ctx, r)
 
 		if err == nil {
 			t.Error("expected an error")
@@ -223,21 +218,16 @@ func TestAuthUser(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when error occurs trying to activate new token for user", func(t *testing.T) {
-		mock, mockAuth, _, uc := setup(t)
+		mock, mockAuth, mockHasher, uc := setup(t)
 
 		r := &pb.AuthUserRequest{Id: "id", Password: "right_password"}
 
-		// run my implementation of hashing in order to create mock's stub
-		stubbedHash, err := password.Hash("right_password")
-		if err != nil {
-			t.Error("unexpected error during stub preparation")
-		}
-
 		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: r.GetId()}, nil)
-		mock.EXPECT().GetUserPassword(gomock.Any(), gomock.Any()).Return(&pb.UserPassword{stubbedHash}, nil)
+		mock.EXPECT().GetUserPassword(gomock.Any(), gomock.Any()).Return(&pb.UserPassword{"hashed_password"}, nil)
+		mockHasher.EXPECT().Validate(gomock.Any(), &pb.StrAndHash{"right_password", "hashed_password"}).Return(&empty.Empty{}, nil)
 		mockAuth.EXPECT().ActivateNewTokenForUser(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
 
-		_, err = uc.AuthUser(ctx, r)
+		_, err := uc.AuthUser(ctx, r)
 
 		if err == nil {
 			t.Error("expected an error")
@@ -248,22 +238,17 @@ func TestAuthUser(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when error occurs trying to update user last active", func(t *testing.T) {
-		mock, mockAuth, _, uc := setup(t)
+		mock, mockAuth, mockHasher, uc := setup(t)
 
 		r := &pb.AuthUserRequest{Id: "id", Password: "right_password"}
 
-		// run my implementation of hashing in order to create mock's stub
-		stubbedHash, err := password.Hash("right_password")
-		if err != nil {
-			t.Error("unexpected error during stub preparation")
-		}
-
 		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: r.GetId()}, nil)
-		mock.EXPECT().GetUserPassword(gomock.Any(), gomock.Any()).Return(&pb.UserPassword{stubbedHash}, nil)
+		mock.EXPECT().GetUserPassword(gomock.Any(), gomock.Any()).Return(&pb.UserPassword{"hashed_password"}, nil)
+		mockHasher.EXPECT().Validate(gomock.Any(), &pb.StrAndHash{"right_password", "hashed_password"}).Return(&empty.Empty{}, nil)
 		mockAuth.EXPECT().ActivateNewTokenForUser(gomock.Any(), gomock.Any()).Return(&pb.AccessToken{}, nil)
 		mock.EXPECT().UpdateUserLastActive(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
 
-		_, err = uc.AuthUser(ctx, r)
+		_, err := uc.AuthUser(ctx, r)
 
 		if err == nil {
 			t.Error("expected an error")
@@ -368,11 +353,12 @@ func TestSetup(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
-		mock, _, _, uc := setup(t)
+		mock, _, mockHasher, uc := setup(t)
 
 		r := &pb.CreateUserRequest{}
 
 		mock.EXPECT().AdminExists(gomock.Any(), gomock.Any()).Return(&wrappers.BoolValue{false}, nil)
+		mockHasher.EXPECT().Hash(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{}, nil)
 		mock.EXPECT().CreateUser(gomock.Any(), &pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r}).Return(nil, errors.New(""))
 
 		_, err := uc.Setup(ctx, r)
@@ -386,13 +372,14 @@ func TestSetup(t *testing.T) {
 		}
 	})
 	t.Run("requires that password is hashed", func(t *testing.T) {
-		mock, _, _, uc := setup(t)
+		mock, _, mockHasher, uc := setup(t)
 
 		r := &pb.CreateUserRequest{Password: "password"}
 		// because the implementation directly mutates the request instance, i need to retain a copy of the request with the original values in order to make an expectation that the password value has actually changed
 		r_orig := &pb.CreateUserRequest{Password: r.GetPassword()}
 
 		mock.EXPECT().AdminExists(gomock.Any(), gomock.Any()).Return(&wrappers.BoolValue{false}, nil)
+		mockHasher.EXPECT().Hash(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{"hashed_password"}, nil)
 		mock.EXPECT().CreateUser(gomock.Any(), gomock.Not(&pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r_orig}))
 
 		_, err := uc.Setup(ctx, r)
