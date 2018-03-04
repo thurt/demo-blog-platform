@@ -18,7 +18,7 @@ import (
 
 var ctx context.Context = context.Background()
 
-func setup(t *testing.T) (*mock_domain.MockProvider, *mock_proto.MockCmsAuthServer, *useCases) {
+func setup(t *testing.T) (*mock_domain.MockProvider, *mock_proto.MockCmsAuthServer, *mock_proto.MockHasherServer, *useCases) {
 	// create NewMockCmsServer
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -29,13 +29,18 @@ func setup(t *testing.T) (*mock_domain.MockProvider, *mock_proto.MockCmsAuthServ
 	defer mockCtrlAuth.Finish()
 	mockAuth := mock_proto.NewMockCmsAuthServer(mockCtrlAuth)
 
-	uc := New(mock, mockAuth)
-	return mock, mockAuth, uc
+	// create NewMockHasher
+	mockCtrlHasher := gomock.NewController(t)
+	defer mockCtrlHasher.Finish()
+	mockHasher := mock_proto.NewMockHasherServer(mockCtrlHasher)
+
+	uc := New(mock, mockAuth, mockHasher)
+	return mock, mockAuth, mockHasher, uc
 }
 
 func TestCreatePost(t *testing.T) {
 	t.Run("requires a Slug to be created from the Title and added to the request", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &pb.CreatePostRequest{Title: "Hello World!"}
 
@@ -43,12 +48,11 @@ func TestCreatePost(t *testing.T) {
 
 		_, _ = uc.CreatePost(ctx, r)
 	})
-
 }
 
 func TestUpdatePost(t *testing.T) {
 	t.Run("requires a Slug to be created from the Title and added to the request", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &pb.UpdatePostRequest{Title: "Hello World!"}
 
@@ -57,7 +61,7 @@ func TestUpdatePost(t *testing.T) {
 		_, _ = uc.UpdatePost(ctx, r)
 	})
 	t.Run("requires that published Posts contain a title", func(t *testing.T) {
-		_, _, uc := setup(t)
+		_, _, _, uc := setup(t)
 		r := &pb.UpdatePostRequest{Title: "", Published: true}
 
 		_, err := uc.UpdatePost(ctx, r)
@@ -70,7 +74,7 @@ func TestUpdatePost(t *testing.T) {
 
 func TestCreateUser(t *testing.T) {
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 		r := &pb.CreateUserRequest{Id: "id"}
 
 		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
@@ -85,7 +89,7 @@ func TestCreateUser(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when receiving a user id that already exists", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &pb.CreateUserRequest{Id: "id"}
 
@@ -101,7 +105,7 @@ func TestCreateUser(t *testing.T) {
 		}
 	})
 	t.Run("requires that password is hashed", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &pb.CreateUserRequest{Id: "id", Password: "password"}
 
@@ -117,7 +121,7 @@ func TestCreateUser(t *testing.T) {
 
 func TestCreateComment(t *testing.T) {
 	t.Run("requires a valid user id", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &pb.CreateCommentRequest{UserId: "id"}
 
@@ -130,7 +134,7 @@ func TestCreateComment(t *testing.T) {
 		}
 	})
 	t.Run("requires a valid post id", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &pb.CreateCommentRequest{PostId: 0}
 
@@ -143,7 +147,7 @@ func TestCreateComment(t *testing.T) {
 		}
 	})
 	t.Run("Comment cannot be created for a Post that is not published", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &pb.CreateCommentRequest{}
 
@@ -159,7 +163,7 @@ func TestCreateComment(t *testing.T) {
 
 func TestAuthUser(t *testing.T) {
 	t.Run("must answer with a grpc error when given a non-existant user id", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &pb.AuthUserRequest{Id: "id", Password: "password"}
 
@@ -177,7 +181,7 @@ func TestAuthUser(t *testing.T) {
 
 	})
 	t.Run("must answer with a grpc error when given an invalid password", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &pb.AuthUserRequest{Id: "id", Password: "wrong_password"}
 
@@ -201,7 +205,7 @@ func TestAuthUser(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when error occurs trying to get user password", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &pb.AuthUserRequest{Id: "id", Password: "right_password"}
 
@@ -219,7 +223,7 @@ func TestAuthUser(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when error occurs trying to activate new token for user", func(t *testing.T) {
-		mock, mockAuth, uc := setup(t)
+		mock, mockAuth, _, uc := setup(t)
 
 		r := &pb.AuthUserRequest{Id: "id", Password: "right_password"}
 
@@ -244,7 +248,7 @@ func TestAuthUser(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when error occurs trying to update user last active", func(t *testing.T) {
-		mock, mockAuth, uc := setup(t)
+		mock, mockAuth, _, uc := setup(t)
 
 		r := &pb.AuthUserRequest{Id: "id", Password: "right_password"}
 
@@ -273,7 +277,7 @@ func TestAuthUser(t *testing.T) {
 
 func TestGetUser(t *testing.T) {
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &pb.UserRequest{}
 
@@ -290,7 +294,7 @@ func TestGetUser(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when receiving a zero-value User", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &pb.UserRequest{}
 
@@ -309,7 +313,7 @@ func TestGetUser(t *testing.T) {
 
 func TestGetComment(t *testing.T) {
 	t.Run("must answer with a grpc error when receiving a zero-value Comment", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &pb.CommentRequest{}
 
@@ -328,7 +332,7 @@ func TestGetComment(t *testing.T) {
 
 func TestIsSetup(t *testing.T) {
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &empty.Empty{}
 
@@ -349,7 +353,7 @@ func TestIsSetup(t *testing.T) {
 func TestSetup(t *testing.T) {
 	r := &pb.CreateUserRequest{}
 	t.Run("must answer with a grpc error if Setup condition (admin does not exist) is not satisfied", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		// return true (admin exists) to test whether function answers properly
 		mock.EXPECT().AdminExists(gomock.Any(), gomock.Any()).Return(&wrappers.BoolValue{true}, nil)
@@ -364,7 +368,7 @@ func TestSetup(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &pb.CreateUserRequest{}
 
@@ -382,7 +386,7 @@ func TestSetup(t *testing.T) {
 		}
 	})
 	t.Run("requires that password is hashed", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &pb.CreateUserRequest{Password: "password"}
 		// because the implementation directly mutates the request instance, i need to retain a copy of the request with the original values in order to make an expectation that the password value has actually changed
@@ -403,7 +407,7 @@ func TestGetPosts(t *testing.T) {
 	mockStreamOut := mock_proto.NewMockCms_GetPostsServer()
 
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		mock.EXPECT().GetPosts(gomock.Any(), gomock.Any()).Return(errors.New(""))
 
@@ -420,7 +424,7 @@ func TestGetPosts(t *testing.T) {
 
 func TestGetPost(t *testing.T) {
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &pb.PostRequest{}
 
@@ -437,7 +441,7 @@ func TestGetPost(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when receiving a zero-value Post", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &pb.PostRequest{}
 
@@ -456,7 +460,7 @@ func TestGetPost(t *testing.T) {
 
 func TestGetPostBySlug(t *testing.T) {
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &pb.PostBySlugRequest{}
 
@@ -473,7 +477,7 @@ func TestGetPostBySlug(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when receiving a zero-value Post", func(t *testing.T) {
-		mock, _, uc := setup(t)
+		mock, _, _, uc := setup(t)
 
 		r := &pb.PostBySlugRequest{}
 

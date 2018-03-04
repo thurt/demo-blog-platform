@@ -17,11 +17,12 @@ import (
 
 type useCases struct {
 	domain.Provider
-	auth pb.CmsAuthServer
+	auth   pb.CmsAuthServer
+	hasher pb.HasherServer
 }
 
-func New(provider domain.Provider, authProvider pb.CmsAuthServer) *useCases {
-	uc := &useCases{provider, authProvider}
+func New(provider domain.Provider, authProvider pb.CmsAuthServer, hasher pb.HasherServer) *useCases {
+	uc := &useCases{provider, authProvider, hasher}
 	return uc
 }
 
