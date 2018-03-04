@@ -14,8 +14,8 @@ type emailer struct {
 	c *smtp.Client
 }
 
-func New() pb.EmailerServer {
-	return &emailer{}
+func New(c *smtp.Client) pb.EmailerServer {
+	return &emailer{c}
 }
 
 func (e *emailer) Send(ctx context.Context, email *pb.Email) (*empty.Empty, error) {

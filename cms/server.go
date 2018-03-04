@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/smtp"
 	"os"
 	"time"
 
@@ -53,6 +54,17 @@ func main() {
 	}
 	log.Println("Connected to memcache host")
 
+	// connect to smtp mail
+	SMTP_HOST := os.Getenv("SMTP_HOST")
+	SMTP_PORT := os.Getenv("SMTP_PORT")
+	SMTP_CONN := fmt.Sprintf("%s:%s", SMTP_HOST, SMTP_PORT)
+	smtpCn, err := smtp.Dial(SMTP_CONN)
+	if err != nil {
+		log.Println("Couldn't connect to smtp mail")
+		panic(err.Error())
+	}
+	log.Println("Connected to smtp: " + SMTP_CONN)
+
 	// connect to db
 	MYSQL_CONNECTION = os.Getenv("MYSQL_CONNECTION")
 	db, err := sql.Open("mysql", MYSQL_CONNECTION)
@@ -90,7 +102,7 @@ func main() {
 		)),
 	}
 	grpcServer := grpc.NewServer(opts...)
-	pb.RegisterCmsServer(grpcServer, authorization.New(usecases.New(mysqlprovider.New(db), authProvider, hasher.New(), emailer.New())))
+	pb.RegisterCmsServer(grpcServer, authorization.New(usecases.New(mysqlprovider.New(db), authProvider, hasher.New(), emailer.New(smtpCn))))
 	log.Printf("Started grpc server on port %d", PORT)
 
 	// setup rest proxy server
