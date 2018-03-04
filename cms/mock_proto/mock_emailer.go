@@ -5,11 +5,12 @@
 package mock_proto
 
 import (
-	gomock "github.com/golang/mock/gomock"
-	proto "github.com/thurt/demo-blog-platform/cms/proto"
-	empty "github.com/thurt/demo-blog-platform/cms/vendor/github.com/golang/protobuf/ptypes/empty"
-	context "github.com/thurt/demo-blog-platform/cms/vendor/golang.org/x/net/context"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+	empty "github.com/golang/protobuf/ptypes/empty"
+	proto "github.com/thurt/demo-blog-platform/cms/proto"
+	context "golang.org/x/net/context"
 )
 
 // MockEmailerServer is a mock of EmailerServer interface
