@@ -139,6 +139,17 @@ message AccessToken {
     uint32 expires_in = 3;
 }
 
+// StrAndHash
+message StrAndHash {
+    string str = 1;
+    string hash = 2;
+}
+
+service Hasher {
+    rpc Hash(google.protobuf.StringValue) returns (google.protobuf.StringValue) {}
+    rpc Validate(StrAndHash) returns (google.protobuf.Empty) {}
+}
+
 // UserPassword
 message UserPassword {
     string password = 1; 
