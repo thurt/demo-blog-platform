@@ -12,6 +12,8 @@ services:
             - MEMCACHED_USER=${MEMCACHED_USER-memcached}
             - MEMCACHED_PASSWORD=${MEMCACHED_PASSWORD-memcached}
             - STATICHOST_ADDRESS=${STATICHOST_ADDRESS-https://storage.googleapis.com/learned-stone-189802.appspot.com}
+            - SMTP_HOST=${SMTP_HOST-mail}
+            - SMTP_PORT=${SMTP_PORT-25}
         depends_on:
             - db
             - memcached
@@ -29,6 +31,8 @@ services:
         environment:
             - PASSWORD=${MEMCACHED_PASSWORD-memcached}
         command: ["/usr/bin/memcached-sasl"]
+    mail:
+        image: namshi/smtp:latest
 
 volumes:
     db-data:
