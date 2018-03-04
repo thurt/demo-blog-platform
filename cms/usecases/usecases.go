@@ -8,7 +8,6 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/satori/go.uuid"
 	"github.com/thurt/demo-blog-platform/cms/domain"
-	"github.com/thurt/demo-blog-platform/cms/password"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
@@ -80,12 +79,12 @@ func (u *useCases) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb
 	}
 
 	// requires that password is hashed
-	hashedPassword, err := password.Hash(r.GetPassword())
+	hashedPassword, err := u.hasher.Hash(ctx, &wrappers.StringValue{r.GetPassword()})
 	if err != nil {
 		return nil, err
 	}
 
-	r.Password = hashedPassword
+	r.Password = hashedPassword.GetValue()
 	return u.Provider.CreateUser(ctx, &pb.CreateUserWithRole{User: r, Role: pb.UserRole_USER})
 }
 
@@ -128,7 +127,7 @@ func (u *useCases) AuthUser(ctx context.Context, r *pb.AuthUserRequest) (*pb.Acc
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	err = password.Validate(r.GetPassword(), p.GetPassword())
+	_, err = u.hasher.Validate(ctx, &pb.StrAndHash{r.GetPassword(), p.GetPassword()})
 	if err != nil {
 		return nil, ErrUnauthenticated
 	}
@@ -176,11 +175,11 @@ func (u *useCases) Setup(ctx context.Context, r *pb.CreateUserRequest) (*pb.User
 	}
 
 	// requires that password is hashed
-	hashedPassword, err := password.Hash(r.GetPassword())
+	hashedPassword, err := u.hasher.Hash(ctx, &wrappers.StringValue{r.GetPassword()})
 	if err != nil {
 		return nil, err
 	}
-	r.Password = hashedPassword
+	r.Password = hashedPassword.GetValue()
 
 	user, err := u.Provider.CreateUser(ctx, &pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r})
 	if err != nil {
