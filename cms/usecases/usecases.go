@@ -79,14 +79,30 @@ func (u *useCases) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb
 		return nil, status.Errorf(codes.AlreadyExists, "The provided user id %q already exists", r.GetId())
 	}
 
-	// requires that password is hashed
 	hashedPassword, err := u.hasher.Hash(ctx, &wrappers.StringValue{r.GetPassword()})
 	if err != nil {
 		return nil, err
 	}
 
 	r.Password = hashedPassword.GetValue()
-	return u.Provider.CreateUser(ctx, &pb.CreateUserWithRole{User: r, Role: pb.UserRole_USER})
+	ur, err := u.Provider.CreateUser(ctx, &pb.CreateUserWithRole{User: r, Role: pb.UserRole_USER})
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = u.emailer.Send(ctx, &pb.Email{
+		To:      r.GetEmail(),
+		From:    "no-reply@demo-blog-platform.com",
+		Subject: "Thanks for joining Demo Blog",
+		Body:    "Hi, thanks for joining. This email is confirmation that you have successfully completed registration for Demo Blog with user id " + r.GetId() + ".",
+	})
+
+	if err != nil {
+		log.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return ur, nil
 }
 
 func (u *useCases) CreateComment(ctx context.Context, r *pb.CreateCommentRequest) (*pb.CommentRequest, error) {

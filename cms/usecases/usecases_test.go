@@ -77,7 +77,7 @@ func TestUpdatePost(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
-	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
+	t.Run("must answer with a grpc error when receiving an error when getting user", func(t *testing.T) {
 		mock, _, _, _, uc := setup(t)
 		r := &pb.CreateUserRequest{Id: "id"}
 
@@ -93,10 +93,11 @@ func TestCreateUser(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when receiving a user id that already exists", func(t *testing.T) {
-		mock, _, _, _, uc := setup(t)
+		mock, _, _, mockEmailer, uc := setup(t)
 
 		r := &pb.CreateUserRequest{Id: "id"}
 
+		mockEmailer.EXPECT().Send(gomock.Any(), gomock.Any()).Return(&empty.Empty{}, nil)
 		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: "id"}, nil)
 
 		_, err := uc.CreateUser(ctx, r)
@@ -108,18 +109,24 @@ func TestCreateUser(t *testing.T) {
 			t.Error("must answer with a grpc error")
 		}
 	})
-	t.Run("requires that password is hashed", func(t *testing.T) {
-		mock, _, mockHasher, _, uc := setup(t)
 
-		r := &pb.CreateUserRequest{Id: "id", Password: "password"}
+	t.Run("must answer with a grpc error when receiving an error when sending email", func(t *testing.T) {
+		mock, _, mockHasher, mockEmailer, uc := setup(t)
 
 		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{}, nil)
 		mockHasher.EXPECT().Hash(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{"hashed_password"}, nil)
-		mock.EXPECT().CreateUser(gomock.Any(), gomock.Not(&pb.CreateUserRequest{Password: "password"}))
+		mock.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(&pb.UserRequest{}, nil)
+		mockEmailer.EXPECT().Send(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
+
+		r := &pb.CreateUserRequest{}
 
 		_, err := uc.CreateUser(ctx, r)
-		if err != nil {
-			t.Error("unexpected error:", err.Error())
+		if err == nil {
+			t.Error("expected an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
 		}
 	})
 }
