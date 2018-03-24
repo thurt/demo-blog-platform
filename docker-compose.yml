@@ -14,6 +14,8 @@ services:
             - STATICHOST_ADDRESS=${STATICHOST_ADDRESS-https://storage.googleapis.com/learned-stone-189802.appspot.com}
             - SMTP_HOST=${SMTP_HOST-mail}
             - SMTP_PORT=${SMTP_PORT-25}
+            - SMTP_USER=${SMTP_USER}
+            - SMTP_PASSWORD=${SMTP_PASSWORD}
         depends_on:
             - db
             - memcached

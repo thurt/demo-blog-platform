@@ -1,6 +1,7 @@
 package main // import "github.com/thurt/demo-blog-platform/cms"
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"fmt"
 	"log"
@@ -57,13 +58,37 @@ func main() {
 	// connect to smtp mail
 	SMTP_HOST := os.Getenv("SMTP_HOST")
 	SMTP_PORT := os.Getenv("SMTP_PORT")
+	SMTP_USER := os.Getenv("SMTP_USER")
+	SMTP_PASSWORD := os.Getenv("SMTP_PASSWORD")
 	SMTP_CONN := fmt.Sprintf("%s:%s", SMTP_HOST, SMTP_PORT)
+	log.Println("Testing connection to smtp server " + SMTP_CONN)
 	smtpCn, err := smtp.Dial(SMTP_CONN)
 	if err != nil {
-		log.Println("Couldn't connect to smtp mail")
+		log.Println("Couldn't connect to smtp server " + SMTP_CONN)
 		panic(err.Error())
 	}
-	log.Println("Connected to smtp: " + SMTP_CONN)
+	log.Println("Connected to smtp server " + SMTP_CONN)
+
+	var smtpAuth smtp.Auth
+	if SMTP_USER != "" {
+		smtpAuth = smtp.PlainAuth("", SMTP_USER, SMTP_PASSWORD, SMTP_HOST)
+		log.Println("Attempting to authorize with smtp server as user " + SMTP_USER)
+		if ok, _ := smtpCn.Extension("STARTTLS"); ok {
+			config := &tls.Config{ServerName: SMTP_HOST}
+			if err = smtpCn.StartTLS(config); err != nil {
+				panic(err.Error())
+			}
+			err = smtpCn.Auth(smtpAuth)
+			if err != nil {
+				log.Println("Couldn't authenticate with smtp host")
+				panic(err.Error())
+			}
+			log.Println("Authenticated with smtp host as user " + SMTP_USER)
+		}
+	}
+	log.Println("SMTP communication test completed, now disconnecting")
+
+	smtpCn.Close()
 
 	// connect to db
 	MYSQL_CONNECTION = os.Getenv("MYSQL_CONNECTION")
@@ -102,7 +127,7 @@ func main() {
 		)),
 	}
 	grpcServer := grpc.NewServer(opts...)
-	pb.RegisterCmsServer(grpcServer, authorization.New(usecases.New(mysqlprovider.New(db), authProvider, hasher.New(), emailer.New(smtpCn))))
+	pb.RegisterCmsServer(grpcServer, authorization.New(usecases.New(mysqlprovider.New(db), authProvider, hasher.New(), emailer.New(SMTP_CONN, smtpAuth))))
 	log.Printf("Started grpc server on port %d", PORT)
 
 	// setup rest proxy server

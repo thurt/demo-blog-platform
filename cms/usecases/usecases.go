@@ -93,8 +93,8 @@ func (u *useCases) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb
 	_, err = u.emailer.Send(ctx, &pb.Email{
 		To:      r.GetEmail(),
 		From:    "no-reply@demo-blog-platform.com",
-		Subject: "Thanks for joining Demo Blog",
-		Body:    "Hi, thanks for joining. This email is confirmation that you have successfully completed registration for Demo Blog with user id " + r.GetId() + ".",
+		Subject: "Thanks for joining Demo Blog!",
+		Body:    "Hi, thanks for joining. \n\nThis is a confirmation email showing that you have successfully completed registration for Demo Blog with user id " + r.GetId() + ".",
 	})
 
 	if err != nil {
