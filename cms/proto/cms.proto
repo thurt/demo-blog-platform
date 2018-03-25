@@ -172,6 +172,8 @@ service CmsInternal {
     rpc GetUserPassword(UserRequest) returns (UserPassword) {}
     // Updates the LastActive field of the provided User
     rpc UpdateUserLastActive(UserRequest) returns (google.protobuf.Empty) {}
+    // Creates the User with the provided Role
+    rpc CreateNewUser(CreateUserWithRole) returns (UserRequest) {}
 }
 
 service CmsAuth {

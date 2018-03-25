@@ -63,6 +63,19 @@ func (mr *MockProviderMockRecorder) CreateComment(arg0, arg1 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateComment", reflect.TypeOf((*MockProvider)(nil).CreateComment), arg0, arg1)
 }
 
+// CreateNewUser mocks base method
+func (m *MockProvider) CreateNewUser(arg0 context.Context, arg1 *proto.CreateUserWithRole) (*proto.UserRequest, error) {
+	ret := m.ctrl.Call(m, "CreateNewUser", arg0, arg1)
+	ret0, _ := ret[0].(*proto.UserRequest)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateNewUser indicates an expected call of CreateNewUser
+func (mr *MockProviderMockRecorder) CreateNewUser(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNewUser", reflect.TypeOf((*MockProvider)(nil).CreateNewUser), arg0, arg1)
+}
+
 // CreatePost mocks base method
 func (m *MockProvider) CreatePost(arg0 context.Context, arg1 *proto.CreatePostWithSlug) (*proto.PostRequest, error) {
 	ret := m.ctrl.Call(m, "CreatePost", arg0, arg1)
