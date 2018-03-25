@@ -150,7 +150,6 @@ service Hasher {
     rpc Validate(StrAndHash) returns (google.protobuf.Empty) {}
 }
 
-
 // Email
 message Email {
     string to = 1;
@@ -186,6 +185,16 @@ option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
     info {
         version: "1.0.0"
     }
+    security_definitions: {
+        security: {
+            key: "APIKey";
+            value: {
+                type: TYPE_API_KEY;
+                in: IN_HEADER;
+                name: "Authorization";
+            }
+        }
+    }
 };
 
 service Cms {
@@ -212,6 +221,12 @@ service Cms {
     // Create a post
     rpc CreatePost(CreatePostRequest) returns (PostRequest) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            security: {
+                security_requirement: {
+                    key: "APIKey";
+                    value: {}
+                }
+            }
             tags: ["Posts"]
         };
         option (google.api.http) = {
@@ -222,6 +237,12 @@ service Cms {
     // Get a post
    rpc GetPost(PostRequest) returns (Post) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            security: {
+                security_requirement: {
+                    key: "APIKey";
+                    value: {}
+                }
+            }
             tags: ["Posts"]
         };
         option (google.api.http) = {
@@ -231,6 +252,12 @@ service Cms {
     // Get a post (by slug)
     rpc GetPostBySlug(PostBySlugRequest) returns (Post) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            security: {
+                security_requirement: {
+                    key: "APIKey";
+                    value: {}
+                }
+            }
             tags: ["Posts"]
         };
         option (google.api.http) = {
@@ -240,6 +267,12 @@ service Cms {
     // Update a post
     rpc UpdatePost(UpdatePostRequest) returns (google.protobuf.Empty) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            security: {
+                security_requirement: {
+                    key: "APIKey";
+                    value: {}
+                }
+            }
             tags: ["Posts"]
         };
         option (google.api.http) = {
@@ -250,6 +283,12 @@ service Cms {
     // Delete a post
     rpc DeletePost(PostRequest) returns (google.protobuf.Empty) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            security: {
+                security_requirement: {
+                    key: "APIKey";
+                    value: {}
+                }
+            }
             tags: ["Posts"]
         };
         option (google.api.http) = {
@@ -268,6 +307,12 @@ service Cms {
     // Get all posts
     rpc GetPosts(GetPostsOptions) returns (stream Post) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            security: {
+                security_requirement: {
+                    key: "APIKey";
+                    value: {}
+                }
+            }
             tags: ["Posts"]
         };
          option (google.api.http) = {
@@ -299,6 +344,12 @@ service Cms {
     // Delete a user
     rpc DeleteUser(UserRequest) returns (google.protobuf.Empty) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            security: {
+                security_requirement: {
+                    key: "APIKey";
+                    value: {}
+                }
+            }
             tags: ["Users"]
         };
          option (google.api.http) = {
@@ -319,6 +370,12 @@ service Cms {
     // Create a comment
     rpc CreateComment(CreateCommentRequest) returns (CommentRequest) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            security: {
+                security_requirement: {
+                    key: "APIKey";
+                    value: {}
+                }
+            }
             tags: ["Comments"]
         };
          option (google.api.http) = {
@@ -338,6 +395,12 @@ service Cms {
     // Update a comment
     rpc UpdateComment(UpdateCommentRequest) returns (google.protobuf.Empty) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            security: {
+                security_requirement: {
+                    key: "APIKey";
+                    value: {}
+                }
+            }
             tags: ["Comments"]
         };
         option (google.api.http) = {
@@ -348,6 +411,12 @@ service Cms {
     // Delete a comment
     rpc DeleteComment(CommentRequest) returns (google.protobuf.Empty) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            security: {
+                security_requirement: {
+                    key: "APIKey";
+                    value: {}
+                }
+            }
             tags: ["Comments"]
         };
          option (google.api.http) = {
@@ -364,7 +433,7 @@ service Cms {
         };
     }
 
-    // Authorize as a user to get an access token
+    // Authenticate as an existing user to get an access token
     rpc AuthUser(AuthUserRequest) returns (AccessToken) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
             tags: ["Auth"]

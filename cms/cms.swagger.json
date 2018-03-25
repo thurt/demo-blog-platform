@@ -19,7 +19,7 @@
   "paths": {
     "/auth/user": {
       "post": {
-        "summary": "Authorize as a user to get an access token",
+        "summary": "Authenticate as an existing user to get an access token",
         "operationId": "AuthUser",
         "responses": {
           "200": {
@@ -787,8 +787,8 @@
   "securityDefinitions": {
     "APIKey": {
       "type": "apiKey",
-      "in": "header",
-      "name": "Authorization"
+      "name": "Authorization",
+      "in": "header"
     }
   }
 }
