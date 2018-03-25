@@ -624,3 +624,19 @@ func TestUpdateUserLastActive(t *testing.T) {
 		}
 	})
 }
+
+func TestCreateNewUser(t *testing.T) {
+	cur := &pb.CreateUserRequest{}
+	f.Fuzz(cur)
+	stubIn := &pb.CreateUserWithRole{User: cur}
+	f.Fuzz(stubIn)
+
+	t.Run("requires sending the correct sql request", func(t *testing.T) {
+		regexSql := esc(p.q.CreateUser(stubIn))
+		mock.ExpectExec(regexSql)
+
+		_, _ = p.CreateNewUser(context.Background(), stubIn)
+
+		checkExpectations(t)
+	})
+}
