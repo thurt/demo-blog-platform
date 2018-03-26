@@ -496,7 +496,7 @@ func request_Cms_RegisterNewUser_0(ctx context.Context, marshaler runtime.Marsha
 }
 
 func request_Cms_VerifyNewUser_0(ctx context.Context, marshaler runtime.Marshaler, client CmsClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq NewUserAuthToken
+	var protoReq empty.Empty
 	var metadata runtime.ServerMetadata
 
 	if req.ContentLength > 0 {

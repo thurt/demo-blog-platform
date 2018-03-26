@@ -450,7 +450,7 @@
           "200": {
             "description": "",
             "schema": {
-              "$ref": "#/definitions/protobufEmpty"
+              "$ref": "#/definitions/cmsUserRequest"
             }
           }
         },
@@ -460,7 +460,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/cmsNewUserAuthToken"
+              "$ref": "#/definitions/protobufEmpty"
             }
           }
         ],
@@ -713,15 +713,6 @@
         }
       },
       "title": "CreateUserRequest"
-    },
-    "cmsNewUserAuthToken": {
-      "type": "object",
-      "properties": {
-        "token": {
-          "type": "string"
-        }
-      },
-      "title": "NewUserAuthToken"
     },
     "cmsPost": {
       "type": "object",

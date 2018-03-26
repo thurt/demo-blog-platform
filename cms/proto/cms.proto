@@ -139,11 +139,6 @@ message AccessToken {
     uint32 expires_in = 3;
 }
 
-// NewUserAuthToken
-message NewUserAuthToken {
-    string token = 1;
-}
-
 // StrAndHash
 message StrAndHash {
     string str = 1;
@@ -466,7 +461,7 @@ service Cms {
     }
     
     // Verify ownership of your email address in order to finish creating your new user account
-    rpc VerifyNewUser(NewUserAuthToken) returns (google.protobuf.Empty) {
+    rpc VerifyNewUser(google.protobuf.Empty) returns (UserRequest) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
             security: {
                 security_requirement: {

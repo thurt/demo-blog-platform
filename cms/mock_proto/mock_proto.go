@@ -294,9 +294,9 @@ func (mr *MockCmsServerMockRecorder) UpdatePost(arg0, arg1 interface{}) *gomock.
 }
 
 // VerifyNewUser mocks base method
-func (m *MockCmsServer) VerifyNewUser(arg0 context.Context, arg1 *proto.NewUserAuthToken) (*empty.Empty, error) {
+func (m *MockCmsServer) VerifyNewUser(arg0 context.Context, arg1 *empty.Empty) (*proto.UserRequest, error) {
 	ret := m.ctrl.Call(m, "VerifyNewUser", arg0, arg1)
-	ret0, _ := ret[0].(*empty.Empty)
+	ret0, _ := ret[0].(*proto.UserRequest)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

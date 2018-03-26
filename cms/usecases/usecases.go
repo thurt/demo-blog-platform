@@ -278,6 +278,6 @@ func (u *useCases) RegisterNewUser(ctx context.Context, r *pb.CreateUserRequest)
 	return &empty.Empty{}, nil
 }
 
-func (u *useCases) VerifyNewUser(ctx context.Context, r *pb.NewUserAuthToken) (*empty.Empty, error) {
+func (u *useCases) VerifyNewUser(ctx context.Context, _ *empty.Empty) (*pb.UserRequest, error) {
 	return nil, status.Error(codes.Unimplemented, codes.Unimplemented.String())
 }
