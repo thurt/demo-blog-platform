@@ -109,7 +109,6 @@ func TestCreateUser(t *testing.T) {
 			t.Error("must answer with a grpc error")
 		}
 	})
-
 	t.Run("must answer with a grpc error when receiving an error when sending email", func(t *testing.T) {
 		mock, _, mockHasher, mockEmailer, uc := setup(t)
 
@@ -489,6 +488,60 @@ func TestGetPostBySlug(t *testing.T) {
 		_, ok := status.FromError(err)
 		if !ok {
 			t.Error("expected a grpc error")
+		}
+	})
+}
+
+func TestRegisterNewUser(t *testing.T) {
+	t.Run("must answer with a grpc error when receiving an error when getting user", func(t *testing.T) {
+		mock, _, _, _, uc := setup(t)
+		r := &pb.CreateUserRequest{Id: "id"}
+
+		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
+
+		_, err := uc.RegisterNewUser(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
+		}
+	})
+	t.Run("must answer with a grpc error when receiving a user id that already exists", func(t *testing.T) {
+		mock, _, _, mockEmailer, uc := setup(t)
+
+		r := &pb.CreateUserRequest{Id: "id"}
+
+		mockEmailer.EXPECT().Send(gomock.Any(), gomock.Any()).Return(&empty.Empty{}, nil)
+		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: "id"}, nil)
+
+		_, err := uc.RegisterNewUser(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
+		}
+	})
+	t.Run("must answer with a grpc error when receiving an error when sending email", func(t *testing.T) {
+		mock, mockAuth, mockHasher, mockEmailer, uc := setup(t)
+
+		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{}, nil)
+		mockHasher.EXPECT().Hash(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{"hashed_password"}, nil)
+		mockAuth.EXPECT().ActivateNewTokenForCreateUserWithRole(gomock.Any(), gomock.Any()).Return(&pb.AccessToken{}, nil)
+		mockEmailer.EXPECT().Send(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
+
+		r := &pb.CreateUserRequest{}
+
+		_, err := uc.RegisterNewUser(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
 		}
 	})
 }

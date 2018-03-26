@@ -241,7 +241,41 @@ func (u *useCases) GetPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (
 }
 
 func (u *useCases) RegisterNewUser(ctx context.Context, r *pb.CreateUserRequest) (*empty.Empty, error) {
-	return nil, status.Error(codes.Unimplemented, codes.Unimplemented.String())
+	// requires that user id does not exist
+	user, err := u.Provider.GetUser(ctx, &pb.UserRequest{Id: r.GetId()})
+	if err != nil {
+		log.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	if *user != (pb.User{}) {
+		return nil, status.Errorf(codes.AlreadyExists, "The provided user id %q already exists", r.GetId())
+	}
+
+	hashedPassword, err := u.hasher.Hash(ctx, &wrappers.StringValue{r.GetPassword()})
+	if err != nil {
+		return nil, err
+	}
+
+	r.Password = hashedPassword.GetValue()
+	at, err := u.auth.ActivateNewTokenForCreateUserWithRole(ctx, &pb.CreateUserWithRole{User: r, Role: pb.UserRole_USER})
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = u.emailer.Send(ctx, &pb.Email{
+		To:      r.GetEmail(),
+		From:    "no-reply@demo-blog-platform.com",
+		Subject: "Verify Your Email",
+		Body:    "In order to complete you registration with user id, " + r.GetId() + ", you must copy the following value into the prompt as instructed on the Demo Blog Platform website: \n\n" + at.GetAccessToken(),
+	})
+
+	if err != nil {
+		log.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &empty.Empty{}, nil
 }
 
 func (u *useCases) VerifyNewUser(ctx context.Context, r *pb.NewUserAuthToken) (*empty.Empty, error) {
