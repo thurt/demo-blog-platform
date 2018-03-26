@@ -42,6 +42,24 @@ func GetUser(ctx context.Context) (*pb.User, error) {
 
 	return u, nil
 }
+func GetCreateUserWithRole(ctx context.Context) (*pb.CreateUserWithRole, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, status.Error(codes.Internal, "metadata does not exist in context")
+	}
+
+	if md["user"] == nil || len(md["user"]) == 0 {
+		return nil, status.Error(codes.Internal, "metadata does not contain user")
+	}
+
+	cuwr := &pb.CreateUserWithRole{}
+	err := proto.UnmarshalText(md["user"][0], cuwr)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return cuwr, nil
+}
 func HasPermission(ctx context.Context, rolesAllowed ...pb.UserRole) bool {
 	u, err := GetUser(ctx)
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/thurt/demo-blog-platform/cms/domain"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
+	"github.com/thurt/demo-blog-platform/cms/reqContext"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -279,5 +280,38 @@ func (u *useCases) RegisterNewUser(ctx context.Context, r *pb.CreateUserRequest)
 }
 
 func (u *useCases) VerifyNewUser(ctx context.Context, _ *empty.Empty) (*pb.UserRequest, error) {
-	return nil, status.Error(codes.Unimplemented, codes.Unimplemented.String())
+	r, err := reqContext.GetCreateUserWithRole(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// requires that user id does not exist
+	user, err := u.Provider.GetUser(ctx, &pb.UserRequest{Id: r.GetUser().GetId()})
+	if err != nil {
+		log.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	if *user != (pb.User{}) {
+		return nil, status.Errorf(codes.AlreadyExists, "The provided user id %q already exists", r.GetUser().GetId())
+	}
+
+	ur, err := u.Provider.CreateNewUser(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = u.emailer.Send(ctx, &pb.Email{
+		To:      r.GetUser().GetEmail(),
+		From:    "no-reply@demo-blog-platform.com",
+		Subject: "Registration Complete",
+		Body:    "Hi, thanks for joining Demo Blog! \n\nThis is a confirmation email that you have successfully completed registration for Demo Blog with user id " + r.GetUser().GetId() + ".",
+	})
+
+	if err != nil {
+		log.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return ur, nil
 }

@@ -12,6 +12,7 @@ import (
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -536,6 +537,56 @@ func TestRegisterNewUser(t *testing.T) {
 		r := &pb.CreateUserRequest{}
 
 		_, err := uc.RegisterNewUser(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
+		}
+	})
+}
+
+func TestVerifyNewUser(t *testing.T) {
+	stubIn := &empty.Empty{}
+	cuwr := &pb.CreateUserWithRole{}
+	stubCtx := metadata.NewIncomingContext(context.Background(), metadata.Pairs("user", cuwr.String()))
+	t.Run("must answer with a grpc error when receiving an error when getting user", func(t *testing.T) {
+		mock, _, _, _, uc := setup(t)
+
+		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
+
+		_, err := uc.VerifyNewUser(stubCtx, stubIn)
+		if err == nil {
+			t.Error("expected an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
+		}
+	})
+	t.Run("must answer with a grpc error when receiving a user id that already exists", func(t *testing.T) {
+		mock, _, _, _, uc := setup(t)
+
+		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: "id"}, nil)
+
+		_, err := uc.VerifyNewUser(stubCtx, stubIn)
+		if err == nil {
+			t.Error("expected an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
+		}
+	})
+	t.Run("must answer with a grpc error when receiving an error when sending email", func(t *testing.T) {
+		mock, _, _, mockEmailer, uc := setup(t)
+
+		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{}, nil)
+		mock.EXPECT().CreateNewUser(gomock.Any(), gomock.Any()).Return(&pb.UserRequest{}, nil)
+		mockEmailer.EXPECT().Send(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
+
+		_, err := uc.VerifyNewUser(stubCtx, stubIn)
 		if err == nil {
 			t.Error("expected an error")
 		}
