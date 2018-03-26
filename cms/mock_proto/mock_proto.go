@@ -241,6 +241,19 @@ func (mr *MockCmsServerMockRecorder) IsSetup(arg0, arg1 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsSetup", reflect.TypeOf((*MockCmsServer)(nil).IsSetup), arg0, arg1)
 }
 
+// RegisterNewUser mocks base method
+func (m *MockCmsServer) RegisterNewUser(arg0 context.Context, arg1 *proto.CreateUserRequest) (*empty.Empty, error) {
+	ret := m.ctrl.Call(m, "RegisterNewUser", arg0, arg1)
+	ret0, _ := ret[0].(*empty.Empty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RegisterNewUser indicates an expected call of RegisterNewUser
+func (mr *MockCmsServerMockRecorder) RegisterNewUser(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterNewUser", reflect.TypeOf((*MockCmsServer)(nil).RegisterNewUser), arg0, arg1)
+}
+
 // Setup mocks base method
 func (m *MockCmsServer) Setup(arg0 context.Context, arg1 *proto.CreateUserRequest) (*proto.UserRequest, error) {
 	ret := m.ctrl.Call(m, "Setup", arg0, arg1)
@@ -278,4 +291,17 @@ func (m *MockCmsServer) UpdatePost(arg0 context.Context, arg1 *proto.UpdatePostR
 // UpdatePost indicates an expected call of UpdatePost
 func (mr *MockCmsServerMockRecorder) UpdatePost(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePost", reflect.TypeOf((*MockCmsServer)(nil).UpdatePost), arg0, arg1)
+}
+
+// VerifyNewUser mocks base method
+func (m *MockCmsServer) VerifyNewUser(arg0 context.Context, arg1 *proto.NewUserAuthToken) (*empty.Empty, error) {
+	ret := m.ctrl.Call(m, "VerifyNewUser", arg0, arg1)
+	ret0, _ := ret[0].(*empty.Empty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VerifyNewUser indicates an expected call of VerifyNewUser
+func (mr *MockCmsServerMockRecorder) VerifyNewUser(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyNewUser", reflect.TypeOf((*MockCmsServer)(nil).VerifyNewUser), arg0, arg1)
 }

@@ -139,6 +139,11 @@ message AccessToken {
     uint32 expires_in = 3;
 }
 
+// NewUserAuthToken
+message NewUserAuthToken {
+    string token = 1;
+}
+
 // StrAndHash
 message StrAndHash {
     string str = 1;
@@ -334,6 +339,8 @@ service Cms {
         };
     }
 
+
+
     // Get a user
     rpc GetUser(UserRequest) returns (User) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
@@ -445,6 +452,35 @@ service Cms {
             post: "/auth/user",
             body: "*"
         };
+    }
+    
+    // Register for a new user account in order to receive an email with a new user authentication token 
+    rpc RegisterNewUser(CreateUserRequest) returns (google.protobuf.Empty) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Register"]
+        };
+         option (google.api.http) = {
+            post: "/register/user/0"
+            body: "*"
+        };
+    }
+    
+    // Verify ownership of your email address in order to finish creating your new user account
+    rpc VerifyNewUser(NewUserAuthToken) returns (google.protobuf.Empty) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            security: {
+                security_requirement: {
+                    key: "APIKey";
+                    value: {}
+                }
+            }
+            tags: ["Register"]
+        };
+        option (google.api.http) = {
+            post: "/register/user/1",
+            body: "*"
+        };
+
     }
 }
 

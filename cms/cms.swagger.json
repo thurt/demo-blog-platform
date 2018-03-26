@@ -415,6 +415,65 @@
         ]
       }
     },
+    "/register/user/0": {
+      "post": {
+        "summary": "Register for a new user account in order to receive an email with a new user authentication token",
+        "operationId": "RegisterNewUser",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/protobufEmpty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cmsCreateUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Register"
+        ]
+      }
+    },
+    "/register/user/1": {
+      "post": {
+        "summary": "Verify ownership of your email address in order to finish creating your new user account",
+        "operationId": "VerifyNewUser",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/protobufEmpty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cmsNewUserAuthToken"
+            }
+          }
+        ],
+        "tags": [
+          "Register"
+        ],
+        "security": [
+          {
+            "APIKey": []
+          }
+        ]
+      }
+    },
     "/setup": {
       "post": {
         "summary": "Setup the application",
@@ -655,6 +714,15 @@
       },
       "title": "CreateUserRequest"
     },
+    "cmsNewUserAuthToken": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        }
+      },
+      "title": "NewUserAuthToken"
+    },
     "cmsPost": {
       "type": "object",
       "properties": {
@@ -748,6 +816,15 @@
       },
       "title": "User"
     },
+    "cmsUserPassword": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "type": "string"
+        }
+      },
+      "title": "UserPassword"
+    },
     "cmsUserRequest": {
       "type": "object",
       "properties": {
@@ -782,6 +859,16 @@
       "type": "object",
       "description": "service Foo {\n      rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);\n    }\n\nThe JSON representation for `Empty` is empty JSON object `{}`.",
       "title": "A generic empty message that you can re-use to avoid defining duplicated\nempty messages in your APIs. A typical example is to use it as the request\nor the response type of an API method. For instance:"
+    },
+    "protobufStringValue": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string",
+          "description": "The string value."
+        }
+      },
+      "description": "Wrapper message for `string`.\n\nThe JSON representation for `StringValue` is JSON string."
     }
   },
   "securityDefinitions": {

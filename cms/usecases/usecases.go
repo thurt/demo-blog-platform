@@ -239,3 +239,11 @@ func (u *useCases) GetPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (
 	}
 	return post, nil
 }
+
+func (u *useCases) RegisterNewUser(ctx context.Context, r *pb.CreateUserRequest) (*empty.Empty, error) {
+	return nil, status.Error(codes.Unimplemented, codes.Unimplemented.String())
+}
+
+func (u *useCases) VerifyNewUser(ctx context.Context, r *pb.NewUserAuthToken) (*empty.Empty, error) {
+	return nil, status.Error(codes.Unimplemented, codes.Unimplemented.String())
+}
