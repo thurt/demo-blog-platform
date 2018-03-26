@@ -639,4 +639,12 @@ func TestCreateNewUser(t *testing.T) {
 
 		checkExpectations(t)
 	})
+	t.Run("requires returning error when sql response is an error", func(t *testing.T) {
+		mock.ExpectExec(regexAny).WillReturnError(errors.New(""))
+		_, err := p.CreateNewUser(context.Background(), stubIn)
+
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
 }
