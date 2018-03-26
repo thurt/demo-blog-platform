@@ -35,6 +35,19 @@ func (m *MockCmsAuthServer) EXPECT() *MockCmsAuthServerMockRecorder {
 	return m.recorder
 }
 
+// ActivateNewTokenForCreateUserWithRole mocks base method
+func (m *MockCmsAuthServer) ActivateNewTokenForCreateUserWithRole(arg0 context.Context, arg1 *proto.CreateUserWithRole) (*proto.AccessToken, error) {
+	ret := m.ctrl.Call(m, "ActivateNewTokenForCreateUserWithRole", arg0, arg1)
+	ret0, _ := ret[0].(*proto.AccessToken)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ActivateNewTokenForCreateUserWithRole indicates an expected call of ActivateNewTokenForCreateUserWithRole
+func (mr *MockCmsAuthServerMockRecorder) ActivateNewTokenForCreateUserWithRole(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActivateNewTokenForCreateUserWithRole", reflect.TypeOf((*MockCmsAuthServer)(nil).ActivateNewTokenForCreateUserWithRole), arg0, arg1)
+}
+
 // ActivateNewTokenForUser mocks base method
 func (m *MockCmsAuthServer) ActivateNewTokenForUser(arg0 context.Context, arg1 *proto.User) (*proto.AccessToken, error) {
 	ret := m.ctrl.Call(m, "ActivateNewTokenForUser", arg0, arg1)

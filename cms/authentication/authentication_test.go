@@ -35,6 +35,20 @@ func TestActivateNewTokenForUser(t *testing.T) {
 	})
 }
 
+func TestActivateNewTokenForCreateUserWithRole(t *testing.T) {
+	t.Run("requires that a new token is added", func(t *testing.T) {
+		mock := setup(t)
+		aP, _ := New(mock, 10*time.Second)
+
+		mock.EXPECT().Add(gomock.Any(), gomock.Any(), gomock.Any(), uint32(10*time.Second.Seconds())).Return(uint64(0), nil)
+
+		_, err := aP.ActivateNewTokenForCreateUserWithRole(context.Background(), &pb.CreateUserWithRole{})
+		if err != nil {
+			t.Error("unexpected error")
+		}
+	})
+}
+
 func TestAuthFunc(t *testing.T) {
 	t.Run("requires well-formed grpc metadata-based context", func(t *testing.T) {
 		mock := setup(t)

@@ -61,6 +61,19 @@ func (a *authProvider) ActivateNewTokenForUser(ctx context.Context, r *pb.User) 
 	return at, nil
 }
 
+func (a *authProvider) ActivateNewTokenForCreateUserWithRole(ctx context.Context, r *pb.CreateUserWithRole) (*pb.AccessToken, error) {
+	at := a.genAccessToken()
+
+	_, err := a.mc.Add(at.GetAccessToken(), r.String(), 0, uint32(a.tokenExpiry.Seconds()))
+	// maybe want to handle some possible errors returned here
+	if err != nil {
+		fmt.Println("error trying to add token to mc:", err)
+		return nil, err
+	}
+
+	return at, nil
+}
+
 func (a *authProvider) genAccessToken() *pb.AccessToken {
 	at := &pb.AccessToken{
 		AccessToken: a.genRandTokenValue(),

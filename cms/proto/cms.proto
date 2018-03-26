@@ -178,6 +178,7 @@ service CmsInternal {
 
 service CmsAuth {
     rpc ActivateNewTokenForUser(User) returns (AccessToken) {}
+    rpc ActivateNewTokenForCreateUserWithRole(CreateUserWithRole) returns (AccessToken) {}
 }
 
 option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
