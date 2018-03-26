@@ -629,7 +629,11 @@ func TestCreateNewUser(t *testing.T) {
 	cur := &pb.CreateUserRequest{}
 	f.Fuzz(cur)
 	stubIn := &pb.CreateUserWithRole{User: cur}
+	stubOut := &pb.UserRequest{}
 	f.Fuzz(stubIn)
+	f.Fuzz(stubOut)
+	stubOut.Id = stubIn.GetUser().GetId()
+	stubResult := sqlmock.NewResult(1, 1)
 
 	t.Run("requires sending the correct sql request", func(t *testing.T) {
 		regexSql := esc(p.q.CreateUser(stubIn))
@@ -645,6 +649,18 @@ func TestCreateNewUser(t *testing.T) {
 
 		if err == nil {
 			t.Error("expected an error")
+		}
+	})
+	t.Run("requires returning result with correct values when sql returns results", func(t *testing.T) {
+		mock.ExpectExec(regexAny).WillReturnResult(stubResult)
+
+		result, err := p.CreateNewUser(context.Background(), stubIn)
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+
+		if !reflect.DeepEqual(result, stubOut) {
+			t.Error("result should have same values as stub values")
 		}
 	})
 }
