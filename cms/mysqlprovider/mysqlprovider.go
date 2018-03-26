@@ -308,6 +308,9 @@ func (p *provider) UpdateUserLastActive(ctx context.Context, r *pb.UserRequest) 
 }
 
 func (p *provider) CreateNewUser(ctx context.Context, r *pb.CreateUserWithRole) (*pb.UserRequest, error) {
-	_, _ = p.db.Exec(p.q.CreateUser(r))
+	_, err := p.db.Exec(p.q.CreateUser(r))
+	if err != nil {
+		return nil, err
+	}
 	return &pb.UserRequest{r.User.GetId()}, nil
 }
