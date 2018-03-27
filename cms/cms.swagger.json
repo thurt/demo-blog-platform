@@ -501,33 +501,6 @@
         ]
       }
     },
-    "/users": {
-      "post": {
-        "summary": "Create a user",
-        "operationId": "CreateUser",
-        "responses": {
-          "200": {
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/cmsUserRequest"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/cmsCreateUserRequest"
-            }
-          }
-        ],
-        "tags": [
-          "Users"
-        ]
-      }
-    },
     "/users/{id}": {
       "get": {
         "summary": "Get a user",

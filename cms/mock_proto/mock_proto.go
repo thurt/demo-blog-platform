@@ -76,19 +76,6 @@ func (mr *MockCmsServerMockRecorder) CreatePost(arg0, arg1 interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePost", reflect.TypeOf((*MockCmsServer)(nil).CreatePost), arg0, arg1)
 }
 
-// CreateUser mocks base method
-func (m *MockCmsServer) CreateUser(arg0 context.Context, arg1 *proto.CreateUserRequest) (*proto.UserRequest, error) {
-	ret := m.ctrl.Call(m, "CreateUser", arg0, arg1)
-	ret0, _ := ret[0].(*proto.UserRequest)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateUser indicates an expected call of CreateUser
-func (mr *MockCmsServerMockRecorder) CreateUser(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockCmsServer)(nil).CreateUser), arg0, arg1)
-}
-
 // DeleteComment mocks base method
 func (m *MockCmsServer) DeleteComment(arg0 context.Context, arg1 *proto.CommentRequest) (*empty.Empty, error) {
 	ret := m.ctrl.Call(m, "DeleteComment", arg0, arg1)

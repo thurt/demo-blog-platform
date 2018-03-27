@@ -322,19 +322,6 @@ service Cms {
             get: "/posts"
         };
     }
-   
-    // Create a user
-    rpc CreateUser(CreateUserRequest) returns (UserRequest) {
-        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
-            tags: ["Users"]
-        };
-         option (google.api.http) = {
-            post: "/users"
-            body: "*"
-        };
-    }
-
-
 
     // Get a user
     rpc GetUser(UserRequest) returns (User) {

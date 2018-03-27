@@ -68,44 +68,6 @@ func (u *useCases) GetUser(ctx context.Context, r *pb.UserRequest) (*pb.User, er
 	return user, nil
 }
 
-func (u *useCases) CreateUser(ctx context.Context, r *pb.CreateUserRequest) (*pb.UserRequest, error) {
-	// requires that user id does not exist
-	user, err := u.Provider.GetUser(ctx, &pb.UserRequest{Id: r.GetId()})
-	if err != nil {
-		log.Println(err)
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	if *user != (pb.User{}) {
-		return nil, status.Errorf(codes.AlreadyExists, "The provided user id %q already exists", r.GetId())
-	}
-
-	hashedPassword, err := u.hasher.Hash(ctx, &wrappers.StringValue{r.GetPassword()})
-	if err != nil {
-		return nil, err
-	}
-
-	r.Password = hashedPassword.GetValue()
-	ur, err := u.Provider.CreateUser(ctx, &pb.CreateUserWithRole{User: r, Role: pb.UserRole_USER})
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = u.emailer.Send(ctx, &pb.Email{
-		To:      r.GetEmail(),
-		From:    "no-reply@demo-blog-platform.com",
-		Subject: "Thanks for joining Demo Blog!",
-		Body:    "Hi, thanks for joining. \n\nThis is a confirmation email showing that you have successfully completed registration for Demo Blog with user id " + r.GetId() + ".",
-	})
-
-	if err != nil {
-		log.Println(err)
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	return ur, nil
-}
-
 func (u *useCases) CreateComment(ctx context.Context, r *pb.CreateCommentRequest) (*pb.CommentRequest, error) {
 	// requires a valid user id
 	_, err := u.Provider.GetUser(ctx, &pb.UserRequest{Id: r.GetUserId()})
@@ -199,7 +161,7 @@ func (u *useCases) Setup(ctx context.Context, r *pb.CreateUserRequest) (*pb.User
 	}
 	r.Password = hashedPassword.GetValue()
 
-	user, err := u.Provider.CreateUser(ctx, &pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r})
+	user, err := u.Provider.CreateNewUser(ctx, &pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r})
 	if err != nil {
 		log.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())

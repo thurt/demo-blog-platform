@@ -153,7 +153,7 @@ func Test_AdminExists(t *testing.T) {
 		preStubIn := &pb.CreateUserWithRole{User: &pb.CreateUserRequest{}}
 		f.Fuzz(preStubIn)
 		preStubIn.Role = pb.UserRole_ADMIN
-		_, err := p.CreateUser(context.Background(), preStubIn)
+		_, err := p.CreateNewUser(context.Background(), preStubIn)
 
 		if err != nil {
 			t.Error("unexpected error in prerequisite:", err.Error())

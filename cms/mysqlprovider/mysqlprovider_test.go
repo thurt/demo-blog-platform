@@ -398,15 +398,6 @@ func TestGetComment(t *testing.T) {
 	})
 }
 
-func TestCreateUser(t *testing.T) {
-	r := &pb.CreateUserWithRole{User: &pb.CreateUserRequest{Id: "id", Email: "email", Password: "password"}}
-	mock.ExpectExec(p.q.CreateUser(r)).WillReturnResult(sqlmock.NewResult(1, 1))
-
-	_, _ = p.CreateUser(context.Background(), r)
-
-	checkExpectations(t)
-}
-
 func TestUpdateComment(t *testing.T) {
 	r := &pb.UpdateCommentRequest{Content: "content", Id: 0}
 	mock.ExpectExec(p.q.UpdateComment(r)).WillReturnResult(sqlmock.NewResult(1, 1))

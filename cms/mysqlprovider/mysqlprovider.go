@@ -119,16 +119,6 @@ func (p *provider) CreateComment(ctx context.Context, r *pb.CreateCommentRequest
 	return &pb.CommentRequest{uint32(id)}, nil
 }
 
-func (p *provider) CreateUser(ctx context.Context, r *pb.CreateUserWithRole) (*pb.UserRequest, error) {
-	_, err := p.db.Exec(p.q.CreateUser(r))
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &pb.UserRequest{r.User.GetId()}, nil
-}
-
 func (p *provider) DeleteComment(ctx context.Context, r *pb.CommentRequest) (*empty.Empty, error) {
 	_, err := p.db.Exec(p.q.DeleteComment(r))
 

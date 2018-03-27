@@ -77,60 +77,6 @@ func TestUpdatePost(t *testing.T) {
 	})
 }
 
-func TestCreateUser(t *testing.T) {
-	t.Run("must answer with a grpc error when receiving an error when getting user", func(t *testing.T) {
-		mock, _, _, _, uc := setup(t)
-		r := &pb.CreateUserRequest{Id: "id"}
-
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
-
-		_, err := uc.CreateUser(ctx, r)
-		if err == nil {
-			t.Error("expected an error")
-		}
-		_, ok := status.FromError(err)
-		if !ok {
-			t.Error("must answer with a grpc error")
-		}
-	})
-	t.Run("must answer with a grpc error when receiving a user id that already exists", func(t *testing.T) {
-		mock, _, _, mockEmailer, uc := setup(t)
-
-		r := &pb.CreateUserRequest{Id: "id"}
-
-		mockEmailer.EXPECT().Send(gomock.Any(), gomock.Any()).Return(&empty.Empty{}, nil)
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: "id"}, nil)
-
-		_, err := uc.CreateUser(ctx, r)
-		if err == nil {
-			t.Error("expected an error")
-		}
-		_, ok := status.FromError(err)
-		if !ok {
-			t.Error("must answer with a grpc error")
-		}
-	})
-	t.Run("must answer with a grpc error when receiving an error when sending email", func(t *testing.T) {
-		mock, _, mockHasher, mockEmailer, uc := setup(t)
-
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{}, nil)
-		mockHasher.EXPECT().Hash(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{"hashed_password"}, nil)
-		mock.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(&pb.UserRequest{}, nil)
-		mockEmailer.EXPECT().Send(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
-
-		r := &pb.CreateUserRequest{}
-
-		_, err := uc.CreateUser(ctx, r)
-		if err == nil {
-			t.Error("expected an error")
-		}
-		_, ok := status.FromError(err)
-		if !ok {
-			t.Error("must answer with a grpc error")
-		}
-	})
-}
-
 func TestCreateComment(t *testing.T) {
 	t.Run("requires a valid user id", func(t *testing.T) {
 		mock, _, _, _, uc := setup(t)
@@ -371,7 +317,7 @@ func TestSetup(t *testing.T) {
 
 		mock.EXPECT().AdminExists(gomock.Any(), gomock.Any()).Return(&wrappers.BoolValue{false}, nil)
 		mockHasher.EXPECT().Hash(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{}, nil)
-		mock.EXPECT().CreateUser(gomock.Any(), &pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r}).Return(nil, errors.New(""))
+		mock.EXPECT().CreateNewUser(gomock.Any(), &pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r}).Return(nil, errors.New(""))
 
 		_, err := uc.Setup(ctx, r)
 
@@ -392,7 +338,7 @@ func TestSetup(t *testing.T) {
 
 		mock.EXPECT().AdminExists(gomock.Any(), gomock.Any()).Return(&wrappers.BoolValue{false}, nil)
 		mockHasher.EXPECT().Hash(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{"hashed_password"}, nil)
-		mock.EXPECT().CreateUser(gomock.Any(), gomock.Not(&pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r_orig}))
+		mock.EXPECT().CreateNewUser(gomock.Any(), gomock.Not(&pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r_orig}))
 
 		_, err := uc.Setup(ctx, r)
 		if err != nil {
