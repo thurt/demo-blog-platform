@@ -277,3 +277,7 @@ func (u *useCases) VerifyNewUser(ctx context.Context, _ *empty.Empty) (*pb.UserR
 
 	return ur, nil
 }
+
+func (u *useCases) Logout(ctx context.Context, r *pb.AccessToken) (*empty.Empty, error) {
+	return nil, status.Error(codes.Unimplemented, codes.Unimplemented.String())
+}

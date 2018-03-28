@@ -1,5 +1,6 @@
 syntax = "proto3";
 
+
 // CMS
 //
 // CMS Service API provides access to CMS entities and supports CMS use-cases
@@ -433,6 +434,16 @@ service Cms {
         };
         option (google.api.http) = {
             post: "/auth/user",
+            body: "*"
+        };
+    }
+    // Logout deactivates the provided access token 
+    rpc Logout(AccessToken) returns (google.protobuf.Empty) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Auth"]
+        };
+        option (google.api.http) = {
+            post: "/auth/user/logout",
             body: "*"
         };
     }

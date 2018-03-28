@@ -44,6 +44,33 @@
         ]
       }
     },
+    "/auth/user/logout": {
+      "post": {
+        "summary": "Logout deactivates the provided access token",
+        "operationId": "Logout",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/protobufEmpty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cmsAccessToken"
+            }
+          }
+        ],
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
     "/comments": {
       "get": {
         "summary": "Get all comments",

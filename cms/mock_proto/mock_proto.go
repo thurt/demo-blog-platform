@@ -228,6 +228,19 @@ func (mr *MockCmsServerMockRecorder) IsSetup(arg0, arg1 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsSetup", reflect.TypeOf((*MockCmsServer)(nil).IsSetup), arg0, arg1)
 }
 
+// Logout mocks base method
+func (m *MockCmsServer) Logout(arg0 context.Context, arg1 *proto.AccessToken) (*empty.Empty, error) {
+	ret := m.ctrl.Call(m, "Logout", arg0, arg1)
+	ret0, _ := ret[0].(*empty.Empty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Logout indicates an expected call of Logout
+func (mr *MockCmsServerMockRecorder) Logout(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockCmsServer)(nil).Logout), arg0, arg1)
+}
+
 // RegisterNewUser mocks base method
 func (m *MockCmsServer) RegisterNewUser(arg0 context.Context, arg1 *proto.CreateUserRequest) (*empty.Empty, error) {
 	ret := m.ctrl.Call(m, "RegisterNewUser", arg0, arg1)
