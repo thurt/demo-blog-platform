@@ -279,5 +279,9 @@ func (u *useCases) VerifyNewUser(ctx context.Context, _ *empty.Empty) (*pb.UserR
 }
 
 func (u *useCases) Logout(ctx context.Context, r *pb.AccessToken) (*empty.Empty, error) {
-	return nil, status.Error(codes.Unimplemented, codes.Unimplemented.String())
+	_, err := u.auth.DeactivateToken(ctx, &wrappers.StringValue{r.GetAccessToken()})
+	if err != nil {
+		return nil, status.Error(codes.Internal, codes.Internal.String())
+	}
+	return &empty.Empty{}, nil
 }

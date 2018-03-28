@@ -542,3 +542,31 @@ func TestVerifyNewUser(t *testing.T) {
 		}
 	})
 }
+
+func TestLogout(t *testing.T) {
+	stubIn := &pb.AccessToken{AccessToken: "0987654321"}
+	t.Run("must answer with a grpc error when receiving an error when deactivating token", func(t *testing.T) {
+		_, mockAuth, _, _, uc := setup(t)
+
+		mockAuth.EXPECT().DeactivateToken(gomock.Any(), &wrappers.StringValue{stubIn.GetAccessToken()}).Return(nil, errors.New(""))
+
+		_, err := uc.Logout(context.Background(), stubIn)
+		if err == nil {
+			t.Error("expected an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
+		}
+	})
+	t.Run("must return successfully without error in normal circumstances", func(t *testing.T) {
+		_, mockAuth, _, _, uc := setup(t)
+
+		mockAuth.EXPECT().DeactivateToken(gomock.Any(), &wrappers.StringValue{stubIn.GetAccessToken()}).Return(&empty.Empty{}, nil)
+
+		_, err := uc.Logout(context.Background(), stubIn)
+		if err != nil {
+			t.Error("unexpected error", err.Error())
+		}
+	})
+}
