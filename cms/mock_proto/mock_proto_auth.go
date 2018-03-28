@@ -8,6 +8,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/golang/protobuf/ptypes/wrappers"
 	proto "github.com/thurt/demo-blog-platform/cms/proto"
 	context "golang.org/x/net/context"
 )
@@ -59,4 +61,17 @@ func (m *MockCmsAuthServer) ActivateNewTokenForUser(arg0 context.Context, arg1 *
 // ActivateNewTokenForUser indicates an expected call of ActivateNewTokenForUser
 func (mr *MockCmsAuthServerMockRecorder) ActivateNewTokenForUser(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActivateNewTokenForUser", reflect.TypeOf((*MockCmsAuthServer)(nil).ActivateNewTokenForUser), arg0, arg1)
+}
+
+// DeactivateToken mocks base method
+func (m *MockCmsAuthServer) DeactivateToken(arg0 context.Context, arg1 *wrappers.StringValue) (*empty.Empty, error) {
+	ret := m.ctrl.Call(m, "DeactivateToken", arg0, arg1)
+	ret0, _ := ret[0].(*empty.Empty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeactivateToken indicates an expected call of DeactivateToken
+func (mr *MockCmsAuthServerMockRecorder) DeactivateToken(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeactivateToken", reflect.TypeOf((*MockCmsAuthServer)(nil).DeactivateToken), arg0, arg1)
 }

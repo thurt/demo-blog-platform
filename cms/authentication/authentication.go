@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"github.com/thurt/demo-blog-platform/cms/reqContext"
 	"golang.org/x/net/context"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -72,6 +75,14 @@ func (a *authProvider) ActivateNewTokenForCreateUserWithRole(ctx context.Context
 	}
 
 	return at, nil
+}
+
+func (a *authProvider) DeactivateToken(ctx context.Context, r *wrappers.StringValue) (*empty.Empty, error) {
+	err := a.mc.Del(r.GetValue())
+	if err != nil {
+		return nil, err
+	}
+	return &empty.Empty{}, nil
 }
 
 func (a *authProvider) genAccessToken() *pb.AccessToken {

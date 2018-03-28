@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/thurt/demo-blog-platform/cms/mock_mc"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"golang.org/x/net/context"
@@ -44,7 +45,33 @@ func TestActivateNewTokenForCreateUserWithRole(t *testing.T) {
 
 		_, err := aP.ActivateNewTokenForCreateUserWithRole(context.Background(), &pb.CreateUserWithRole{})
 		if err != nil {
-			t.Error("unexpected error")
+			t.Error("unexpected error", err.Error())
+		}
+	})
+}
+
+func TestDeactivateToken(t *testing.T) {
+	token := "0987654321"
+	t.Run("must return without error under normal circumstances", func(t *testing.T) {
+		mock := setup(t)
+		aP, _ := New(mock, 10*time.Second)
+
+		mock.EXPECT().Del(token).Return(nil)
+
+		_, err := aP.DeactivateToken(context.Background(), &wrappers.StringValue{token})
+		if err != nil {
+			t.Error("unexpected an error", err.Error())
+		}
+	})
+	t.Run("must return a grpc error when memcached returns error", func(t *testing.T) {
+		mock := setup(t)
+		aP, _ := New(mock, 10*time.Second)
+
+		mock.EXPECT().Del(token).Return(errors.New(""))
+
+		_, err := aP.DeactivateToken(context.Background(), &wrappers.StringValue{token})
+		if err == nil {
+			t.Error("expected an error")
 		}
 	})
 }

@@ -179,6 +179,7 @@ service CmsInternal {
 service CmsAuth {
     rpc ActivateNewTokenForUser(User) returns (AccessToken) {}
     rpc ActivateNewTokenForCreateUserWithRole(CreateUserWithRole) returns (AccessToken) {}
+    rpc DeactivateToken(google.protobuf.StringValue) returns (google.protobuf.Empty) {}
 }
 
 option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
