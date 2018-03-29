@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package cacher;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/duration.proto";
+
+message SetRequest {
+    string key = 1;
+    string value = 2;
+    google.protobuf.Duration ttl = 3;
+}
+
+message GetRequest {
+    string key = 1;
+}
+
+// Cacher is a service interface for a k/v store with ttl
+service Cacher {
+    // Set a key/value pair 
+    rpc Set(SetRequest) returns (google.protobuf.Empty) {} 
+    // Get a value by key
+    rpc Get(GetRequest) returns (google.protobuf.StringValue) {}
+}
