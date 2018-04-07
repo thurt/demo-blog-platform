@@ -18,6 +18,7 @@ import (
 	"github.com/memcachier/mc"
 	"github.com/thurt/demo-blog-platform/cms/authentication"
 	"github.com/thurt/demo-blog-platform/cms/authorization"
+	"github.com/thurt/demo-blog-platform/cms/cacher"
 	"github.com/thurt/demo-blog-platform/cms/emailer"
 	"github.com/thurt/demo-blog-platform/cms/hasher"
 	"github.com/thurt/demo-blog-platform/cms/mysqlprovider"
@@ -127,7 +128,7 @@ func main() {
 		)),
 	}
 	grpcServer := grpc.NewServer(opts...)
-	pb.RegisterCmsServer(grpcServer, authorization.New(usecases.New(mysqlprovider.New(db), authProvider, hasher.New(), emailer.New(SMTP_CONN, smtpAuth))))
+	pb.RegisterCmsServer(grpcServer, authorization.New(usecases.New(mysqlprovider.New(db), authProvider, hasher.New(), emailer.New(SMTP_CONN, smtpAuth), cacher.New(cn))))
 	log.Printf("Started grpc server on port %d", PORT)
 
 	// setup rest proxy server

@@ -1,7 +1,7 @@
 package cacher
 
 import (
-	"context"
+	"golang.org/x/net/context"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/golang/protobuf/ptypes/wrappers"

@@ -30,6 +30,8 @@ It has these top-level messages:
 	CreateUserWithRole
 	AuthUserRequest
 	AccessToken
+	VerifyNewUserRequest
+	Email
 	UserPassword
 */
 package cms
@@ -370,7 +372,19 @@ func (this *AccessToken) Fuzz(c gofuzz.Continue) {
 	var g goregen.Generator
 	var _ = g // Reference g to suppress errors if it is not otherwise used.
 }
-func (this *UserPassword) Validate() error {
+
+var _regex_VerifyNewUserRequest_Token = regexp.MustCompile("^[[:xdigit:]]{6}$")
+
+func (this *VerifyNewUserRequest) Validate() error {
+	if !_regex_VerifyNewUserRequest_Token.MatchString(this.Token) {
+		return go_proto_validators.FieldError("Token", fmt.Errorf(`Sorry, that token does not appear valid. Please try entering the token again`))
+	}
+	if this.Token == "" {
+		return go_proto_validators.FieldError("Token", fmt.Errorf(`Sorry, that token does not appear valid. Please try entering the token again`))
+	}
+	return nil
+}
+func (this *Email) Validate() error {
 	return nil
 }
 func (this *UserPassword) Fuzz(c gofuzz.Continue) {

@@ -146,6 +146,11 @@ message StrAndHash {
     string hash = 2;
 }
 
+// VerifyNewUserRequest
+message VerifyNewUserRequest {
+    string token = 1 [(validator.field) = {string_not_empty: true, regex: "^[[:xdigit:]]{6}$", human_error: "Sorry, that token does not appear valid. Please try entering the token again"}];
+}
+
 service Hasher {
     rpc Hash(google.protobuf.StringValue) returns (google.protobuf.StringValue) {}
     rpc Validate(StrAndHash) returns (google.protobuf.Empty) {}
@@ -460,7 +465,7 @@ service Cms {
     }
     
     // Verify ownership of your email address in order to finish creating your new user account
-    rpc VerifyNewUser(google.protobuf.Empty) returns (UserRequest) {
+    rpc VerifyNewUser(VerifyNewUserRequest) returns (UserRequest) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
             security: {
                 security_requirement: {

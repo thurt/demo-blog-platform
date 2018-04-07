@@ -1,15 +1,20 @@
 package usecases
 
 import (
+	"crypto/rand"
+	"fmt"
 	"log"
+	"time"
 
+	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/gosimple/slug"
 	"github.com/satori/go.uuid"
+	pb_cacher "github.com/thurt/demo-blog-platform/cms/cacher/proto"
 	"github.com/thurt/demo-blog-platform/cms/domain"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
-	"github.com/thurt/demo-blog-platform/cms/reqContext"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -20,11 +25,21 @@ type useCases struct {
 	auth    pb.CmsAuthServer
 	hasher  pb.HasherServer
 	emailer pb.EmailerServer
+	cacher  pb_cacher.CacherServer
 }
 
-func New(provider domain.Provider, authProvider pb.CmsAuthServer, hasher pb.HasherServer, emailer pb.EmailerServer) *useCases {
-	uc := &useCases{provider, authProvider, hasher, emailer}
+func New(provider domain.Provider, authProvider pb.CmsAuthServer, hasher pb.HasherServer, emailer pb.EmailerServer, cacher pb_cacher.CacherServer) *useCases {
+	uc := &useCases{provider, authProvider, hasher, emailer, cacher}
 	return uc
+}
+
+func genRandHexValue(bytes uint) string {
+	if bytes == 0 {
+		return ""
+	}
+	b := make([]byte, bytes)
+	rand.Read(b)
+	return fmt.Sprintf("%x", b)
 }
 
 func slugMake(str string) string {
@@ -219,9 +234,15 @@ func (u *useCases) RegisterNewUser(ctx context.Context, r *pb.CreateUserRequest)
 	if err != nil {
 		return nil, err
 	}
-
 	r.Password = hashedPassword.GetValue()
-	at, err := u.auth.ActivateNewTokenForCreateUserWithRole(ctx, &pb.CreateUserWithRole{User: r, Role: pb.UserRole_USER})
+
+	cuwr := &pb.CreateUserWithRole{User: r, Role: pb.UserRole_USER}
+	tv := genRandHexValue(3)
+	_, err = u.cacher.Set(ctx, &pb_cacher.SetRequest{
+		Key:   tv,
+		Value: cuwr.String(),
+		Ttl:   &duration.Duration{Seconds: int64((24 * time.Hour).Seconds())},
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -230,7 +251,7 @@ func (u *useCases) RegisterNewUser(ctx context.Context, r *pb.CreateUserRequest)
 		To:      r.GetEmail(),
 		From:    "no-reply@demo-blog-platform.com",
 		Subject: "Verify Your Email",
-		Body:    "In order to complete you registration with user id, " + r.GetId() + ", you must copy the following value into the prompt as instructed on the Demo Blog Platform website: \n\n" + at.GetAccessToken(),
+		Body:    "In order to complete you registration with user id, " + r.GetId() + ", you must copy the following value into the prompt as instructed on the Demo Blog Platform website: \n\n" + tv,
 	})
 
 	if err != nil {
@@ -241,33 +262,42 @@ func (u *useCases) RegisterNewUser(ctx context.Context, r *pb.CreateUserRequest)
 	return &empty.Empty{}, nil
 }
 
-func (u *useCases) VerifyNewUser(ctx context.Context, _ *empty.Empty) (*pb.UserRequest, error) {
-	r, err := reqContext.GetCreateUserWithRole(ctx)
+func (u *useCases) VerifyNewUser(ctx context.Context, r *pb.VerifyNewUserRequest) (*pb.UserRequest, error) {
+	v, err := u.cacher.Get(ctx, &pb_cacher.GetRequest{Key: r.GetToken()})
 	if err != nil {
-		return nil, err
+		log.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// unmarshal value returned from cacher
+	cuwr := &pb.CreateUserWithRole{}
+	err = proto.UnmarshalText(v.GetValue(), cuwr)
+	if err != nil {
+		log.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	// requires that user id does not exist
-	user, err := u.Provider.GetUser(ctx, &pb.UserRequest{Id: r.GetUser().GetId()})
+	user, err := u.Provider.GetUser(ctx, &pb.UserRequest{Id: cuwr.GetUser().GetId()})
 	if err != nil {
 		log.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	if *user != (pb.User{}) {
-		return nil, status.Errorf(codes.AlreadyExists, "The provided user id %q already exists", r.GetUser().GetId())
+		return nil, status.Errorf(codes.AlreadyExists, "The provided user id %q already exists", cuwr.GetUser().GetId())
 	}
 
-	ur, err := u.Provider.CreateNewUser(ctx, r)
+	ur, err := u.Provider.CreateNewUser(ctx, cuwr)
 	if err != nil {
 		return nil, err
 	}
 
 	_, err = u.emailer.Send(ctx, &pb.Email{
-		To:      r.GetUser().GetEmail(),
+		To:      cuwr.GetUser().GetEmail(),
 		From:    "no-reply@demo-blog-platform.com",
 		Subject: "Registration Complete",
-		Body:    "Hi, thanks for joining Demo Blog! \n\nThis is a confirmation email that you have successfully completed registration for Demo Blog with user id " + r.GetUser().GetId() + ".",
+		Body:    "Hi, thanks for joining Demo Blog! \n\nThis is a confirmation email that you have successfully completed registration for Demo Blog with user id " + cuwr.GetUser().GetId() + ".",
 	})
 
 	if err != nil {
