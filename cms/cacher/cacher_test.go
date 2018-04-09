@@ -73,3 +73,28 @@ func TestSet(t *testing.T) {
 		}
 	})
 }
+
+func TestDelete(t *testing.T) {
+	stubIn := &pb.DeleteRequest{}
+	stubIn.Key = "abc"
+	t.Run("must return error when memcached returns error", func(t *testing.T) {
+		mock, c := setup(t)
+		mock.EXPECT().Del(stubIn.GetKey()).Return(errors.New(""))
+
+		_, err := c.Delete(context.Background(), stubIn)
+
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
+	t.Run("must return without error under normal circumstances", func(t *testing.T) {
+		mock, c := setup(t)
+		mock.EXPECT().Del(stubIn.GetKey()).Return(nil)
+
+		_, err := c.Delete(context.Background(), stubIn)
+
+		if err != nil {
+			t.Error("unexpected error", err.Error())
+		}
+	})
+}

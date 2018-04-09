@@ -31,3 +31,11 @@ func (c *cacher) Set(ctx context.Context, r *pb.SetRequest) (*empty.Empty, error
 	}
 	return &empty.Empty{}, nil
 }
+
+func (c *cacher) Delete(ctx context.Context, r *pb.DeleteRequest) (*empty.Empty, error) {
+	err := c.mc.Del(r.GetKey())
+	if err != nil {
+		return nil, err
+	}
+	return &empty.Empty{}, nil
+}
