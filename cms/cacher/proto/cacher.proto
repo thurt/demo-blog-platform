@@ -16,10 +16,16 @@ message GetRequest {
     string key = 1;
 }
 
+message DeleteRequest {
+    string key = 1;
+}
+
 // Cacher is a service interface for a k/v store with ttl
 service Cacher {
     // Set a key/value pair 
     rpc Set(SetRequest) returns (google.protobuf.Empty) {} 
     // Get a value by key
     rpc Get(GetRequest) returns (google.protobuf.StringValue) {}
+    // Delete a key
+    rpc Delete(DeleteRequest) returns (google.protobuf.Empty) {}
 }
