@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
+	pb_cacher "github.com/thurt/demo-blog-platform/cms/cacher/proto"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"github.com/thurt/demo-blog-platform/cms/reqContext"
 	"golang.org/x/net/context"
@@ -19,12 +21,12 @@ import (
 var ErrUnauthenticated = status.Error(codes.Unauthenticated, "Your credentials are expired or invalid. Try to authenticate again.")
 
 type authProvider struct {
-	mc          Conn
+	cacher      pb_cacher.CacherServer
 	tokenExpiry time.Duration
 	tokenType   string
 }
 
-func newAuthFunc(mc Conn, tokenExpiry time.Duration) grpc_auth.AuthFunc {
+func newAuthFunc(cacher pb_cacher.CacherServer, tokenExpiry time.Duration) grpc_auth.AuthFunc {
 	return func(ctx context.Context) (context.Context, error) {
 		t, err := reqContext.GetAuthorizationToken(ctx)
 
@@ -35,26 +37,28 @@ func newAuthFunc(mc Conn, tokenExpiry time.Duration) grpc_auth.AuthFunc {
 			return ctx, nil
 		}
 
-		// get and touch will reset expiry to the tokenExpiry value
-		// this allows a token to remain active so long as it is still being used
-		userStr, _, _, err := mc.GAT(t, uint32(tokenExpiry.Seconds()))
+		userStr, err := cacher.Get(ctx, &pb_cacher.GetRequest{t})
 		// maybe want to handle some possible errors returned here
 		if err != nil {
 			return nil, ErrUnauthenticated
 		}
 
-		return reqContext.NewFromUserString(ctx, userStr), nil
+		return reqContext.NewFromUserString(ctx, userStr.GetValue()), nil
 	}
 }
 
-func New(mc Conn, tokenExpiry time.Duration) (*authProvider, grpc_auth.AuthFunc) {
-	return &authProvider{mc, tokenExpiry, "Bearer"}, newAuthFunc(mc, tokenExpiry)
+func New(cacher pb_cacher.CacherServer, tokenExpiry time.Duration) (*authProvider, grpc_auth.AuthFunc) {
+	return &authProvider{cacher, tokenExpiry, "Bearer"}, newAuthFunc(cacher, tokenExpiry)
 }
 
 func (a *authProvider) ActivateNewTokenForUser(ctx context.Context, r *pb.User) (*pb.AccessToken, error) {
 	at := a.genAccessToken()
 
-	_, err := a.mc.Add(at.GetAccessToken(), r.String(), 0, uint32(a.tokenExpiry.Seconds()))
+	_, err := a.cacher.Set(ctx, &pb_cacher.SetRequest{
+		Key:   at.GetAccessToken(),
+		Value: r.String(),
+		Ttl:   &duration.Duration{Seconds: int64(a.tokenExpiry.Seconds())},
+	})
 	// maybe want to handle some possible errors returned here
 	if err != nil {
 		fmt.Println("error trying to add token to mc:", err)
@@ -67,7 +71,12 @@ func (a *authProvider) ActivateNewTokenForUser(ctx context.Context, r *pb.User) 
 func (a *authProvider) ActivateNewTokenForCreateUserWithRole(ctx context.Context, r *pb.CreateUserWithRole) (*pb.AccessToken, error) {
 	at := a.genAccessToken()
 
-	_, err := a.mc.Add(at.GetAccessToken(), r.String(), 0, uint32(a.tokenExpiry.Seconds()))
+	_, err := a.cacher.Set(ctx, &pb_cacher.SetRequest{
+		Key:   at.GetAccessToken(),
+		Value: r.String(),
+		Ttl:   &duration.Duration{Seconds: int64(a.tokenExpiry.Seconds())},
+	})
+
 	// maybe want to handle some possible errors returned here
 	if err != nil {
 		fmt.Println("error trying to add token to mc:", err)
@@ -78,7 +87,7 @@ func (a *authProvider) ActivateNewTokenForCreateUserWithRole(ctx context.Context
 }
 
 func (a *authProvider) DeactivateToken(ctx context.Context, r *wrappers.StringValue) (*empty.Empty, error) {
-	err := a.mc.Del(r.GetValue())
+	_, err := a.cacher.Delete(ctx, &pb_cacher.DeleteRequest{r.GetValue()})
 	if err != nil {
 		return nil, err
 	}

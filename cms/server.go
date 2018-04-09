@@ -42,15 +42,15 @@ var (
 func main() {
 	//connect to memcache
 	MEMCACHED_HOST = os.Getenv("MEMCACHED_HOST")
-	cn, err := mc.Dial("tcp", MEMCACHED_HOST)
+	mcCn, err := mc.Dial("tcp", MEMCACHED_HOST)
 	if err != nil {
 		panic(err)
 	}
-	defer cn.Close()
+	defer mcCn.Close()
 
 	MEMCACHED_USER = os.Getenv("MEMCACHED_USER")
 	MEMCACHED_PASSWORD = os.Getenv("MEMCACHED_PASSWORD")
-	err = cn.Auth(MEMCACHED_USER, MEMCACHED_PASSWORD)
+	err = mcCn.Auth(MEMCACHED_USER, MEMCACHED_PASSWORD)
 	if err != nil {
 		panic(err)
 	}
@@ -113,7 +113,10 @@ func main() {
 		panic(err.Error())
 	}
 
-	authProvider, authFunc := authentication.New(cn, 8*time.Hour)
+	// create the cacher service using a memcached driver
+	mcCacher := cacher.New(mcCn)
+
+	authProvider, authFunc := authentication.New(mcCacher, 8*time.Hour)
 
 	grpc.EnableTracing = true
 	opts := []grpc.ServerOption{
@@ -128,7 +131,7 @@ func main() {
 		)),
 	}
 	grpcServer := grpc.NewServer(opts...)
-	pb.RegisterCmsServer(grpcServer, authorization.New(usecases.New(mysqlprovider.New(db), authProvider, hasher.New(), emailer.New(SMTP_CONN, smtpAuth), cacher.New(cn))))
+	pb.RegisterCmsServer(grpcServer, authorization.New(usecases.New(mysqlprovider.New(db), authProvider, hasher.New(), emailer.New(SMTP_CONN, smtpAuth), mcCacher)))
 	log.Printf("Started grpc server on port %d", PORT)
 
 	// setup rest proxy server
