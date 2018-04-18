@@ -20,7 +20,7 @@ services:
             - db
             - memcached
             - mail
-        command: ["/go/src/app/wait-for-it.sh", "--timeout=120", "db:3306", "--", "/go/src/app/wait-for-it.sh", "--timeout=120", "memcached:3000", "--", "/go/src/app/wait-for-it.sh", "--timeout=120", "mail:25", "--", "go-wrapper", "run"]
+        command: ["/root/wait-for-it.sh", "--timeout=120", "db:3306", "--", "/root/wait-for-it.sh", "--timeout=120", "memcached:3000", "--", "/root/wait-for-it.sh", "--timeout=120", "mail:25", "--", "./cms"]
     db:
         build: ./cms/mysqlprovider/db 
         volumes:

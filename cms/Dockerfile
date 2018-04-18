@@ -1,11 +1,12 @@
-FROM golang:1.8
-
+FROM golang:1.8 as builder
 WORKDIR /go/src/app
 COPY . .
-
 RUN go-wrapper download
-RUN go-wrapper install
+RUN CGO_ENABLED=0 go-wrapper install
 
-CMD ["go-wrapper", "run"]
-
+FROM alpine:latest
+WORKDIR /root/
+RUN apk -v --no-cache add bash ca-certificates
+COPY --from=builder /go/src/app/wait-for-it.sh /go/bin/cms ./
+CMD ["/root/cms"]
 EXPOSE 10000/TCP 8080/TCP 8181/TCP
