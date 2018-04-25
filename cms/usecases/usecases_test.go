@@ -19,7 +19,15 @@ import (
 
 var ctx context.Context = context.Background()
 
-func newTestFixture(t *testing.T) (*mock_domain.MockProvider, *mock_proto.MockCmsAuthServer, *mock_proto.MockHasherServer, *mock_proto.MockEmailerServer, *mock_proto_cacher.MockCacherServer, *useCases) {
+type TestFixture struct {
+	Provider *mock_domain.MockProvider
+	Auth     *mock_proto.MockCmsAuthServer
+	Hasher   *mock_proto.MockHasherServer
+	Emailer  *mock_proto.MockEmailerServer
+	Cacher   *mock_proto_cacher.MockCacherServer
+}
+
+func newTestFixture(t *testing.T) (*TestFixture, *UseCases) {
 	// create NewMockCmsServer
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -45,17 +53,18 @@ func newTestFixture(t *testing.T) (*mock_domain.MockProvider, *mock_proto.MockCm
 	defer mockCtrlCacher.Finish()
 	mockCacher := mock_proto_cacher.NewMockCacherServer(mockCtrlCacher)
 
-	uc := New(mock, mockAuth, mockHasher, mockEmailer, mockCacher)
-	return mock, mockAuth, mockHasher, mockEmailer, mockCacher, uc
+	uc := &UseCases{mock, mockAuth, mockHasher, mockEmailer, mockCacher}
+	tf := &TestFixture{mock, mockAuth, mockHasher, mockEmailer, mockCacher}
+	return tf, uc
 }
 
 func TestCreatePost(t *testing.T) {
 	t.Run("requires a Slug to be created from the Title and added to the request", func(t *testing.T) {
-		mock, _, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.CreatePostRequest{Title: "Hello World!"}
 
-		mock.EXPECT().CreatePost(ctx, &pb.CreatePostWithSlug{Slug: "hello-world", Post: r})
+		tf.Provider.EXPECT().CreatePost(ctx, &pb.CreatePostWithSlug{Slug: "hello-world", Post: r})
 
 		_, _ = uc.CreatePost(ctx, r)
 	})
@@ -63,16 +72,16 @@ func TestCreatePost(t *testing.T) {
 
 func TestUpdatePost(t *testing.T) {
 	t.Run("requires a Slug to be created from the Title and added to the request", func(t *testing.T) {
-		mock, _, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.UpdatePostRequest{Title: "Hello World!"}
 
-		mock.EXPECT().UpdatePost(ctx, &pb.UpdatePostWithSlug{Slug: "hello-world", Post: r})
+		tf.Provider.EXPECT().UpdatePost(ctx, &pb.UpdatePostWithSlug{Slug: "hello-world", Post: r})
 
 		_, _ = uc.UpdatePost(ctx, r)
 	})
 	t.Run("requires that published Posts contain a title", func(t *testing.T) {
-		_, _, _, _, _, uc := newTestFixture(t)
+		_, uc := newTestFixture(t)
 		r := &pb.UpdatePostRequest{Title: "", Published: true}
 
 		_, err := uc.UpdatePost(ctx, r)
@@ -85,11 +94,11 @@ func TestUpdatePost(t *testing.T) {
 
 func TestCreateComment(t *testing.T) {
 	t.Run("requires a valid user id", func(t *testing.T) {
-		mock, _, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.CreateCommentRequest{UserId: "id"}
 
-		mock.EXPECT().GetUser(gomock.Any(), &pb.UserRequest{"id"}).Return(nil, status.Error(codes.NotFound, ""))
+		tf.Provider.EXPECT().GetUser(gomock.Any(), &pb.UserRequest{"id"}).Return(nil, status.Error(codes.NotFound, ""))
 
 		_, err := uc.CreateComment(ctx, r)
 
@@ -98,12 +107,12 @@ func TestCreateComment(t *testing.T) {
 		}
 	})
 	t.Run("requires a valid post id", func(t *testing.T) {
-		mock, _, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.CreateCommentRequest{PostId: 0}
 
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{}, nil)
-		mock.EXPECT().GetPost(gomock.Any(), &pb.PostRequest{0}).Return(nil, status.Error(codes.NotFound, ""))
+		tf.Provider.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{}, nil)
+		tf.Provider.EXPECT().GetPost(gomock.Any(), &pb.PostRequest{0}).Return(nil, status.Error(codes.NotFound, ""))
 
 		_, err := uc.CreateComment(ctx, r)
 		if err == nil {
@@ -111,12 +120,12 @@ func TestCreateComment(t *testing.T) {
 		}
 	})
 	t.Run("Comment cannot be created for a Post that is not published", func(t *testing.T) {
-		mock, _, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.CreateCommentRequest{}
 
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{}, nil)
-		mock.EXPECT().GetPost(gomock.Any(), gomock.Any()).Return(&pb.Post{Id: 1, Published: false}, nil)
+		tf.Provider.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{}, nil)
+		tf.Provider.EXPECT().GetPost(gomock.Any(), gomock.Any()).Return(&pb.Post{Id: 1, Published: false}, nil)
 
 		_, err := uc.CreateComment(ctx, r)
 		if err == nil {
@@ -127,11 +136,11 @@ func TestCreateComment(t *testing.T) {
 
 func TestAuthUser(t *testing.T) {
 	t.Run("must answer with a grpc error when given a non-existant user id", func(t *testing.T) {
-		mock, _, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.AuthUserRequest{Id: "id", Password: "password"}
 
-		mock.EXPECT().GetUser(gomock.Any(), &pb.UserRequest{Id: r.GetId()}).Return(nil, errors.New(""))
+		tf.Provider.EXPECT().GetUser(gomock.Any(), &pb.UserRequest{Id: r.GetId()}).Return(nil, errors.New(""))
 
 		_, err := uc.AuthUser(ctx, r)
 
@@ -145,13 +154,13 @@ func TestAuthUser(t *testing.T) {
 
 	})
 	t.Run("must answer with a grpc error when given an invalid password", func(t *testing.T) {
-		mock, _, mockHasher, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.AuthUserRequest{Id: "id", Password: "wrong_password"}
 
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: r.GetId()}, nil)
-		mock.EXPECT().GetUserPassword(gomock.Any(), &pb.UserRequest{Id: r.GetId()}).Return(&pb.UserPassword{"hashed_password"}, nil)
-		mockHasher.EXPECT().Validate(gomock.Any(), &pb.StrAndHash{"wrong_password", "hashed_password"}).Return(nil, errors.New(""))
+		tf.Provider.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: r.GetId()}, nil)
+		tf.Provider.EXPECT().GetUserPassword(gomock.Any(), &pb.UserRequest{Id: r.GetId()}).Return(&pb.UserPassword{"hashed_password"}, nil)
+		tf.Hasher.EXPECT().Validate(gomock.Any(), &pb.StrAndHash{"wrong_password", "hashed_password"}).Return(nil, errors.New(""))
 
 		_, err := uc.AuthUser(ctx, r)
 
@@ -164,12 +173,12 @@ func TestAuthUser(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when error occurs trying to get user password", func(t *testing.T) {
-		mock, _, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.AuthUserRequest{Id: "id", Password: "right_password"}
 
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: r.GetId()}, nil)
-		mock.EXPECT().GetUserPassword(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
+		tf.Provider.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: r.GetId()}, nil)
+		tf.Provider.EXPECT().GetUserPassword(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
 
 		_, err := uc.AuthUser(ctx, r)
 
@@ -182,14 +191,14 @@ func TestAuthUser(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when error occurs trying to activate new token for user", func(t *testing.T) {
-		mock, mockAuth, mockHasher, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.AuthUserRequest{Id: "id", Password: "right_password"}
 
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: r.GetId()}, nil)
-		mock.EXPECT().GetUserPassword(gomock.Any(), gomock.Any()).Return(&pb.UserPassword{"hashed_password"}, nil)
-		mockHasher.EXPECT().Validate(gomock.Any(), &pb.StrAndHash{"right_password", "hashed_password"}).Return(&empty.Empty{}, nil)
-		mockAuth.EXPECT().ActivateNewTokenForUser(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
+		tf.Provider.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: r.GetId()}, nil)
+		tf.Provider.EXPECT().GetUserPassword(gomock.Any(), gomock.Any()).Return(&pb.UserPassword{"hashed_password"}, nil)
+		tf.Hasher.EXPECT().Validate(gomock.Any(), &pb.StrAndHash{"right_password", "hashed_password"}).Return(&empty.Empty{}, nil)
+		tf.Auth.EXPECT().ActivateNewTokenForUser(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
 
 		_, err := uc.AuthUser(ctx, r)
 
@@ -202,15 +211,15 @@ func TestAuthUser(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when error occurs trying to update user last active", func(t *testing.T) {
-		mock, mockAuth, mockHasher, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.AuthUserRequest{Id: "id", Password: "right_password"}
 
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: r.GetId()}, nil)
-		mock.EXPECT().GetUserPassword(gomock.Any(), gomock.Any()).Return(&pb.UserPassword{"hashed_password"}, nil)
-		mockHasher.EXPECT().Validate(gomock.Any(), &pb.StrAndHash{"right_password", "hashed_password"}).Return(&empty.Empty{}, nil)
-		mockAuth.EXPECT().ActivateNewTokenForUser(gomock.Any(), gomock.Any()).Return(&pb.AccessToken{}, nil)
-		mock.EXPECT().UpdateUserLastActive(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
+		tf.Provider.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: r.GetId()}, nil)
+		tf.Provider.EXPECT().GetUserPassword(gomock.Any(), gomock.Any()).Return(&pb.UserPassword{"hashed_password"}, nil)
+		tf.Hasher.EXPECT().Validate(gomock.Any(), &pb.StrAndHash{"right_password", "hashed_password"}).Return(&empty.Empty{}, nil)
+		tf.Auth.EXPECT().ActivateNewTokenForUser(gomock.Any(), gomock.Any()).Return(&pb.AccessToken{}, nil)
+		tf.Provider.EXPECT().UpdateUserLastActive(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
 
 		_, err := uc.AuthUser(ctx, r)
 
@@ -226,11 +235,11 @@ func TestAuthUser(t *testing.T) {
 
 func TestGetUser(t *testing.T) {
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
-		mock, _, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.UserRequest{}
 
-		mock.EXPECT().GetUser(gomock.Any(), r).Return(nil, errors.New(""))
+		tf.Provider.EXPECT().GetUser(gomock.Any(), r).Return(nil, errors.New(""))
 
 		_, err := uc.GetUser(ctx, r)
 
@@ -243,11 +252,11 @@ func TestGetUser(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when receiving a zero-value User", func(t *testing.T) {
-		mock, _, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.UserRequest{}
 
-		mock.EXPECT().GetUser(gomock.Any(), r).Return(&pb.User{}, nil)
+		tf.Provider.EXPECT().GetUser(gomock.Any(), r).Return(&pb.User{}, nil)
 
 		_, err := uc.GetUser(ctx, r)
 		if err == nil {
@@ -262,11 +271,11 @@ func TestGetUser(t *testing.T) {
 
 func TestGetComment(t *testing.T) {
 	t.Run("must answer with a grpc error when receiving a zero-value Comment", func(t *testing.T) {
-		mock, _, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.CommentRequest{}
 
-		mock.EXPECT().GetComment(gomock.Any(), r).Return(&pb.Comment{}, nil)
+		tf.Provider.EXPECT().GetComment(gomock.Any(), r).Return(&pb.Comment{}, nil)
 
 		_, err := uc.GetComment(ctx, r)
 		if err == nil {
@@ -281,11 +290,11 @@ func TestGetComment(t *testing.T) {
 
 func TestIsSetup(t *testing.T) {
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
-		mock, _, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &empty.Empty{}
 
-		mock.EXPECT().AdminExists(gomock.Any(), r).Return(nil, errors.New(""))
+		tf.Provider.EXPECT().AdminExists(gomock.Any(), r).Return(nil, errors.New(""))
 
 		_, err := uc.IsSetup(ctx, r)
 
@@ -302,10 +311,10 @@ func TestIsSetup(t *testing.T) {
 func TestSetup(t *testing.T) {
 	r := &pb.CreateUserRequest{}
 	t.Run("must answer with a grpc error if Setup condition (admin does not exist) is not satisfied", func(t *testing.T) {
-		mock, _, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		// return true (admin exists) to test whether function answers properly
-		mock.EXPECT().AdminExists(gomock.Any(), gomock.Any()).Return(&wrappers.BoolValue{true}, nil)
+		tf.Provider.EXPECT().AdminExists(gomock.Any(), gomock.Any()).Return(&wrappers.BoolValue{true}, nil)
 
 		_, err := uc.Setup(ctx, r)
 		if err == nil {
@@ -317,13 +326,13 @@ func TestSetup(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
-		mock, _, mockHasher, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.CreateUserRequest{}
 
-		mock.EXPECT().AdminExists(gomock.Any(), gomock.Any()).Return(&wrappers.BoolValue{false}, nil)
-		mockHasher.EXPECT().Hash(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{}, nil)
-		mock.EXPECT().CreateNewUser(gomock.Any(), &pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r}).Return(nil, errors.New(""))
+		tf.Provider.EXPECT().AdminExists(gomock.Any(), gomock.Any()).Return(&wrappers.BoolValue{false}, nil)
+		tf.Hasher.EXPECT().Hash(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{}, nil)
+		tf.Provider.EXPECT().CreateNewUser(gomock.Any(), &pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r}).Return(nil, errors.New(""))
 
 		_, err := uc.Setup(ctx, r)
 
@@ -336,15 +345,15 @@ func TestSetup(t *testing.T) {
 		}
 	})
 	t.Run("requires that password is hashed", func(t *testing.T) {
-		mock, _, mockHasher, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.CreateUserRequest{Password: "password"}
 		// because the implementation directly mutates the request instance, i need to retain a copy of the request with the original values in order to make an expectation that the password value has actually changed
 		r_orig := &pb.CreateUserRequest{Password: r.GetPassword()}
 
-		mock.EXPECT().AdminExists(gomock.Any(), gomock.Any()).Return(&wrappers.BoolValue{false}, nil)
-		mockHasher.EXPECT().Hash(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{"hashed_password"}, nil)
-		mock.EXPECT().CreateNewUser(gomock.Any(), gomock.Not(&pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r_orig}))
+		tf.Provider.EXPECT().AdminExists(gomock.Any(), gomock.Any()).Return(&wrappers.BoolValue{false}, nil)
+		tf.Hasher.EXPECT().Hash(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{"hashed_password"}, nil)
+		tf.Provider.EXPECT().CreateNewUser(gomock.Any(), gomock.Not(&pb.CreateUserWithRole{Role: pb.UserRole_ADMIN, User: r_orig}))
 
 		_, err := uc.Setup(ctx, r)
 		if err != nil {
@@ -358,9 +367,9 @@ func TestGetPosts(t *testing.T) {
 	mockStreamOut := mock_proto.NewMockCms_GetPostsServer()
 
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
-		mock, _, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
-		mock.EXPECT().GetPosts(gomock.Any(), gomock.Any()).Return(errors.New(""))
+		tf.Provider.EXPECT().GetPosts(gomock.Any(), gomock.Any()).Return(errors.New(""))
 
 		err := uc.GetPosts(r, mockStreamOut)
 		if err == nil {
@@ -375,11 +384,11 @@ func TestGetPosts(t *testing.T) {
 
 func TestGetPost(t *testing.T) {
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
-		mock, _, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.PostRequest{}
 
-		mock.EXPECT().GetPost(gomock.Any(), r).Return(nil, errors.New(""))
+		tf.Provider.EXPECT().GetPost(gomock.Any(), r).Return(nil, errors.New(""))
 
 		_, err := uc.GetPost(ctx, r)
 
@@ -392,11 +401,11 @@ func TestGetPost(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when receiving a zero-value Post", func(t *testing.T) {
-		mock, _, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.PostRequest{}
 
-		mock.EXPECT().GetPost(gomock.Any(), r).Return(&pb.Post{}, nil)
+		tf.Provider.EXPECT().GetPost(gomock.Any(), r).Return(&pb.Post{}, nil)
 
 		_, err := uc.GetPost(ctx, r)
 		if err == nil {
@@ -411,11 +420,11 @@ func TestGetPost(t *testing.T) {
 
 func TestGetPostBySlug(t *testing.T) {
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
-		mock, _, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.PostBySlugRequest{}
 
-		mock.EXPECT().GetPostBySlug(gomock.Any(), r).Return(nil, errors.New(""))
+		tf.Provider.EXPECT().GetPostBySlug(gomock.Any(), r).Return(nil, errors.New(""))
 
 		_, err := uc.GetPostBySlug(ctx, r)
 
@@ -428,11 +437,11 @@ func TestGetPostBySlug(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when receiving a zero-value Post", func(t *testing.T) {
-		mock, _, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.PostBySlugRequest{}
 
-		mock.EXPECT().GetPostBySlug(gomock.Any(), r).Return(&pb.Post{}, nil)
+		tf.Provider.EXPECT().GetPostBySlug(gomock.Any(), r).Return(&pb.Post{}, nil)
 
 		_, err := uc.GetPostBySlug(ctx, r)
 		if err == nil {
@@ -447,10 +456,10 @@ func TestGetPostBySlug(t *testing.T) {
 
 func TestRegisterNewUser(t *testing.T) {
 	t.Run("must answer with a grpc error when receiving an error when getting user", func(t *testing.T) {
-		mock, _, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 		r := &pb.CreateUserRequest{Id: "id"}
 
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
+		tf.Provider.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
 
 		_, err := uc.RegisterNewUser(ctx, r)
 		if err == nil {
@@ -462,12 +471,12 @@ func TestRegisterNewUser(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when receiving a user id that already exists", func(t *testing.T) {
-		mock, _, _, mockEmailer, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
 		r := &pb.CreateUserRequest{Id: "id"}
 
-		mockEmailer.EXPECT().Send(gomock.Any(), gomock.Any()).Return(&empty.Empty{}, nil)
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: "id"}, nil)
+		tf.Emailer.EXPECT().Send(gomock.Any(), gomock.Any()).Return(&empty.Empty{}, nil)
+		tf.Provider.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: "id"}, nil)
 
 		_, err := uc.RegisterNewUser(ctx, r)
 		if err == nil {
@@ -479,12 +488,12 @@ func TestRegisterNewUser(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when receiving an error when sending email", func(t *testing.T) {
-		mock, _, mockHasher, mockEmailer, mockCacher, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{}, nil)
-		mockHasher.EXPECT().Hash(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{"hashed_password"}, nil)
-		mockCacher.EXPECT().Set(gomock.Any(), gomock.Any()).Return(&empty.Empty{}, nil)
-		mockEmailer.EXPECT().Send(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
+		tf.Provider.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{}, nil)
+		tf.Hasher.EXPECT().Hash(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{"hashed_password"}, nil)
+		tf.Cacher.EXPECT().Set(gomock.Any(), gomock.Any()).Return(&empty.Empty{}, nil)
+		tf.Emailer.EXPECT().Send(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
 
 		r := &pb.CreateUserRequest{}
 
@@ -503,10 +512,10 @@ func TestVerifyNewUser(t *testing.T) {
 	stubIn := &pb.VerifyNewUserRequest{}
 	stubIn.Token = "abc"
 	t.Run("must answer with a grpc error when receiving an error when getting user", func(t *testing.T) {
-		mock, _, _, _, mockCacher, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
-		mockCacher.EXPECT().Get(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{""}, nil)
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
+		tf.Cacher.EXPECT().Get(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{""}, nil)
+		tf.Provider.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
 
 		_, err := uc.VerifyNewUser(context.Background(), stubIn)
 		if err == nil {
@@ -518,10 +527,10 @@ func TestVerifyNewUser(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when receiving a user id that already exists", func(t *testing.T) {
-		mock, _, _, _, mockCacher, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
-		mockCacher.EXPECT().Get(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{""}, nil)
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: "id"}, nil)
+		tf.Cacher.EXPECT().Get(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{""}, nil)
+		tf.Provider.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{Id: "id"}, nil)
 
 		_, err := uc.VerifyNewUser(context.Background(), stubIn)
 		if err == nil {
@@ -533,12 +542,12 @@ func TestVerifyNewUser(t *testing.T) {
 		}
 	})
 	t.Run("must answer with a grpc error when receiving an error when sending email", func(t *testing.T) {
-		mock, _, _, mockEmailer, mockCacher, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
-		mockCacher.EXPECT().Get(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{""}, nil)
-		mock.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{}, nil)
-		mock.EXPECT().CreateNewUser(gomock.Any(), gomock.Any()).Return(&pb.UserRequest{}, nil)
-		mockEmailer.EXPECT().Send(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
+		tf.Cacher.EXPECT().Get(gomock.Any(), gomock.Any()).Return(&wrappers.StringValue{""}, nil)
+		tf.Provider.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{}, nil)
+		tf.Provider.EXPECT().CreateNewUser(gomock.Any(), gomock.Any()).Return(&pb.UserRequest{}, nil)
+		tf.Emailer.EXPECT().Send(gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
 
 		_, err := uc.VerifyNewUser(context.Background(), stubIn)
 		if err == nil {
@@ -554,9 +563,9 @@ func TestVerifyNewUser(t *testing.T) {
 func TestLogout(t *testing.T) {
 	stubIn := &pb.AccessToken{AccessToken: "0987654321"}
 	t.Run("must answer with a grpc error when receiving an error when deactivating token", func(t *testing.T) {
-		_, mockAuth, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
-		mockAuth.EXPECT().DeactivateToken(gomock.Any(), &wrappers.StringValue{stubIn.GetAccessToken()}).Return(nil, errors.New(""))
+		tf.Auth.EXPECT().DeactivateToken(gomock.Any(), &wrappers.StringValue{stubIn.GetAccessToken()}).Return(nil, errors.New(""))
 
 		_, err := uc.Logout(context.Background(), stubIn)
 		if err == nil {
@@ -568,9 +577,9 @@ func TestLogout(t *testing.T) {
 		}
 	})
 	t.Run("must return successfully without error in normal circumstances", func(t *testing.T) {
-		_, mockAuth, _, _, _, uc := newTestFixture(t)
+		tf, uc := newTestFixture(t)
 
-		mockAuth.EXPECT().DeactivateToken(gomock.Any(), &wrappers.StringValue{stubIn.GetAccessToken()}).Return(&empty.Empty{}, nil)
+		tf.Auth.EXPECT().DeactivateToken(gomock.Any(), &wrappers.StringValue{stubIn.GetAccessToken()}).Return(&empty.Empty{}, nil)
 
 		_, err := uc.Logout(context.Background(), stubIn)
 		if err != nil {
