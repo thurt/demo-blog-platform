@@ -27,7 +27,7 @@ type TestFixture struct {
 	Cacher   *mock_proto_cacher.MockCacherServer
 }
 
-func newTestFixture(t *testing.T) (*TestFixture, *UseCases) {
+func newTestFixture(t *testing.T) (*TestFixture, *useCases) {
 	// create NewMockCmsServer
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -53,7 +53,7 @@ func newTestFixture(t *testing.T) (*TestFixture, *UseCases) {
 	defer mockCtrlCacher.Finish()
 	mockCacher := mock_proto_cacher.NewMockCacherServer(mockCtrlCacher)
 
-	uc := &UseCases{mock, mockAuth, mockHasher, mockEmailer, mockCacher}
+	uc := &useCases{mock, mockAuth, mockHasher, mockEmailer, mockCacher}
 	tf := &TestFixture{mock, mockAuth, mockHasher, mockEmailer, mockCacher}
 	return tf, uc
 }
