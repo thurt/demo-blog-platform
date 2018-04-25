@@ -38,6 +38,12 @@ var (
 	MEMCACHED_USER     string
 	MEMCACHED_PASSWORD string
 )
+var (
+	SMTP_HOST     string
+	SMTP_PORT     string
+	SMTP_USER     string
+	SMTP_PASSWORD string
+)
 
 func main() {
 	//connect to memcache
@@ -57,10 +63,10 @@ func main() {
 	log.Println("Connected to memcache host")
 
 	// connect to smtp mail
-	SMTP_HOST := os.Getenv("SMTP_HOST")
-	SMTP_PORT := os.Getenv("SMTP_PORT")
-	SMTP_USER := os.Getenv("SMTP_USER")
-	SMTP_PASSWORD := os.Getenv("SMTP_PASSWORD")
+	SMTP_HOST = os.Getenv("SMTP_HOST")
+	SMTP_PORT = os.Getenv("SMTP_PORT")
+	SMTP_USER = os.Getenv("SMTP_USER")
+	SMTP_PASSWORD = os.Getenv("SMTP_PASSWORD")
 	SMTP_CONN := fmt.Sprintf("%s:%s", SMTP_HOST, SMTP_PORT)
 	log.Println("Testing connection to smtp server " + SMTP_CONN)
 	smtpCn, err := smtp.Dial(SMTP_CONN)
