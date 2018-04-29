@@ -4,8 +4,8 @@ services:
         build: ./cms
         ports:
             - "10000:10000" #grpc
-            - "8282:8080"   #rest
-            - "8383:8181"   #grpc tracing
+            - "8080:8080"   #rest
+            - "8181:8181"   #grpc tracing
         environment:
             - MYSQL_CONNECTION=${MYSQL_CONNECTION-root:root@tcp(db:3306)/cms}
             - MEMCACHED_HOST=${MEMCACHED_HOST-memcached:3000}
