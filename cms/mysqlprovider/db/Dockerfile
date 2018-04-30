@@ -1,3 +1,4 @@
 FROM mysql:5
-
 COPY . .
+
+EXPOSE 3306/TCP

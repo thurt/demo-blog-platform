@@ -1,3 +1,6 @@
 *_test.go
 .*.s[a-w][a-z]
 dummy.go
+db_test.go
+db_integration_test.go
+migrations
