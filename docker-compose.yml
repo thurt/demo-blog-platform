@@ -16,13 +16,14 @@ services:
             - SMTP_PORT=${SMTP_PORT-25}
             - SMTP_USER=${SMTP_USER}
             - SMTP_PASSWORD=${SMTP_PASSWORD}
+            - DB_SCHEMA_VERSION=${DB_SCHEMA_VERSION}
         depends_on:
             - db
             - memcached
             - mail
         command: ["/root/wait-for-it.sh", "--timeout=120", "db:3306", "--", "/root/wait-for-it.sh", "--timeout=120", "memcached:3000", "--", "/root/wait-for-it.sh", "--timeout=120", "mail:25", "--", "./cms"]
     db:
-        build: ./cms/mysqlprovider/db 
+        image: mysql:5
         volumes:
             - type: volume
               source: db-data

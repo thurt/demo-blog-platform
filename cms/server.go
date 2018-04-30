@@ -9,12 +9,17 @@ import (
 	"net/http"
 	"net/smtp"
 	"os"
+	"strconv"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/golang-migrate/migrate"
+	"github.com/golang-migrate/migrate/database/mysql"
+	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/grpc-ecosystem/go-grpc-middleware/validator"
+	_ "github.com/lib/pq"
 	"github.com/memcachier/mc"
 	"github.com/thurt/demo-blog-platform/cms/authentication"
 	"github.com/thurt/demo-blog-platform/cms/authorization"
@@ -33,6 +38,8 @@ const (
 )
 
 var MYSQL_CONNECTION string
+var DB_SCHEMA_VERSION uint
+
 var (
 	MEMCACHED_HOST     string
 	MEMCACHED_USER     string
@@ -98,7 +105,7 @@ func main() {
 	smtpCn.Close()
 
 	// connect to db
-	MYSQL_CONNECTION = os.Getenv("MYSQL_CONNECTION")
+	MYSQL_CONNECTION = fmt.Sprint(os.Getenv("MYSQL_CONNECTION"), "?multiStatements=true")
 	db, err := sql.Open("mysql", MYSQL_CONNECTION)
 	if err != nil {
 		log.Println("Couldn't connect with mysql connection string")
@@ -111,6 +118,67 @@ func main() {
 	}
 	log.Println("Connected to db server")
 	defer db.Close()
+
+	// maybe perform db migration
+	// migration only happens when:
+	//		env var DB_SCHEMA_VERSION exists, and
+	//		its value differs from current version in the database
+	vString := os.Getenv("DB_SCHEMA_VERSION")
+	if vString == "" {
+		log.Printf("Skipping database migration since no DB_SCHEMA_VERSION was provided")
+	} else {
+		vInt64, err := strconv.ParseUint(vString, 10, 0)
+		if err != nil {
+			log.Println("Failed to convert env var DB_SCHEMA_VERSION to integer")
+			panic(err.Error())
+		}
+		DB_SCHEMA_VERSION = uint(vInt64)
+
+		driver, err := mysql.WithInstance(db, &mysql.Config{})
+		if err != nil {
+			log.Println("Error setting up mysql driver for migrations")
+			panic(err.Error())
+		}
+		m, err := migrate.NewWithDatabaseInstance(
+			"file:///root/migrations/",
+			"mysql", driver)
+		if err != nil {
+			log.Println("Error setting up database migrate instance")
+			panic(err.Error())
+		}
+
+		// check the version
+		currV, d, err := m.Version()
+		if err != nil {
+			// if there is no current version set, then set it to version 1
+			if err == migrate.ErrNilVersion {
+				err := m.Migrate(1)
+				if err != nil {
+					log.Printf("Error setting initial database version to 1")
+					panic(err.Error())
+				}
+			} else {
+				log.Printf("Error getting database migration version")
+				panic(err.Error())
+			}
+		}
+		// if dirty, panic
+		if d == true {
+			log.Printf("Aborting database migration checks because your database is dirty")
+			panic(err.Error())
+		}
+		// if currV == provided version then skip, no-op
+		if currV == DB_SCHEMA_VERSION {
+			log.Printf("The provided version, %d, matches the currently installed version in the database", DB_SCHEMA_VERSION)
+		} else {
+			err = m.Migrate(DB_SCHEMA_VERSION)
+			if err != nil {
+				log.Printf("Error performing database migration from version %d to version %d. Your database is probably dirty now and requires manual adjustment.", currV, DB_SCHEMA_VERSION)
+				panic(err.Error())
+			}
+			log.Printf("Successfully migrated database from version %d to version %d", currV, DB_SCHEMA_VERSION)
+		}
+	}
 
 	// setup grpc server
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", PORT))
