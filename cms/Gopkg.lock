@@ -111,7 +111,8 @@
     "database",
     "database/mysql",
     "source",
-    "source/file"
+    "source/file",
+    "source/github"
   ]
   revision = "22f249514de9aa3f8a720a7cabbdd45d294f83a1"
   version = "v3.2.0"
@@ -137,6 +138,18 @@
   ]
   revision = "925541529c1fa6821df4e44ce2723319eb2be768"
   version = "v1.0.0"
+
+[[projects]]
+  name = "github.com/google/go-github"
+  packages = ["github"]
+  revision = "e48060a28fac52d0f1cb758bc8b87c07bac4a87d"
+  version = "v15.0.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/google/go-querystring"
+  packages = ["query"]
+  revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
 
 [[projects]]
   branch = "master"
@@ -390,6 +403,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "be891bb14f7b7c22b11c22ebdb6f16474ee1815c6af879eda3e621a06b825dd4"
+  inputs-digest = "eac1453f5a5be165f9357159f0ae06ebfc41ee996f91c52a5404273bb93846ba"
   solver-name = "gps-cdcl"
   solver-version = 1

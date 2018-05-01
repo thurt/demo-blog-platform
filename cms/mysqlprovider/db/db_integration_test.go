@@ -12,12 +12,20 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/golang-migrate/migrate"
+	"github.com/golang-migrate/migrate/database/mysql"
+	_ "github.com/golang-migrate/migrate/source/github"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/gofuzz"
+	_ "github.com/lib/pq"
 	"github.com/thurt/demo-blog-platform/cms/domain"
 	"github.com/thurt/demo-blog-platform/cms/mysqlprovider"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	dockertest "gopkg.in/ory-am/dockertest.v3"
+)
+
+const (
+	DB_SCHEMA_VERSION = 1
 )
 
 var (
@@ -47,7 +55,7 @@ func TestMain(m *testing.M) {
 	// pulls an image, creates a container based on it and runs it
 	opts := &dockertest.RunOptions{
 		Name:       "db-test",
-		Repository: "demoblogplatform_db",
+		Repository: "demo-blog-platform_db",
 		Env:        []string{"MYSQL_ROOT_PASSWORD=secret"},
 	}
 	resource, err := pool.RunWithOptions(opts)
@@ -59,7 +67,7 @@ func TestMain(m *testing.M) {
 	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
 	if err := pool.Retry(func() error {
 		var err error
-		db, err = sql.Open("mysql", fmt.Sprintf("root:secret@tcp(%s:%s)/cms", TCP_PROXY, resource.GetPort("3306/tcp")))
+		db, err = sql.Open("mysql", fmt.Sprintf("root:secret@tcp(%s:%s)/cms?multiStatements=true", TCP_PROXY, resource.GetPort("3306/tcp")))
 		if err != nil {
 			return err
 		}
@@ -69,6 +77,26 @@ func TestMain(m *testing.M) {
 			log.Println("Could not purge resource (you may have to manually):", purgeErr)
 		}
 		log.Fatalf("Could not connect to docker: %s", err)
+	}
+
+	// setup schema version in database
+	driver, err := mysql.WithInstance(db, &mysql.Config{})
+	if err != nil {
+		log.Println("Error setting up mysql driver for migrations")
+		panic(err.Error())
+	}
+	mi, err := migrate.NewWithDatabaseInstance(
+		"github://:@thurt/demo-blog-platform/cms/mysqlprovider/db/migrations",
+		"mysql", driver)
+	if err != nil {
+		log.Println("Error setting up database migrate instance")
+		panic(err.Error())
+	}
+
+	err = mi.Migrate(DB_SCHEMA_VERSION)
+	if err != nil {
+		log.Printf("Error performing database migration to version %d. Your database is probably dirty now and requires manual adjustment.", DB_SCHEMA_VERSION)
+		panic(err.Error())
 	}
 
 	// create Domain Provider
