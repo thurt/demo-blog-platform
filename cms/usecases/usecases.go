@@ -100,11 +100,6 @@ func (u *useCases) CreateComment(ctx context.Context, r *pb.CreateCommentRequest
 		return nil, status.Errorf(codes.NotFound, "The provided post id %q does not exist", r.GetPostId())
 	}
 
-	// Comment cannot be created for a Post that is not published
-	if post.GetPublished() == false {
-		return nil, status.Error(codes.InvalidArgument, "A Comment cannot be created for a Post that is not published")
-	}
-
 	return u.Provider.CreateComment(ctx, r)
 }
 
@@ -209,6 +204,30 @@ func (u *useCases) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, er
 
 func (u *useCases) GetPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (*pb.Post, error) {
 	post, err := u.Provider.GetPostBySlug(ctx, r)
+	if err != nil {
+		log.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	if *post == (pb.Post{}) {
+		return nil, status.Errorf(codes.NotFound, "The provided post slug %q does not exist", r.GetSlug())
+	}
+	return post, nil
+}
+
+func (u *useCases) GetUnpublishedPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
+	post, err := u.Provider.GetUnpublishedPost(ctx, r)
+	if err != nil {
+		log.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	if *post == (pb.Post{}) {
+		return nil, status.Errorf(codes.NotFound, "The provided post id %q does not exist", r.GetId())
+	}
+	return post, nil
+}
+
+func (u *useCases) GetUnpublishedPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (*pb.Post, error) {
+	post, err := u.Provider.GetUnpublishedPostBySlug(ctx, r)
 	if err != nil {
 		log.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())

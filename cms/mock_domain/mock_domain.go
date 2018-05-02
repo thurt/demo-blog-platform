@@ -204,6 +204,32 @@ func (mr *MockProviderMockRecorder) GetPosts(arg0, arg1 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPosts", reflect.TypeOf((*MockProvider)(nil).GetPosts), arg0, arg1)
 }
 
+// GetUnpublishedPost mocks base method
+func (m *MockProvider) GetUnpublishedPost(arg0 context.Context, arg1 *proto.PostRequest) (*proto.Post, error) {
+	ret := m.ctrl.Call(m, "GetUnpublishedPost", arg0, arg1)
+	ret0, _ := ret[0].(*proto.Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUnpublishedPost indicates an expected call of GetUnpublishedPost
+func (mr *MockProviderMockRecorder) GetUnpublishedPost(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUnpublishedPost", reflect.TypeOf((*MockProvider)(nil).GetUnpublishedPost), arg0, arg1)
+}
+
+// GetUnpublishedPostBySlug mocks base method
+func (m *MockProvider) GetUnpublishedPostBySlug(arg0 context.Context, arg1 *proto.PostBySlugRequest) (*proto.Post, error) {
+	ret := m.ctrl.Call(m, "GetUnpublishedPostBySlug", arg0, arg1)
+	ret0, _ := ret[0].(*proto.Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUnpublishedPostBySlug indicates an expected call of GetUnpublishedPostBySlug
+func (mr *MockProviderMockRecorder) GetUnpublishedPostBySlug(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUnpublishedPostBySlug", reflect.TypeOf((*MockProvider)(nil).GetUnpublishedPostBySlug), arg0, arg1)
+}
+
 // GetUser mocks base method
 func (m *MockProvider) GetUser(arg0 context.Context, arg1 *proto.UserRequest) (*proto.User, error) {
 	ret := m.ctrl.Call(m, "GetUser", arg0, arg1)

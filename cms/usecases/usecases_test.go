@@ -120,19 +120,6 @@ func TestCreateComment(t *testing.T) {
 			t.Error("expected an error")
 		}
 	})
-	t.Run("Comment cannot be created for a Post that is not published", func(t *testing.T) {
-		tf, uc := newTestFixture(t)
-
-		r := &pb.CreateCommentRequest{}
-
-		tf.Provider.EXPECT().GetUser(gomock.Any(), gomock.Any()).Return(&pb.User{}, nil)
-		tf.Provider.EXPECT().GetPost(gomock.Any(), gomock.Any()).Return(&pb.Post{Id: 1, Published: false}, nil)
-
-		_, err := uc.CreateComment(ctx, r)
-		if err == nil {
-			t.Error("expected an error")
-		}
-	})
 }
 
 func TestAuthUser(t *testing.T) {
@@ -445,6 +432,78 @@ func TestGetPostBySlug(t *testing.T) {
 		tf.Provider.EXPECT().GetPostBySlug(gomock.Any(), r).Return(&pb.Post{}, nil)
 
 		_, err := uc.GetPostBySlug(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("expected a grpc error")
+		}
+	})
+}
+
+func TestGetUnpublishedPost(t *testing.T) {
+	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
+		tf, uc := newTestFixture(t)
+
+		r := &pb.PostRequest{}
+
+		tf.Provider.EXPECT().GetUnpublishedPost(gomock.Any(), r).Return(nil, errors.New(""))
+
+		_, err := uc.GetUnpublishedPost(ctx, r)
+
+		if err == nil {
+			t.Error("must anwser with an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
+		}
+	})
+	t.Run("must answer with a grpc error when receiving a zero-value Post", func(t *testing.T) {
+		tf, uc := newTestFixture(t)
+
+		r := &pb.PostRequest{}
+
+		tf.Provider.EXPECT().GetUnpublishedPost(gomock.Any(), r).Return(&pb.Post{}, nil)
+
+		_, err := uc.GetUnpublishedPost(ctx, r)
+		if err == nil {
+			t.Error("expected an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("expected a grpc error")
+		}
+	})
+}
+
+func TestGetUnpublishedPostBySlug(t *testing.T) {
+	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
+		tf, uc := newTestFixture(t)
+
+		r := &pb.PostBySlugRequest{}
+
+		tf.Provider.EXPECT().GetUnpublishedPostBySlug(gomock.Any(), r).Return(nil, errors.New(""))
+
+		_, err := uc.GetUnpublishedPostBySlug(ctx, r)
+
+		if err == nil {
+			t.Error("must anwser with an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
+		}
+	})
+	t.Run("must answer with a grpc error when receiving a zero-value Post", func(t *testing.T) {
+		tf, uc := newTestFixture(t)
+
+		r := &pb.PostBySlugRequest{}
+
+		tf.Provider.EXPECT().GetUnpublishedPostBySlug(gomock.Any(), r).Return(&pb.Post{}, nil)
+
+		_, err := uc.GetUnpublishedPostBySlug(ctx, r)
 		if err == nil {
 			t.Error("expected an error")
 		}
