@@ -169,6 +169,106 @@ func TestGetPostBySlug(t *testing.T) {
 	})
 }
 
+func TestGetUnpublishedPost(t *testing.T) {
+	stubIn := &pb.PostRequest{}
+	stubOut := &pb.Post{}
+	f.Fuzz(stubIn)
+	f.Fuzz(stubOut)
+	regexSql := esc(p.q.GetUnpublishedPost(stubIn))
+	stubRows := sqlmock.NewRows(structs.Names(stubOut))
+	stubRows.AddRow(makeRowData(structs.Values(stubOut))...)
+
+	t.Run("requires dispatching the correct sql request", func(t *testing.T) {
+		mock.ExpectQuery(regexSql)
+
+		_, _ = p.GetUnpublishedPost(context.Background(), stubIn)
+
+		checkExpectations(t)
+	})
+	t.Run("requires returning result with correct values from sql response", func(t *testing.T) {
+		mock.ExpectQuery(regexAny).WillReturnRows(stubRows)
+
+		result, err := p.GetUnpublishedPost(context.Background(), stubIn)
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+
+		if !reflect.DeepEqual(result, stubOut) {
+			t.Error("result should have same values as stub values")
+		}
+	})
+	t.Run("requires returning error when sql response is an error", func(t *testing.T) {
+		mock.ExpectQuery(regexAny).WillReturnError(errors.New(""))
+
+		_, err := p.GetUnpublishedPost(context.Background(), stubIn)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
+	t.Run("requires returning zero-value struct when sql response is a sql.ErrNoRows", func(t *testing.T) {
+		mock.ExpectQuery(regexAny).WillReturnError(sql.ErrNoRows)
+
+		post, err := p.GetUnpublishedPost(context.Background(), stubIn)
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+
+		if *post != (pb.Post{}) {
+			t.Error("expected a zero-value struct")
+		}
+	})
+}
+
+func TestGetUnpublishedPostBySlug(t *testing.T) {
+	stubIn := &pb.PostBySlugRequest{}
+	stubOut := &pb.Post{}
+	f.Fuzz(stubIn)
+	f.Fuzz(stubOut)
+	regexSql := esc(p.q.GetUnpublishedPostBySlug(stubIn))
+	stubRows := sqlmock.NewRows(structs.Names(stubOut))
+	stubRows.AddRow(makeRowData(structs.Values(stubOut))...)
+
+	t.Run("requires dispatching the correct sql request", func(t *testing.T) {
+		mock.ExpectQuery(regexSql)
+
+		_, _ = p.GetUnpublishedPostBySlug(context.Background(), stubIn)
+
+		checkExpectations(t)
+	})
+	t.Run("requires returning result with correct values from sql response", func(t *testing.T) {
+		mock.ExpectQuery(regexAny).WillReturnRows(stubRows)
+
+		result, err := p.GetUnpublishedPostBySlug(context.Background(), stubIn)
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+
+		if !reflect.DeepEqual(result, stubOut) {
+			t.Error("result should have same values as stub values")
+		}
+	})
+	t.Run("requires returning error when sql response is an error", func(t *testing.T) {
+		mock.ExpectQuery(regexAny).WillReturnError(errors.New(""))
+
+		_, err := p.GetUnpublishedPostBySlug(context.Background(), stubIn)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
+	t.Run("requires returning zero-value struct when sql response is a sql.ErrNoRows", func(t *testing.T) {
+		mock.ExpectQuery(regexAny).WillReturnError(sql.ErrNoRows)
+
+		post, err := p.GetUnpublishedPostBySlug(context.Background(), stubIn)
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+
+		if *post != (pb.Post{}) {
+			t.Error("expected a zero-value struct")
+		}
+	})
+}
+
 func TestGetUser(t *testing.T) {
 	stubIn := &pb.UserRequest{}
 	stubOut := &pb.User{}

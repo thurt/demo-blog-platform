@@ -42,7 +42,7 @@ func (p *provider) GetUserPassword(ctx context.Context, r *pb.UserRequest) (*pb.
 
 func (p *provider) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
 	po := &pb.Post{}
-	err := p.db.QueryRow(p.q.GetPost(r)).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Published, &po.Slug)
+	err := p.db.QueryRow(p.q.GetPost(r)).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Slug)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// no-op -- this line is for checking test coverage of this rule
@@ -55,7 +55,33 @@ func (p *provider) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, er
 
 func (p *provider) GetPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (*pb.Post, error) {
 	po := &pb.Post{}
-	err := p.db.QueryRow(p.q.GetPostBySlug(r)).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Published, &po.Slug)
+	err := p.db.QueryRow(p.q.GetPostBySlug(r)).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Slug)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// no-op -- this line is for checking test coverage of this rule
+		} else {
+			return nil, err
+		}
+	}
+	return po, nil
+}
+
+func (p *provider) GetUnpublishedPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
+	po := &pb.Post{}
+	err := p.db.QueryRow(p.q.GetUnpublishedPost(r)).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Slug)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// no-op -- this line is for checking test coverage of this rule
+		} else {
+			return nil, err
+		}
+	}
+	return po, nil
+}
+
+func (p *provider) GetUnpublishedPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (*pb.Post, error) {
+	po := &pb.Post{}
+	err := p.db.QueryRow(p.q.GetUnpublishedPostBySlug(r)).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Slug)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// no-op -- this line is for checking test coverage of this rule
@@ -195,7 +221,7 @@ func (p *provider) GetPosts(r *pb.GetPostsOptions, stream pb.Cms_GetPostsServer)
 
 	for ps.Next() {
 		po := &pb.Post{}
-		err = ps.Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Published, &po.Slug)
+		err = ps.Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Slug)
 		if err != nil {
 			return err
 		}
