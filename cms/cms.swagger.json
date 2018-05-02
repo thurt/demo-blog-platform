@@ -239,23 +239,8 @@
             }
           }
         },
-        "parameters": [
-          {
-            "name": "includeUnPublished",
-            "description": "when true, includes unpublished Posts in response (note: Authorization token with ADMIN role is required).",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
-            "format": "boolean"
-          }
-        ],
         "tags": [
           "Posts"
-        ],
-        "security": [
-          {
-            "APIKey": []
-          }
         ]
       },
       "post": {
@@ -510,6 +495,28 @@
         ],
         "tags": [
           "Setup"
+        ]
+      }
+    },
+    "/unpublished-posts": {
+      "get": {
+        "summary": "Get all unpublished posts",
+        "operationId": "GetUnpublishedPosts",
+        "responses": {
+          "200": {
+            "description": "(streaming responses)",
+            "schema": {
+              "$ref": "#/definitions/cmsPost"
+            }
+          }
+        },
+        "tags": [
+          "Posts"
+        ],
+        "security": [
+          {
+            "APIKey": []
+          }
         ]
       }
     },

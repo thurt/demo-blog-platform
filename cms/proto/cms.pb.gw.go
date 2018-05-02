@@ -266,19 +266,28 @@ func request_Cms_GetPostComments_0(ctx context.Context, marshaler runtime.Marsha
 
 }
 
-var (
-	filter_Cms_GetPosts_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
-
 func request_Cms_GetPosts_0(ctx context.Context, marshaler runtime.Marshaler, client CmsClient, req *http.Request, pathParams map[string]string) (Cms_GetPostsClient, runtime.ServerMetadata, error) {
-	var protoReq GetPostsOptions
+	var protoReq empty.Empty
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_Cms_GetPosts_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
 	stream, err := client.GetPosts(ctx, &protoReq)
+	if err != nil {
+		return nil, metadata, err
+	}
+	header, err := stream.Header()
+	if err != nil {
+		return nil, metadata, err
+	}
+	metadata.HeaderMD = header
+	return stream, metadata, nil
+
+}
+
+func request_Cms_GetUnpublishedPosts_0(ctx context.Context, marshaler runtime.Marshaler, client CmsClient, req *http.Request, pathParams map[string]string) (Cms_GetUnpublishedPostsClient, runtime.ServerMetadata, error) {
+	var protoReq empty.Empty
+	var metadata runtime.ServerMetadata
+
+	stream, err := client.GetUnpublishedPosts(ctx, &protoReq)
 	if err != nil {
 		return nil, metadata, err
 	}
@@ -904,6 +913,35 @@ func RegisterCmsHandlerClient(ctx context.Context, mux *runtime.ServeMux, client
 
 	})
 
+	mux.Handle("GET", pattern_Cms_GetUnpublishedPosts_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		if cn, ok := w.(http.CloseNotifier); ok {
+			go func(done <-chan struct{}, closed <-chan bool) {
+				select {
+				case <-done:
+				case <-closed:
+					cancel()
+				}
+			}(ctx.Done(), cn.CloseNotify())
+		}
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_Cms_GetUnpublishedPosts_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_Cms_GetUnpublishedPosts_0(ctx, mux, outboundMarshaler, w, req, func() (proto.Message, error) { return resp.Recv() }, mux.GetForwardResponseOptions()...)
+
+	})
+
 	mux.Handle("GET", pattern_Cms_GetUser_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1278,6 +1316,8 @@ var (
 
 	pattern_Cms_GetPosts_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"posts"}, ""))
 
+	pattern_Cms_GetUnpublishedPosts_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"unpublished-posts"}, ""))
+
 	pattern_Cms_GetUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 1, 0, 4, 1, 5, 1}, []string{"users", "id"}, ""))
 
 	pattern_Cms_DeleteUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 1, 0, 4, 1, 5, 1}, []string{"users", "id"}, ""))
@@ -1325,6 +1365,8 @@ var (
 	forward_Cms_GetPostComments_0 = runtime.ForwardResponseStream
 
 	forward_Cms_GetPosts_0 = runtime.ForwardResponseStream
+
+	forward_Cms_GetUnpublishedPosts_0 = runtime.ForwardResponseStream
 
 	forward_Cms_GetUser_0 = runtime.ForwardResponseMessage
 

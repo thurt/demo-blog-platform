@@ -15,7 +15,6 @@ It has these top-level messages:
 	Post
 	PostRequest
 	PostBySlugRequest
-	GetPostsOptions
 	CreatePostRequest
 	CreatePostWithSlug
 	UpdatePostRequest
@@ -83,14 +82,6 @@ func (this *PostBySlugRequest) Validate() error {
 	return nil
 }
 func (this *PostBySlugRequest) Fuzz(c gofuzz.Continue) {
-	c.FuzzNoCustom(this)
-	var g goregen.Generator
-	var _ = g // Reference g to suppress errors if it is not otherwise used.
-}
-func (this *GetPostsOptions) Validate() error {
-	return nil
-}
-func (this *GetPostsOptions) Fuzz(c gofuzz.Continue) {
 	c.FuzzNoCustom(this)
 	var g goregen.Generator
 	var _ = g // Reference g to suppress errors if it is not otherwise used.

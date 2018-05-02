@@ -179,7 +179,7 @@ func (mr *MockCmsServerMockRecorder) GetPostComments(arg0, arg1 interface{}) *go
 }
 
 // GetPosts mocks base method
-func (m *MockCmsServer) GetPosts(arg0 *proto.GetPostsOptions, arg1 proto.Cms_GetPostsServer) error {
+func (m *MockCmsServer) GetPosts(arg0 *empty.Empty, arg1 proto.Cms_GetPostsServer) error {
 	ret := m.ctrl.Call(m, "GetPosts", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -214,6 +214,18 @@ func (m *MockCmsServer) GetUnpublishedPostBySlug(arg0 context.Context, arg1 *pro
 // GetUnpublishedPostBySlug indicates an expected call of GetUnpublishedPostBySlug
 func (mr *MockCmsServerMockRecorder) GetUnpublishedPostBySlug(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUnpublishedPostBySlug", reflect.TypeOf((*MockCmsServer)(nil).GetUnpublishedPostBySlug), arg0, arg1)
+}
+
+// GetUnpublishedPosts mocks base method
+func (m *MockCmsServer) GetUnpublishedPosts(arg0 *empty.Empty, arg1 proto.Cms_GetUnpublishedPostsServer) error {
+	ret := m.ctrl.Call(m, "GetUnpublishedPosts", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetUnpublishedPosts indicates an expected call of GetUnpublishedPosts
+func (mr *MockCmsServerMockRecorder) GetUnpublishedPosts(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUnpublishedPosts", reflect.TypeOf((*MockCmsServer)(nil).GetUnpublishedPosts), arg0, arg1)
 }
 
 // GetUser mocks base method

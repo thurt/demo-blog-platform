@@ -32,12 +32,6 @@ message PostBySlugRequest {
     string slug = 1 [(validator.field) = {string_not_empty: true, length_lt: 37}];
 }
 
-// GetPostsOptions
-message GetPostsOptions {
-    // when true, includes unpublished Posts in response (note: Authorization token with ADMIN role is required)
-    bool includeUnPublished = 2;
-}
-
 // CreatePostRequest
 message CreatePostRequest {
     string title = 1 [(validator.field) = {length_lt: 257, regex: "^.{0,256}$", human_error: "title must be 256 characters or less"}]; 
@@ -333,7 +327,16 @@ service Cms {
         };
     }
     // Get all posts
-    rpc GetPosts(GetPostsOptions) returns (stream Post) {
+    rpc GetPosts(google.protobuf.Empty) returns (stream Post) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Posts"]
+        };
+         option (google.api.http) = {
+            get: "/posts"
+        };
+    }
+    // Get all unpublished posts
+    rpc GetUnpublishedPosts(google.protobuf.Empty) returns (stream Post) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
             security: {
                 security_requirement: {
@@ -344,9 +347,10 @@ service Cms {
             tags: ["Posts"]
         };
          option (google.api.http) = {
-            get: "/posts"
+            get: "/unpublished-posts"
         };
     }
+
 
     // Get a user
     rpc GetUser(UserRequest) returns (User) {
