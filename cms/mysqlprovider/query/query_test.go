@@ -127,8 +127,8 @@ func TestAdminExists(t *testing.T) {
 func TestGetPosts(t *testing.T) {
 	checkSyntax(q.GetPosts(), t)
 }
-func TestGetPublishedPosts(t *testing.T) {
-	checkSyntax(q.GetPublishedPosts(), t)
+func TestGetUnpublishedPosts(t *testing.T) {
+	checkSyntax(q.GetUnpublishedPosts(), t)
 }
 func TestGetUserPassword(t *testing.T) {
 	ur := &pb.UserRequest{}

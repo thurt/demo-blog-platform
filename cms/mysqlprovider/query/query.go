@@ -34,11 +34,11 @@ func (q *Query) GetUserComments(r *pb.UserRequest) string {
 }
 
 func (q *Query) GetPosts() string {
-	return "SELECT id, title, content, created, last_edited, published, slug FROM posts ORDER BY created DESC"
+	return "SELECT id, title, content, created, last_edited, slug FROM published_posts ORDER BY created DESC"
 }
 
-func (q *Query) GetPublishedPosts() string {
-	return "SELECT id, title, content, created, last_edited, published, slug FROM posts WHERE published=1 ORDER BY created DESC"
+func (q *Query) GetUnpublishedPosts() string {
+	return "SELECT id, title, content, created, last_edited, slug FROM posts ORDER BY created DESC"
 }
 
 func (q *Query) GetComments(_ *empty.Empty) string {
