@@ -25,7 +25,7 @@ type Authorization interface {
 	CreateComment(context.Context, *pb.CreateCommentRequest) (*pb.CommentRequest, error)
 	UpdateComment(context.Context, *pb.UpdateCommentRequest) (*empty.Empty, error)
 	DeleteComment(context.Context, *pb.CommentRequest) (*empty.Empty, error)
-	GetPosts(*pb.GetPostsOptions, pb.Cms_GetPostsServer) error
+	GetUnpublishedPosts(*empty.Empty, pb.Cms_GetUnpublishedPostsServer) error
 	GetUnpublishedPost(context.Context, *pb.PostRequest) (*pb.Post, error)
 	GetUnpublishedPostBySlug(context.Context, *pb.PostBySlugRequest) (*pb.Post, error)
 }
@@ -117,14 +117,12 @@ func (a *authorization) DeleteComment(ctx context.Context, r *pb.CommentRequest)
 	return a.CmsServer.DeleteComment(ctx, r)
 }
 
-func (a *authorization) GetPosts(r *pb.GetPostsOptions, stream pb.Cms_GetPostsServer) error {
-	if r.GetIncludeUnPublished() == true {
-		// requires Admin Role has permission
-		if !reqContext.HasPermission(stream.Context(), pb.UserRole_ADMIN) {
-			return ErrPermissionDenied
-		}
+func (a *authorization) GetUnpublishedPosts(r *empty.Empty, stream pb.Cms_GetUnpublishedPostsServer) error {
+	// requires Admin Role has permission
+	if !reqContext.HasPermission(stream.Context(), pb.UserRole_ADMIN) {
+		return ErrPermissionDenied
 	}
-	return a.CmsServer.GetPosts(r, stream)
+	return a.CmsServer.GetUnpublishedPosts(r, stream)
 }
 
 func (a *authorization) GetUnpublishedPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
