@@ -19,7 +19,6 @@ message Post {
     string content = 3;
     string created = 4;
     string last_edited = 5;
-    bool published = 6;
     string slug = 7;
 }
 
@@ -244,8 +243,8 @@ service Cms {
             body: "*"
         };
     }
-    // Get a post
-   rpc GetPost(PostRequest) returns (Post) {
+    // Get an unpublished post
+   rpc GetUnpublishedPost(PostRequest) returns (Post) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
             security: {
                 security_requirement: {
@@ -256,11 +255,11 @@ service Cms {
             tags: ["Posts"]
         };
         option (google.api.http) = {
-            get: "/posts/{id}"
+            get: "/unpublished-posts/{id}"
         };
     }
-    // Get a post (by slug)
-    rpc GetPostBySlug(PostBySlugRequest) returns (Post) {
+    // Get an unpublished post (by slug)
+    rpc GetUnpublishedPostBySlug(PostBySlugRequest) returns (Post) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
             security: {
                 security_requirement: {
@@ -268,6 +267,25 @@ service Cms {
                     value: {}
                 }
             }
+            tags: ["Posts"]
+        };
+        option (google.api.http) = {
+            get: "/unpublished-posts/slug/{slug}"
+        };
+    }
+
+    // Get a post
+   rpc GetPost(PostRequest) returns (Post) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            tags: ["Posts"]
+        };
+        option (google.api.http) = {
+            get: "/posts/{id}"
+        };
+    }
+    // Get a post (by slug)
+    rpc GetPostBySlug(PostBySlugRequest) returns (Post) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
             tags: ["Posts"]
         };
         option (google.api.http) = {

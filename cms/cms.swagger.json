@@ -311,11 +311,6 @@
         ],
         "tags": [
           "Posts"
-        ],
-        "security": [
-          {
-            "APIKey": []
-          }
         ]
       }
     },
@@ -342,11 +337,6 @@
         ],
         "tags": [
           "Posts"
-        ],
-        "security": [
-          {
-            "APIKey": []
-          }
         ]
       },
       "delete": {
@@ -520,6 +510,67 @@
         ],
         "tags": [
           "Setup"
+        ]
+      }
+    },
+    "/unpublished-posts/slug/{slug}": {
+      "get": {
+        "summary": "Get an unpublished post (by slug)",
+        "operationId": "GetUnpublishedPostBySlug",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/cmsPost"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Posts"
+        ],
+        "security": [
+          {
+            "APIKey": []
+          }
+        ]
+      }
+    },
+    "/unpublished-posts/{id}": {
+      "get": {
+        "summary": "Get an unpublished post",
+        "operationId": "GetUnpublishedPost",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/cmsPost"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Posts"
+        ],
+        "security": [
+          {
+            "APIKey": []
+          }
         ]
       }
     },
@@ -727,10 +778,6 @@
         },
         "lastEdited": {
           "type": "string"
-        },
-        "published": {
-          "type": "boolean",
-          "format": "boolean"
         },
         "slug": {
           "type": "string"
