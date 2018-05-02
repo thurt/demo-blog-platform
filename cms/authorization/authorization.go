@@ -26,8 +26,8 @@ type Authorization interface {
 	UpdateComment(context.Context, *pb.UpdateCommentRequest) (*empty.Empty, error)
 	DeleteComment(context.Context, *pb.CommentRequest) (*empty.Empty, error)
 	GetPosts(*pb.GetPostsOptions, pb.Cms_GetPostsServer) error
-	GetPost(context.Context, *pb.PostRequest) (*pb.Post, error)
-	GetPostBySlug(context.Context, *pb.PostBySlugRequest) (*pb.Post, error)
+	GetUnpublishedPost(context.Context, *pb.PostRequest) (*pb.Post, error)
+	GetUnpublishedPostBySlug(context.Context, *pb.PostBySlugRequest) (*pb.Post, error)
 }
 
 func New(server pb.CmsServer) pb.CmsServer {
@@ -127,23 +127,23 @@ func (a *authorization) GetPosts(r *pb.GetPostsOptions, stream pb.Cms_GetPostsSe
 	return a.CmsServer.GetPosts(r, stream)
 }
 
-func (a *authorization) GetPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
-	post, err := a.CmsServer.GetPost(ctx, r)
+func (a *authorization) GetUnpublishedPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
+	post, err := a.CmsServer.GetUnpublishedPost(ctx, r)
 	if err != nil {
 		return nil, err
 	}
-	if post.GetPublished() == false && !reqContext.HasPermission(ctx, pb.UserRole_ADMIN) {
+	if !reqContext.HasPermission(ctx, pb.UserRole_ADMIN) {
 		return nil, ErrPermissionDenied
 	}
 	return post, nil
 }
 
-func (a *authorization) GetPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (*pb.Post, error) {
-	post, err := a.CmsServer.GetPostBySlug(ctx, r)
+func (a *authorization) GetUnpublishedPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (*pb.Post, error) {
+	post, err := a.CmsServer.GetUnpublishedPostBySlug(ctx, r)
 	if err != nil {
 		return nil, err
 	}
-	if post.GetPublished() == false && !reqContext.HasPermission(ctx, pb.UserRole_ADMIN) {
+	if !reqContext.HasPermission(ctx, pb.UserRole_ADMIN) {
 		return nil, ErrPermissionDenied
 	}
 	return post, nil
