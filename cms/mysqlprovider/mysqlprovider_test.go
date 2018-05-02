@@ -537,25 +537,15 @@ func TestGetComments(t *testing.T) {
 }
 
 func TestGetPosts(t *testing.T) {
-	stubIn := &pb.GetPostsOptions{}
+	stubIn := &empty.Empty{}
 	stubOut := []*pb.Post{&pb.Post{}, &pb.Post{}}
 	f.Fuzz(stubIn)
 	f.Fuzz(stubOut[0])
 	f.Fuzz(stubOut[1])
 	mockStreamOut := mock_proto.NewMockCms_GetPostsServer()
 
-	t.Run("(options) requires dispatching the correct sql request when IncludeUnPublished is true", func(t *testing.T) {
-		stubIn.IncludeUnPublished = true
+	t.Run("requires dispatching the correct sql request", func(t *testing.T) {
 		regexSql := esc(p.q.GetPosts())
-		mock.ExpectQuery(regexSql)
-
-		_ = p.GetPosts(stubIn, mockStreamOut)
-
-		checkExpectations(t)
-	})
-	t.Run("(options) requires dispatching the correct sql request when IncludeUnPublished is false", func(t *testing.T) {
-		stubIn.IncludeUnPublished = false
-		regexSql := esc(p.q.GetPublishedPosts())
 		mock.ExpectQuery(regexSql)
 
 		_ = p.GetPosts(stubIn, mockStreamOut)
@@ -610,6 +600,76 @@ func TestGetPosts(t *testing.T) {
 		mock.ExpectQuery(regexAny).WillReturnRows(stubRowsWithErr)
 
 		err := p.GetPosts(stubIn, mockStreamOut)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
+}
+
+func TestGetUnpublishedPosts(t *testing.T) {
+	stubIn := &empty.Empty{}
+	stubOut := []*pb.Post{&pb.Post{}, &pb.Post{}}
+	f.Fuzz(stubIn)
+	f.Fuzz(stubOut[0])
+	f.Fuzz(stubOut[1])
+	mockStreamOut := mock_proto.NewMockCms_GetPostsServer()
+
+	t.Run("requires dispatching the correct sql request", func(t *testing.T) {
+		regexSql := esc(p.q.GetUnpublishedPosts())
+		mock.ExpectQuery(regexSql)
+
+		_ = p.GetUnpublishedPosts(stubIn, mockStreamOut)
+
+		checkExpectations(t)
+	})
+	t.Run("requires returning result thru stream with correct values from sql response", func(t *testing.T) {
+		stubRows := sqlmock.NewRows(structs.Names(stubOut[0])).AddRow(makeRowData(structs.Values(stubOut[0]))...).AddRow(makeRowData(structs.Values(stubOut[1]))...)
+		mock.ExpectQuery(regexAny).WillReturnRows(stubRows)
+
+		err := p.GetUnpublishedPosts(stubIn, mockStreamOut)
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+
+		if !reflect.DeepEqual(mockStreamOut.Results, stubOut) {
+			t.Error(fmt.Sprintf("result should have same values as stub values:\nHave:\n%v\nWant:\n%v\n", mockStreamOut.Results, stubOut))
+		}
+	})
+	t.Run("requires returning error when sql response is an error", func(t *testing.T) {
+		mock.ExpectQuery(regexAny).WillReturnError(errors.New(""))
+
+		err := p.GetUnpublishedPosts(stubIn, mockStreamOut)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
+	t.Run("requires returning error when stream.Send creates an error", func(t *testing.T) {
+		mockStreamOutWithErr := mock_proto.NewMockCms_GetPostsServer().SetSendError(1, errors.New(""))
+		stubRows := sqlmock.NewRows(structs.Names(stubOut[0])).AddRow(makeRowData(structs.Values(stubOut[0]))...).AddRow(makeRowData(structs.Values(stubOut[1]))...)
+		mock.ExpectQuery(regexAny).WillReturnRows(stubRows)
+
+		err := p.GetUnpublishedPosts(stubIn, mockStreamOutWithErr)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
+	t.Run("requires returning error when driver scan creates an error", func(t *testing.T) {
+		// creates badStub with 0 fields in order to setup a situation where *Rows.Scan (called by the func under test) should return an error: "sql: expected 0 destination arguments in Scan, got X"
+		type badStub struct{}
+		badStubRows := sqlmock.NewRows(structs.Names(badStub{})).AddRow(makeRowData(structs.Values(badStub{}))...)
+
+		mock.ExpectQuery(regexAny).WillReturnRows(badStubRows)
+
+		err := p.GetUnpublishedPosts(stubIn, mockStreamOut)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
+	t.Run("requires returning error when driver row creates an error", func(t *testing.T) {
+		stubRowsWithErr := sqlmock.NewRows(structs.Names(stubOut[0])).AddRow(makeRowData(structs.Values(stubOut[0]))...).RowError(0, errors.New(""))
+		mock.ExpectQuery(regexAny).WillReturnRows(stubRowsWithErr)
+
+		err := p.GetUnpublishedPosts(stubIn, mockStreamOut)
 		if err == nil {
 			t.Error("expected an error")
 		}

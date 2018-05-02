@@ -203,17 +203,34 @@ func (p *provider) GetComments(r *empty.Empty, stream pb.Cms_GetCommentsServer) 
 	return nil
 }
 
-func (p *provider) GetPosts(r *pb.GetPostsOptions, stream pb.Cms_GetPostsServer) error {
-	var sql string
-	if r.GetIncludeUnPublished() == true {
-		// (options) requires dispatching the correct sql request when IncludeUnPublished is true
-		sql = p.q.GetPosts()
-	} else {
-		// (options) requires dispatching the correct sql request when IncludeUnPublished is false
-		sql = p.q.GetPublishedPosts()
+func (p *provider) GetPosts(r *empty.Empty, stream pb.Cms_GetPostsServer) error {
+	ps, err := p.db.Query(p.q.GetPosts())
+	if err != nil {
+		return err
+	}
+	defer ps.Close()
+
+	for ps.Next() {
+		po := &pb.Post{}
+		err = ps.Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Slug)
+		if err != nil {
+			return err
+		}
+		err := stream.Send(po)
+		if err != nil {
+			return err
+		}
 	}
 
-	ps, err := p.db.Query(sql)
+	if err = ps.Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *provider) GetUnpublishedPosts(r *empty.Empty, stream pb.Cms_GetPostsServer) error {
+	ps, err := p.db.Query(p.q.GetUnpublishedPosts())
 	if err != nil {
 		return err
 	}
