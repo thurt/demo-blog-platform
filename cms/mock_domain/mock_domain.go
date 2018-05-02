@@ -230,6 +230,18 @@ func (mr *MockProviderMockRecorder) GetUnpublishedPostBySlug(arg0, arg1 interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUnpublishedPostBySlug", reflect.TypeOf((*MockProvider)(nil).GetUnpublishedPostBySlug), arg0, arg1)
 }
 
+// GetUnpublishedPosts mocks base method
+func (m *MockProvider) GetUnpublishedPosts(arg0 *empty.Empty, arg1 proto.Cms_GetPostsServer) error {
+	ret := m.ctrl.Call(m, "GetUnpublishedPosts", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// GetUnpublishedPosts indicates an expected call of GetUnpublishedPosts
+func (mr *MockProviderMockRecorder) GetUnpublishedPosts(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUnpublishedPosts", reflect.TypeOf((*MockProvider)(nil).GetUnpublishedPosts), arg0, arg1)
+}
+
 // GetUser mocks base method
 func (m *MockProvider) GetUser(arg0 context.Context, arg1 *proto.UserRequest) (*proto.User, error) {
 	ret := m.ctrl.Call(m, "GetUser", arg0, arg1)

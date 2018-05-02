@@ -181,8 +181,17 @@ func (u *useCases) Setup(ctx context.Context, r *pb.CreateUserRequest) (*pb.User
 	return user, nil
 }
 
-func (u *useCases) GetPosts(r *pb.GetPostsOptions, stream pb.Cms_GetPostsServer) error {
+func (u *useCases) GetPosts(r *empty.Empty, stream pb.Cms_GetPostsServer) error {
 	err := u.Provider.GetPosts(r, stream)
+	if err != nil {
+		log.Println(err)
+		return status.Error(codes.Internal, err.Error())
+	}
+	return nil
+}
+
+func (u *useCases) GetUnpublishedPosts(r *empty.Empty, stream pb.Cms_GetUnpublishedPostsServer) error {
+	err := u.Provider.GetUnpublishedPosts(r, stream)
 	if err != nil {
 		log.Println(err)
 		return status.Error(codes.Internal, err.Error())

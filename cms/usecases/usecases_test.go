@@ -351,7 +351,7 @@ func TestSetup(t *testing.T) {
 }
 
 func TestGetPosts(t *testing.T) {
-	r := &pb.GetPostsOptions{}
+	r := &empty.Empty{}
 	mockStreamOut := mock_proto.NewMockCms_GetPostsServer()
 
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
@@ -360,6 +360,26 @@ func TestGetPosts(t *testing.T) {
 		tf.Provider.EXPECT().GetPosts(gomock.Any(), gomock.Any()).Return(errors.New(""))
 
 		err := uc.GetPosts(r, mockStreamOut)
+		if err == nil {
+			t.Error("must anwser with an error")
+		}
+		_, ok := status.FromError(err)
+		if !ok {
+			t.Error("must answer with a grpc error")
+		}
+	})
+}
+
+func TestGetUnpublishedPosts(t *testing.T) {
+	r := &empty.Empty{}
+	mockStreamOut := mock_proto.NewMockCms_GetPostsServer()
+
+	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
+		tf, uc := newTestFixture(t)
+
+		tf.Provider.EXPECT().GetUnpublishedPosts(gomock.Any(), gomock.Any()).Return(errors.New(""))
+
+		err := uc.GetUnpublishedPosts(r, mockStreamOut)
 		if err == nil {
 			t.Error("must anwser with an error")
 		}
