@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	DB_SCHEMA_VERSION = 1
+	DB_SCHEMA_VERSION = 2
 )
 
 var (
@@ -98,6 +98,7 @@ func TestMain(m *testing.M) {
 		log.Printf("Error performing database migration to version %d. Your database is probably dirty now and requires manual adjustment.", DB_SCHEMA_VERSION)
 		panic(err.Error())
 	}
+	log.Printf("Successfully performed database migration to version %d", DB_SCHEMA_VERSION)
 
 	// create Domain Provider
 	p = mysqlprovider.New(db)
@@ -123,9 +124,11 @@ func TestCRUD_Post(t *testing.T) {
 		if err != nil {
 			t.Error("unexpected error:", err.Error())
 		}
+
 		if *p != (pb.Post{}) {
 			t.Errorf("expected a zero-value Post, instead got %+v", p)
 		}
+
 	})
 	t.Run("must answer without error when creating entity", func(t *testing.T) {
 		stubIn := &pb.CreatePostWithSlug{Post: &pb.CreatePostRequest{}}

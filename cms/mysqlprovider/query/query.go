@@ -22,7 +22,7 @@ func (q *Query) GetUserPassword(r *pb.UserRequest) string {
 }
 
 func (q *Query) UpdatePost(r *pb.UpdatePostWithSlug) string {
-	return fmt.Sprintf("UPDATE posts SET slug=%q, title=%q, content=%q, published=%t WHERE id=%d", r.GetSlug(), r.Post.GetTitle(), r.Post.GetContent(), r.Post.GetPublished(), r.Post.GetId())
+	return fmt.Sprintf("UPDATE posts SET slug=%q, title=%q, content=%q WHERE id=%d", r.GetSlug(), r.Post.GetTitle(), r.Post.GetContent(), r.Post.GetId())
 }
 
 func (q *Query) UpdateComment(r *pb.UpdateCommentRequest) string {
