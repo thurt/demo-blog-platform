@@ -1,8 +1,9 @@
 package mock_proto
 
 import (
+	"context"
+
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
-	context "golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
 

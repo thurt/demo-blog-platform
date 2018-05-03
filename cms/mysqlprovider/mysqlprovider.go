@@ -9,7 +9,8 @@ import (
 	"github.com/thurt/demo-blog-platform/cms/mysqlprovider/query"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 
-	"golang.org/x/net/context"
+	"context"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

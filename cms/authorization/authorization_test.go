@@ -4,11 +4,12 @@ import (
 	"errors"
 	"testing"
 
+	"context"
+
 	"github.com/golang/mock/gomock"
 	"github.com/thurt/demo-blog-platform/cms/mock_proto"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"github.com/thurt/demo-blog-platform/cms/reqContext"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc/status"
 )
 

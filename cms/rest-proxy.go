@@ -8,10 +8,11 @@ import (
 	"os"
 	"path"
 
+	"context"
+
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
 	pb "github.com/thurt/demo-blog-platform/cms/proto"

@@ -5,6 +5,8 @@ import (
 	"errors"
 	"testing"
 
+	"context"
+
 	"github.com/golang/mock/gomock"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/golang/protobuf/ptypes/wrappers"
@@ -12,7 +14,6 @@ import (
 	"github.com/thurt/demo-blog-platform/cms/mock_domain"
 	"github.com/thurt/demo-blog-platform/cms/mock_proto"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

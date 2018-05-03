@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"context"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"golang.org/x/net/context"
 )
 
 func maybeRespondNotModified(req *http.Request, w http.ResponseWriter, etag string) bool {

@@ -22,7 +22,8 @@ import google_protobuf1 "github.com/golang/protobuf/ptypes/wrappers"
 import google_protobuf2 "github.com/golang/protobuf/ptypes/duration"
 
 import (
-	context "golang.org/x/net/context"
+	"context"
+
 	grpc "google.golang.org/grpc"
 )
 

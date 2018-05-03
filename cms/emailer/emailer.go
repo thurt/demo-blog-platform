@@ -3,7 +3,7 @@ package emailer
 import (
 	"net/smtp"
 
-	"golang.org/x/net/context"
+	"context"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"

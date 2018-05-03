@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"context"
+
 	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/golang/protobuf/ptypes/wrappers"
@@ -12,7 +14,6 @@ import (
 	pb_cacher "github.com/thurt/demo-blog-platform/cms/cacher/proto"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"github.com/thurt/demo-blog-platform/cms/reqContext"
-	"golang.org/x/net/context"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

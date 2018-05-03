@@ -6,6 +6,8 @@ import (
 	"log"
 	"time"
 
+	"context"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -15,7 +17,6 @@ import (
 	pb_cacher "github.com/thurt/demo-blog-platform/cms/cacher/proto"
 	"github.com/thurt/demo-blog-platform/cms/domain"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

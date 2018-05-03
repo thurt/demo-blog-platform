@@ -6,13 +6,14 @@ import (
 	"testing"
 	"time"
 
+	"context"
+
 	"github.com/golang/mock/gomock"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/thurt/demo-blog-platform/cms/cacher/mock_proto"
 	pb_cacher "github.com/thurt/demo-blog-platform/cms/cacher/proto"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc/metadata"
 )
 

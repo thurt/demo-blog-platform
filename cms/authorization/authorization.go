@@ -1,10 +1,11 @@
 package authorization
 
 import (
+	"context"
+
 	"github.com/golang/protobuf/ptypes/empty"
 	pb "github.com/thurt/demo-blog-platform/cms/proto"
 	"github.com/thurt/demo-blog-platform/cms/reqContext"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
