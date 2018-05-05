@@ -1,4 +1,4 @@
-.PHONY: authentication cms cacher domain secrets test test-integration
+.PHONY: secrets run
 
 VENDOR=$(GOPATH)/src/github.com/thurt/demo-blog-platform/cms/vendor
 
@@ -25,19 +25,40 @@ $(DOCKER):
 	exit 1
 
 ##############################
+###### RUN
+##############################
+run: build | $(DOCKER_COMPOSE)
+	docker-compose up 
+
+##############################
+###### BUILD
+##############################
+DOCKER_COMPOSE=/usr/local/bin/docker-compose
+$(DOCKER_COMPOSE):
+	echo "You must first install docker-compose. Refer to https://docs.docker.com/compose/install/"
+	exit 1
+
+build: $(shell find -path "./cms/*" -name "*.go" -not -path "./cms/vendor/*") authentication cms cacher domain test | $(DOCKER_COMPOSE) $(DOCKER)
+	docker-compose build
+	@touch build
+
+##############################
 ###### TEST
 ##############################
+PACKAGES=$(shell go list ./... | grep -v /vendor/) # see @rsc final answer https://github.com/golang/go/issues/11659
 
-test:
+test: authentication cms cacher domain
 	go test \
 		-v \
-		$(shell go list ./... | grep -v /vendor/) # see @rsc final answer https://github.com/golang/go/issues/11659
+		$(PACKAGES)
+	@touch test
 
-test-integration: | $(DOCKER)
+test-integration: authentication cms cacher domain | $(DOCKER)
 	go test \
 		-v \
 		-tags=integration \
-		$(shell go list ./... | grep -v /vendor/) # see @rsc final answer https://github.com/golang/go/issues/11659
+		$(PACKAGES)
+	@touch test-integration
 
 ##############################
 ###### AUTHENICATION
@@ -65,6 +86,7 @@ $(MC_MOCK): $(MC_IFACE) | $(MOCKGEN)
 	mockgen -package=mock_mc -source=$(MC_IFACE) >  $@
 
 authentication: $(MC_MOCK) $(MC_IFACE)
+	@touch authentication
 
 
 ##############################
@@ -89,6 +111,7 @@ $(CACHER_MOCK): $(CACHER_GO) | $(MOCKGEN)
 	mockgen $(CACHER_PROTO_PACKAGE) CacherServer > $@
 
 cacher: $(CACHER_GO) $(CACHER_MOCK)
+	@touch cacher
 
 
 ##############################
@@ -173,6 +196,7 @@ $(CMS_MOCK): $(CMS_GO) | $(MOCKGEN)
 	mockgen $(CMS_PROTO_PACKAGE) CmsServer > $@
 
 cms: $(CMS_PROTO) $(CMS_GO) $(CMS_VALIDATOR) $(CMS_GATEWAY) $(CMS_SWAGGER) $(CMS_MOCK) $(CMS_MOCK_HASHER) $(CMS_MOCK_EMAILER) $(CMS_MOCK_AUTH)
+	@touch cms
 
 
 ##############################
@@ -186,6 +210,7 @@ $(DOMAIN_MOCK): $(DOMAIN_GO) | $(MOCKGEN)
 	mockgen github.com/thurt/demo-blog-platform/cms/domain Provider > $@
 
 domain: $(DOMAIN_MOCK)
+	@touch domain
 
 
 ##############################

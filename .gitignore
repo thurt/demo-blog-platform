@@ -3,3 +3,11 @@
 app.yaml
 client-secret.json
 secrets.tar
+
+#these are empty target files used by make
+build
+cacher
+domain
+test
+test-integration
+authentication
