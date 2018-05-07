@@ -34,11 +34,11 @@ run: build | $(DOCKER_COMPOSE)
 ###### BUILD
 ##############################
 DOCKER_COMPOSE=/usr/local/bin/docker-compose
-$(DOCKER_COMPOSE):
+$(DOCKER_COMPOSE): | $(DOCKER)
 	echo "You must first install docker-compose. Refer to https://docs.docker.com/compose/install/"
 	exit 1
 
-build: $(shell find -path "./cms/*" -name "*.go" -not -path "./cms/vendor/*") authentication cms cacher domain test | $(DOCKER_COMPOSE) $(DOCKER)
+build: $(shell find -path "./cms/*" -name "*.go" -not -path "./cms/vendor/*") authentication cms cacher domain test | $(DOCKER_COMPOSE)
 	docker-compose build
 	@touch build
 
@@ -198,6 +198,28 @@ $(CMS_MOCK): $(CMS_GO) | $(MOCKGEN)
 cms: $(CMS_PROTO) $(CMS_GO) $(CMS_VALIDATOR) $(CMS_GATEWAY) $(CMS_SWAGGER) $(CMS_MOCK) $(CMS_MOCK_HASHER) $(CMS_MOCK_EMAILER) $(CMS_MOCK_AUTH)
 	@touch cms
 
+
+##############################
+###### CLIENT API
+##############################
+GEN_CLIENT_API: $(CMS_SWAGGER) | $(DOCKER)
+	#for some reason, mounting to /tmp/ssh_auth.sock does not work. maybe related to the storage driver used by dind
+	docker run \
+		--name=docker \
+		-d \
+		-it \
+		--privileged \
+		--env SSH_AUTH_SOCK=/docker-mount/ssh_auth.sock \
+		--mount type=bind,src=$(SSH_AUTH_SOCK),dst=/docker-mount/ssh_auth.sock \
+		--mount type=bind,src=$(HOME)/.ssh/known_hosts,dst=/root/.ssh/known_hosts \
+		--mount type=volume,src=dind-volume,dst=/var/lib/docker \
+		dind-git --group 999
+	docker cp ./cms/cms.swagger.json docker:/cms.swagger.json
+	docker exec -it docker sh -c "git clone git@github.com:thurt/cms-client-api.git && cd cms-client-api && git pull"
+	docker exec -it docker sh -c "docker pull swaggerapi/swagger-codegen-cli:v2.3.1"
+	docker exec -it docker sh -c "docker run --rm --mount type=bind,src=/cms-client-api,dst=/local --mount type=bind,src=/cms.swagger.json,dst=/cms.swagger.json swaggerapi/swagger-codegen-cli:v2.3.1 generate -i /cms.swagger.json -l typescript-fetch -o /local"
+	docker cp docker:/cms-client-api ../
+	docker stop docker && docker rm docker
 
 ##############################
 ###### DOMAIN 
