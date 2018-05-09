@@ -195,8 +195,8 @@ $(CMS_MOCK_AUTH): $(CMS_GO) | $(MOCKGEN)
 $(CMS_MOCK): $(CMS_GO) | $(MOCKGEN)
 	mockgen $(CMS_PROTO_PACKAGE) CmsServer > $@
 
-cms: $(CMS_PROTO) $(CMS_GO) $(CMS_VALIDATOR) $(CMS_GATEWAY) $(CMS_SWAGGER) $(CMS_MOCK) $(CMS_MOCK_HASHER) $(CMS_MOCK_EMAILER) $(CMS_MOCK_AUTH)
-	@touch cms
+cms.: $(CMS_PROTO) $(CMS_GO) $(CMS_VALIDATOR) $(CMS_GATEWAY) $(CMS_SWAGGER) $(CMS_MOCK) $(CMS_MOCK_HASHER) $(CMS_MOCK_EMAILER) $(CMS_MOCK_AUTH)
+	@touch cms.
 
 
 ##############################
