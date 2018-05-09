@@ -5,7 +5,7 @@
 package mock_proto
 
 import (
-	"context"
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"

@@ -5,13 +5,12 @@
 package mock_proto
 
 import (
-	"context"
-	reflect "reflect"
-
+	context "context"
 	gomock "github.com/golang/mock/gomock"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	wrappers "github.com/golang/protobuf/ptypes/wrappers"
 	proto "github.com/thurt/demo-blog-platform/cms/proto"
+	reflect "reflect"
 )
 
 // MockHasherServer is a mock of HasherServer interface

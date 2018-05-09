@@ -46,8 +46,7 @@ import _ "github.com/mwitkow/go-proto-validators"
 import _ "github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger/options"
 
 import (
-	context "context"
-
+	context "golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
 )
 
