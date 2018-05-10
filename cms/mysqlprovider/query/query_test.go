@@ -140,3 +140,8 @@ func TestUpdateUserLastActive(t *testing.T) {
 	f.Fuzz(ur)
 	checkSyntax(q.UpdateUserLastActive(ur), t)
 }
+func TestUpdateUnpublishedPost(t *testing.T) {
+	upws := &pb.UpdatePostWithSlug{Post: &pb.UpdatePostRequest{}}
+	f.Fuzz(upws)
+	checkSyntax(q.UpdateUnpublishedPost(upws), t)
+}
