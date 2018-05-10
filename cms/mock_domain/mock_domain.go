@@ -203,9 +203,9 @@ func (mr *MockProviderMockRecorder) GetPosts(arg0, arg1 interface{}) *gomock.Cal
 }
 
 // GetUnpublishedPost mocks base method
-func (m *MockProvider) GetUnpublishedPost(arg0 context.Context, arg1 *proto.PostRequest) (*proto.Post, error) {
+func (m *MockProvider) GetUnpublishedPost(arg0 context.Context, arg1 *proto.PostRequest) (*proto.UnpublishedPost, error) {
 	ret := m.ctrl.Call(m, "GetUnpublishedPost", arg0, arg1)
-	ret0, _ := ret[0].(*proto.Post)
+	ret0, _ := ret[0].(*proto.UnpublishedPost)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

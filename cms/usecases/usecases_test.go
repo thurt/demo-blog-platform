@@ -497,7 +497,7 @@ func TestGetUnpublishedPost(t *testing.T) {
 
 		r := &pb.PostRequest{}
 
-		tf.Provider.EXPECT().GetUnpublishedPost(gomock.Any(), r).Return(&pb.Post{}, nil)
+		tf.Provider.EXPECT().GetUnpublishedPost(gomock.Any(), r).Return(&pb.UnpublishedPost{}, nil)
 
 		_, err := uc.GetUnpublishedPost(ctx, r)
 		if err == nil {
