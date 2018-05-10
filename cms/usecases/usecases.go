@@ -344,10 +344,3 @@ func (u *useCases) Logout(ctx context.Context, r *pb.AccessToken) (*empty.Empty,
 	}
 	return &empty.Empty{}, nil
 }
-
-func (u *useCases) UpdateUnpublishedPost(ctx context.Context, r *pb.UpdatePostRequest) (*empty.Empty, error) {
-	// requires a Slug to be created from the Title and added to the request
-	upws := &pb.UpdatePostWithSlug{Post: r}
-	upws.Slug = slugMake(r.GetTitle())
-	return u.Provider.UpdateUnpublishedPost(ctx, upws)
-}

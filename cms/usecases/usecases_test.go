@@ -77,9 +77,9 @@ func TestUpdateUnpublishedPost(t *testing.T) {
 
 		r := &pb.UpdatePostRequest{Title: "Hello World!"}
 
-		tf.Provider.EXPECT().UpdateUnpublishedPost(ctx, &pb.UpdatePostWithSlug{Slug: "hello-world", Post: r})
+		tf.Provider.EXPECT().UpdatePost(ctx, &pb.UpdatePostWithSlug{Slug: "hello-world", Post: r})
 
-		_, _ = uc.UpdateUnpublishedPost(ctx, r)
+		_, _ = uc.UpdatePost(ctx, r)
 	})
 }
 
@@ -384,7 +384,7 @@ func TestGetPosts(t *testing.T) {
 
 func TestGetUnpublishedPosts(t *testing.T) {
 	r := &empty.Empty{}
-	mockStreamOut := mock_proto.NewMockCms_GetPostsServer()
+	mockStreamOut := mock_proto.NewMockCms_GetUnpublishedPostsServer()
 
 	t.Run("must answer with a grpc error when receiving an error", func(t *testing.T) {
 		tf, uc := newTestFixture(t)
