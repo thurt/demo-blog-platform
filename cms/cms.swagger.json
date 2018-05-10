@@ -579,6 +579,43 @@
             "APIKey": []
           }
         ]
+      },
+      "put": {
+        "summary": "Update a unpublished post",
+        "operationId": "UpdateUnpublishedPost",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/protobufEmpty"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/cmsUpdatePostRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Posts"
+        ],
+        "security": [
+          {
+            "APIKey": []
+          }
+        ]
       }
     },
     "/users/{id}": {

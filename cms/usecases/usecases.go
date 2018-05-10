@@ -344,3 +344,7 @@ func (u *useCases) Logout(ctx context.Context, r *pb.AccessToken) (*empty.Empty,
 	}
 	return &empty.Empty{}, nil
 }
+
+func (u *useCases) UpdateUnpublishedPost(ctx context.Context, r *pb.UpdatePostRequest) (*empty.Empty, error) {
+	return nil, status.Error(codes.Unimplemented, codes.Unimplemented.String())
+}

@@ -330,6 +330,19 @@ func (mr *MockCmsServerMockRecorder) UpdatePost(arg0, arg1 interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePost", reflect.TypeOf((*MockCmsServer)(nil).UpdatePost), arg0, arg1)
 }
 
+// UpdateUnpublishedPost mocks base method
+func (m *MockCmsServer) UpdateUnpublishedPost(arg0 context.Context, arg1 *proto.UpdatePostRequest) (*empty.Empty, error) {
+	ret := m.ctrl.Call(m, "UpdateUnpublishedPost", arg0, arg1)
+	ret0, _ := ret[0].(*empty.Empty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateUnpublishedPost indicates an expected call of UpdateUnpublishedPost
+func (mr *MockCmsServerMockRecorder) UpdateUnpublishedPost(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUnpublishedPost", reflect.TypeOf((*MockCmsServer)(nil).UpdateUnpublishedPost), arg0, arg1)
+}
+
 // VerifyNewUser mocks base method
 func (m *MockCmsServer) VerifyNewUser(arg0 context.Context, arg1 *proto.VerifyNewUserRequest) (*proto.UserRequest, error) {
 	ret := m.ctrl.Call(m, "VerifyNewUser", arg0, arg1)

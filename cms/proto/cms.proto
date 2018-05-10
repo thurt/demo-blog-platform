@@ -266,6 +266,23 @@ service Cms {
             get: "/unpublished-posts/slug/{slug}"
         };
     }
+    // Update a unpublished post
+    rpc UpdateUnpublishedPost(UpdatePostRequest) returns (google.protobuf.Empty) {
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            security: {
+                security_requirement: {
+                    key: "APIKey";
+                    value: {}
+                }
+            }
+            tags: ["Posts"]
+        };
+        option (google.api.http) = {
+            put: "/unpublished-posts/{id}"
+            body: "*"
+        };
+    }
+
 
     // Get a post
    rpc GetPost(PostRequest) returns (Post) {
