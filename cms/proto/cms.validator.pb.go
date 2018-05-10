@@ -13,6 +13,7 @@ It is generated from these files:
 
 It has these top-level messages:
 	Post
+	UnpublishedPost
 	PostRequest
 	PostBySlugRequest
 	CreatePostRequest
@@ -60,6 +61,14 @@ func (this *Post) Fuzz(c gofuzz.Continue) {
 	c.FuzzNoCustom(this)
 	var g goregen.Generator
 	var _ = g // Reference g to suppress errors if it is not otherwise used.
+}
+func (this *UnpublishedPost) Validate() error {
+	if this.Post != nil {
+		if err := go_proto_validators.CallValidatorIfExists(this.Post); err != nil {
+			return go_proto_validators.FieldError("Post", err)
+		}
+	}
+	return nil
 }
 func (this *PostRequest) Validate() error {
 	if !(this.Id > 0) {

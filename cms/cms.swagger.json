@@ -506,7 +506,7 @@
           "200": {
             "description": "(streaming responses)",
             "schema": {
-              "$ref": "#/definitions/cmsPost"
+              "$ref": "#/definitions/cmsUnpublishedPost"
             }
           }
         },
@@ -528,7 +528,7 @@
           "200": {
             "description": "",
             "schema": {
-              "$ref": "#/definitions/cmsPost"
+              "$ref": "#/definitions/cmsUnpublishedPost"
             }
           }
         },
@@ -558,7 +558,7 @@
           "200": {
             "description": "",
             "schema": {
-              "$ref": "#/definitions/cmsPost"
+              "$ref": "#/definitions/cmsUnpublishedPost"
             }
           }
         },
@@ -569,43 +569,6 @@
             "required": true,
             "type": "integer",
             "format": "int64"
-          }
-        ],
-        "tags": [
-          "Posts"
-        ],
-        "security": [
-          {
-            "APIKey": []
-          }
-        ]
-      },
-      "put": {
-        "summary": "Update a unpublished post",
-        "operationId": "UpdateUnpublishedPost",
-        "responses": {
-          "200": {
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/protobufEmpty"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "integer",
-            "format": "int64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/cmsUpdatePostRequest"
-            }
           }
         ],
         "tags": [
@@ -839,6 +802,22 @@
       },
       "title": "PostRequest"
     },
+    "cmsUnpublishedPost": {
+      "type": "object",
+      "properties": {
+        "post": {
+          "$ref": "#/definitions/cmsPost"
+        },
+        "published": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "last_published": {
+          "type": "string"
+        }
+      },
+      "title": "Unpublished Post"
+    },
     "cmsUpdateCommentRequest": {
       "type": "object",
       "properties": {
@@ -864,6 +843,10 @@
         },
         "content": {
           "type": "string"
+        },
+        "published": {
+          "type": "boolean",
+          "format": "boolean"
         }
       },
       "title": "UpdatePostRequest"

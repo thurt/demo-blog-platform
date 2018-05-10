@@ -22,6 +22,13 @@ message Post {
     string slug = 7;
 }
 
+// Unpublished Post
+message UnpublishedPost {
+    Post post = 1;
+    bool published = 2;
+    string last_published = 3;
+}
+
 // PostRequest
 message PostRequest {
     uint32 id = 1 [(validator.field) = {int_gt: 0}];
@@ -49,6 +56,7 @@ message UpdatePostRequest {
     uint32 id = 1 [(validator.field) = {int_gt: 0}];
     string title = 2 [(validator.field) = {length_lt: 257, regex: "^.{0,256}$", human_error: "title must be 256 characters or less"}]; 
     string content = 3 [(validator.field) = {length_lt: 16777216}];
+    bool published = 4;
 }
 
 // UpdatePostWithSlug
@@ -237,7 +245,7 @@ service Cms {
         };
     }
     // Get an unpublished post
-   rpc GetUnpublishedPost(PostRequest) returns (Post) {
+   rpc GetUnpublishedPost(PostRequest) returns (UnpublishedPost) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
             security: {
                 security_requirement: {
@@ -252,7 +260,7 @@ service Cms {
         };
     }
     // Get an unpublished post (by slug)
-    rpc GetUnpublishedPostBySlug(PostBySlugRequest) returns (Post) {
+    rpc GetUnpublishedPostBySlug(PostBySlugRequest) returns (UnpublishedPost) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
             security: {
                 security_requirement: {
@@ -266,23 +274,6 @@ service Cms {
             get: "/unpublished-posts/slug/{slug}"
         };
     }
-    // Update a unpublished post
-    rpc UpdateUnpublishedPost(UpdatePostRequest) returns (google.protobuf.Empty) {
-        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
-            security: {
-                security_requirement: {
-                    key: "APIKey";
-                    value: {}
-                }
-            }
-            tags: ["Posts"]
-        };
-        option (google.api.http) = {
-            put: "/unpublished-posts/{id}"
-            body: "*"
-        };
-    }
-
 
     // Get a post
    rpc GetPost(PostRequest) returns (Post) {
@@ -352,7 +343,7 @@ service Cms {
         };
     }
     // Get all unpublished posts
-    rpc GetUnpublishedPosts(google.protobuf.Empty) returns (stream Post) {
+    rpc GetUnpublishedPosts(google.protobuf.Empty) returns (stream UnpublishedPost) {
         option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
             security: {
                 security_requirement: {

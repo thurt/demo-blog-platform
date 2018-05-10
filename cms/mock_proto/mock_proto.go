@@ -190,9 +190,9 @@ func (mr *MockCmsServerMockRecorder) GetPosts(arg0, arg1 interface{}) *gomock.Ca
 }
 
 // GetUnpublishedPost mocks base method
-func (m *MockCmsServer) GetUnpublishedPost(arg0 context.Context, arg1 *proto.PostRequest) (*proto.Post, error) {
+func (m *MockCmsServer) GetUnpublishedPost(arg0 context.Context, arg1 *proto.PostRequest) (*proto.UnpublishedPost, error) {
 	ret := m.ctrl.Call(m, "GetUnpublishedPost", arg0, arg1)
-	ret0, _ := ret[0].(*proto.Post)
+	ret0, _ := ret[0].(*proto.UnpublishedPost)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -203,9 +203,9 @@ func (mr *MockCmsServerMockRecorder) GetUnpublishedPost(arg0, arg1 interface{}) 
 }
 
 // GetUnpublishedPostBySlug mocks base method
-func (m *MockCmsServer) GetUnpublishedPostBySlug(arg0 context.Context, arg1 *proto.PostBySlugRequest) (*proto.Post, error) {
+func (m *MockCmsServer) GetUnpublishedPostBySlug(arg0 context.Context, arg1 *proto.PostBySlugRequest) (*proto.UnpublishedPost, error) {
 	ret := m.ctrl.Call(m, "GetUnpublishedPostBySlug", arg0, arg1)
-	ret0, _ := ret[0].(*proto.Post)
+	ret0, _ := ret[0].(*proto.UnpublishedPost)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -328,19 +328,6 @@ func (m *MockCmsServer) UpdatePost(arg0 context.Context, arg1 *proto.UpdatePostR
 // UpdatePost indicates an expected call of UpdatePost
 func (mr *MockCmsServerMockRecorder) UpdatePost(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePost", reflect.TypeOf((*MockCmsServer)(nil).UpdatePost), arg0, arg1)
-}
-
-// UpdateUnpublishedPost mocks base method
-func (m *MockCmsServer) UpdateUnpublishedPost(arg0 context.Context, arg1 *proto.UpdatePostRequest) (*empty.Empty, error) {
-	ret := m.ctrl.Call(m, "UpdateUnpublishedPost", arg0, arg1)
-	ret0, _ := ret[0].(*empty.Empty)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateUnpublishedPost indicates an expected call of UpdateUnpublishedPost
-func (mr *MockCmsServerMockRecorder) UpdateUnpublishedPost(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUnpublishedPost", reflect.TypeOf((*MockCmsServer)(nil).UpdateUnpublishedPost), arg0, arg1)
 }
 
 // VerifyNewUser mocks base method
