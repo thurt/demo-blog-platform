@@ -83,7 +83,7 @@ func TestUpdatePost(t *testing.T) {
 	})
 	t.Run("requires that published Posts contain a title", func(t *testing.T) {
 		_, uc := newTestFixture(t)
-		r := &pb.UpdatePostRequest{Title: "", Published: true}
+		r := &pb.UpdatePostRequest{Title: ""}
 
 		_, err := uc.UpdatePost(ctx, r)
 

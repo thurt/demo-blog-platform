@@ -63,7 +63,7 @@ func (u *useCases) CreatePost(ctx context.Context, r *pb.CreatePostRequest) (*pb
 }
 
 func (u *useCases) UpdatePost(ctx context.Context, r *pb.UpdatePostRequest) (*empty.Empty, error) {
-	if r.GetPublished() == true && r.GetTitle() == "" {
+	if r.GetTitle() == "" {
 		return nil, status.Error(codes.InvalidArgument, "A published post must have a title")
 	}
 	// requires a Slug to be created from the Title and added to the request
