@@ -216,9 +216,9 @@ func (mr *MockProviderMockRecorder) GetUnpublishedPost(arg0, arg1 interface{}) *
 }
 
 // GetUnpublishedPostBySlug mocks base method
-func (m *MockProvider) GetUnpublishedPostBySlug(arg0 context.Context, arg1 *proto.PostBySlugRequest) (*proto.Post, error) {
+func (m *MockProvider) GetUnpublishedPostBySlug(arg0 context.Context, arg1 *proto.PostBySlugRequest) (*proto.UnpublishedPost, error) {
 	ret := m.ctrl.Call(m, "GetUnpublishedPostBySlug", arg0, arg1)
-	ret0, _ := ret[0].(*proto.Post)
+	ret0, _ := ret[0].(*proto.UnpublishedPost)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

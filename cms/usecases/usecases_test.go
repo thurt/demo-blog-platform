@@ -533,7 +533,7 @@ func TestGetUnpublishedPostBySlug(t *testing.T) {
 
 		r := &pb.PostBySlugRequest{}
 
-		tf.Provider.EXPECT().GetUnpublishedPostBySlug(gomock.Any(), r).Return(&pb.Post{}, nil)
+		tf.Provider.EXPECT().GetUnpublishedPostBySlug(gomock.Any(), r).Return(&pb.UnpublishedPost{}, nil)
 
 		_, err := uc.GetUnpublishedPostBySlug(ctx, r)
 		if err == nil {

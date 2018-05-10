@@ -14,7 +14,7 @@ type Provider interface {
 	GetPost(context.Context, *pb.PostRequest) (*pb.Post, error)
 	GetPostBySlug(context.Context, *pb.PostBySlugRequest) (*pb.Post, error)
 	GetUnpublishedPost(context.Context, *pb.PostRequest) (*pb.UnpublishedPost, error)
-	GetUnpublishedPostBySlug(context.Context, *pb.PostBySlugRequest) (*pb.Post, error)
+	GetUnpublishedPostBySlug(context.Context, *pb.PostBySlugRequest) (*pb.UnpublishedPost, error)
 	UpdatePost(context.Context, *pb.UpdatePostWithSlug) (*empty.Empty, error)
 	DeletePost(context.Context, *pb.PostRequest) (*empty.Empty, error)
 	GetPostComments(*pb.PostRequest, pb.Cms_GetPostCommentsServer) error

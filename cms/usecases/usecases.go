@@ -235,13 +235,13 @@ func (u *useCases) GetUnpublishedPost(ctx context.Context, r *pb.PostRequest) (*
 	return post, nil
 }
 
-func (u *useCases) GetUnpublishedPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (*pb.Post, error) {
+func (u *useCases) GetUnpublishedPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (*pb.UnpublishedPost, error) {
 	post, err := u.Provider.GetUnpublishedPostBySlug(ctx, r)
 	if err != nil {
 		log.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	if *post == (pb.Post{}) {
+	if *post == (pb.UnpublishedPost{}) {
 		return nil, status.Errorf(codes.NotFound, "The provided post slug %q does not exist", r.GetSlug())
 	}
 	return post, nil

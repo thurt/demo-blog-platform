@@ -171,11 +171,11 @@ func TestGetPostBySlug(t *testing.T) {
 
 func TestGetUnpublishedPost(t *testing.T) {
 	stubIn := &pb.PostRequest{}
-	stubOut := &pb.Post{}
+	stubOut := &pb.UnpublishedPost{Post: &pb.Post{}}
 	f.Fuzz(stubIn)
 	f.Fuzz(stubOut)
 	regexSql := esc(p.q.GetUnpublishedPost(stubIn))
-	stubRows := sqlmock.NewRows(structs.Names(stubOut))
+	stubRows := sqlmock.NewRows(append(structs.Names(stubOut.Post), "Published", "LastPublished"))
 	stubRows.AddRow(makeRowData(structs.Values(stubOut))...)
 
 	t.Run("requires dispatching the correct sql request", func(t *testing.T) {
@@ -208,12 +208,12 @@ func TestGetUnpublishedPost(t *testing.T) {
 	t.Run("requires returning zero-value struct when sql response is a sql.ErrNoRows", func(t *testing.T) {
 		mock.ExpectQuery(regexAny).WillReturnError(sql.ErrNoRows)
 
-		post, err := p.GetUnpublishedPost(context.Background(), stubIn)
+		upost, err := p.GetUnpublishedPost(context.Background(), stubIn)
 		if err != nil {
 			t.Error("unexpected error:", err.Error())
 		}
 
-		if *post != (pb.Post{}) {
+		if *upost != (pb.UnpublishedPost{}) && *upost.Post != (pb.Post{}) {
 			t.Error("expected a zero-value struct")
 		}
 	})
@@ -221,11 +221,11 @@ func TestGetUnpublishedPost(t *testing.T) {
 
 func TestGetUnpublishedPostBySlug(t *testing.T) {
 	stubIn := &pb.PostBySlugRequest{}
-	stubOut := &pb.Post{}
+	stubOut := &pb.UnpublishedPost{Post: &pb.Post{}}
 	f.Fuzz(stubIn)
 	f.Fuzz(stubOut)
 	regexSql := esc(p.q.GetUnpublishedPostBySlug(stubIn))
-	stubRows := sqlmock.NewRows(structs.Names(stubOut))
+	stubRows := sqlmock.NewRows(append(structs.Names(stubOut.Post), "Published", "LastPublished"))
 	stubRows.AddRow(makeRowData(structs.Values(stubOut))...)
 
 	t.Run("requires dispatching the correct sql request", func(t *testing.T) {
@@ -258,12 +258,12 @@ func TestGetUnpublishedPostBySlug(t *testing.T) {
 	t.Run("requires returning zero-value struct when sql response is a sql.ErrNoRows", func(t *testing.T) {
 		mock.ExpectQuery(regexAny).WillReturnError(sql.ErrNoRows)
 
-		post, err := p.GetUnpublishedPostBySlug(context.Background(), stubIn)
+		upost, err := p.GetUnpublishedPostBySlug(context.Background(), stubIn)
 		if err != nil {
 			t.Error("unexpected error:", err.Error())
 		}
 
-		if *post != (pb.Post{}) {
+		if *upost != (pb.UnpublishedPost{}) && *upost.Post != (pb.Post{}) {
 			t.Error("expected a zero-value struct")
 		}
 	})

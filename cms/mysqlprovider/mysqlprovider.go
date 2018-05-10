@@ -66,9 +66,9 @@ func (p *provider) GetPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (
 	return po, nil
 }
 
-func (p *provider) GetUnpublishedPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
-	po := &pb.Post{}
-	err := p.db.QueryRow(p.q.GetUnpublishedPost(r)).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Slug)
+func (p *provider) GetUnpublishedPost(ctx context.Context, r *pb.PostRequest) (*pb.UnpublishedPost, error) {
+	upo := &pb.UnpublishedPost{Post: &pb.Post{}}
+	err := p.db.QueryRow(p.q.GetUnpublishedPost(r)).Scan(&upo.Post.Id, &upo.Post.Title, &upo.Post.Content, &upo.Post.Created, &upo.Post.LastEdited, &upo.Post.Slug, &upo.Published, &upo.LastPublished)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// no-op -- this line is for checking test coverage of this rule
@@ -76,12 +76,12 @@ func (p *provider) GetUnpublishedPost(ctx context.Context, r *pb.PostRequest) (*
 			return nil, err
 		}
 	}
-	return po, nil
+	return upo, nil
 }
 
-func (p *provider) GetUnpublishedPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (*pb.Post, error) {
-	po := &pb.Post{}
-	err := p.db.QueryRow(p.q.GetUnpublishedPostBySlug(r)).Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Slug)
+func (p *provider) GetUnpublishedPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (*pb.UnpublishedPost, error) {
+	upo := &pb.UnpublishedPost{Post: &pb.Post{}}
+	err := p.db.QueryRow(p.q.GetUnpublishedPostBySlug(r)).Scan(&upo.Post.Id, &upo.Post.Title, &upo.Post.Content, &upo.Post.Created, &upo.Post.LastEdited, &upo.Post.Slug, &upo.Published, &upo.LastPublished)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// no-op -- this line is for checking test coverage of this rule
@@ -89,7 +89,7 @@ func (p *provider) GetUnpublishedPostBySlug(ctx context.Context, r *pb.PostBySlu
 			return nil, err
 		}
 	}
-	return po, nil
+	return upo, nil
 }
 
 func (p *provider) CreatePost(ctx context.Context, r *pb.CreatePostWithSlug) (*pb.PostRequest, error) {
