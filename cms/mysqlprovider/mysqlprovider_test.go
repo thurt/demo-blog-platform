@@ -608,11 +608,14 @@ func TestGetPosts(t *testing.T) {
 
 func TestGetUnpublishedPosts(t *testing.T) {
 	stubIn := &empty.Empty{}
-	stubOut := []*pb.Post{&pb.Post{}, &pb.Post{}}
+	stubOut := []*pb.UnpublishedPost{&pb.UnpublishedPost{Post: &pb.Post{}}, &pb.UnpublishedPost{Post: &pb.Post{}}}
 	f.Fuzz(stubIn)
 	f.Fuzz(stubOut[0])
 	f.Fuzz(stubOut[1])
-	mockStreamOut := mock_proto.NewMockCms_GetPostsServer()
+	mockStreamOut := mock_proto.NewMockCms_GetUnpublishedPostsServer()
+	columns := append(structs.Names(stubOut[0].Post), "Published", "LastPublished")
+	rowValues1 := makeRowData(structs.Values(stubOut[0]))
+	rowValues2 := makeRowData(structs.Values(stubOut[1]))
 
 	t.Run("requires dispatching the correct sql request", func(t *testing.T) {
 		regexSql := esc(p.q.GetUnpublishedPosts())
@@ -623,7 +626,7 @@ func TestGetUnpublishedPosts(t *testing.T) {
 		checkExpectations(t)
 	})
 	t.Run("requires returning result thru stream with correct values from sql response", func(t *testing.T) {
-		stubRows := sqlmock.NewRows(structs.Names(stubOut[0])).AddRow(makeRowData(structs.Values(stubOut[0]))...).AddRow(makeRowData(structs.Values(stubOut[1]))...)
+		stubRows := sqlmock.NewRows(columns).AddRow(rowValues1...).AddRow(rowValues2...)
 		mock.ExpectQuery(regexAny).WillReturnRows(stubRows)
 
 		err := p.GetUnpublishedPosts(stubIn, mockStreamOut)
@@ -644,8 +647,8 @@ func TestGetUnpublishedPosts(t *testing.T) {
 		}
 	})
 	t.Run("requires returning error when stream.Send creates an error", func(t *testing.T) {
-		mockStreamOutWithErr := mock_proto.NewMockCms_GetPostsServer().SetSendError(1, errors.New(""))
-		stubRows := sqlmock.NewRows(structs.Names(stubOut[0])).AddRow(makeRowData(structs.Values(stubOut[0]))...).AddRow(makeRowData(structs.Values(stubOut[1]))...)
+		mockStreamOutWithErr := mock_proto.NewMockCms_GetUnpublishedPostsServer().SetSendError(1, errors.New(""))
+		stubRows := sqlmock.NewRows(columns).AddRow(rowValues1...).AddRow(rowValues2...)
 		mock.ExpectQuery(regexAny).WillReturnRows(stubRows)
 
 		err := p.GetUnpublishedPosts(stubIn, mockStreamOutWithErr)
@@ -666,7 +669,7 @@ func TestGetUnpublishedPosts(t *testing.T) {
 		}
 	})
 	t.Run("requires returning error when driver row creates an error", func(t *testing.T) {
-		stubRowsWithErr := sqlmock.NewRows(structs.Names(stubOut[0])).AddRow(makeRowData(structs.Values(stubOut[0]))...).RowError(0, errors.New(""))
+		stubRowsWithErr := sqlmock.NewRows(columns).AddRow(rowValues1...).RowError(0, errors.New(""))
 		mock.ExpectQuery(regexAny).WillReturnRows(stubRowsWithErr)
 
 		err := p.GetUnpublishedPosts(stubIn, mockStreamOut)

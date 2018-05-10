@@ -229,7 +229,7 @@ func (p *provider) GetPosts(r *empty.Empty, stream pb.Cms_GetPostsServer) error 
 	return nil
 }
 
-func (p *provider) GetUnpublishedPosts(r *empty.Empty, stream pb.Cms_GetPostsServer) error {
+func (p *provider) GetUnpublishedPosts(r *empty.Empty, stream pb.Cms_GetUnpublishedPostsServer) error {
 	ps, err := p.db.Query(p.q.GetUnpublishedPosts())
 	if err != nil {
 		return err
@@ -237,12 +237,12 @@ func (p *provider) GetUnpublishedPosts(r *empty.Empty, stream pb.Cms_GetPostsSer
 	defer ps.Close()
 
 	for ps.Next() {
-		po := &pb.Post{}
-		err = ps.Scan(&po.Id, &po.Title, &po.Content, &po.Created, &po.LastEdited, &po.Slug)
+		upo := &pb.UnpublishedPost{Post: &pb.Post{}}
+		err = ps.Scan(&upo.Post.Id, &upo.Post.Title, &upo.Post.Content, &upo.Post.Created, &upo.Post.LastEdited, &upo.Post.Slug, &upo.Published, &upo.LastPublished)
 		if err != nil {
 			return err
 		}
-		err := stream.Send(po)
+		err := stream.Send(upo)
 		if err != nil {
 			return err
 		}

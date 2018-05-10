@@ -43,6 +43,42 @@ func NewMockCms_GetPostsServer() *mockCms_GetPostsServer {
 	return &mockCms_GetPostsServer{nextErr: make(map[int]error)}
 }
 
+type mockCms_GetUnpublishedPostsServer struct {
+	grpc.ServerStream
+	Results []*pb.UnpublishedPost
+	pos     int
+	nextErr map[int]error
+	ctx     context.Context
+}
+
+func (m *mockCms_GetUnpublishedPostsServer) SetSendError(pos int, err error) *mockCms_GetUnpublishedPostsServer {
+	m.nextErr[pos] = err
+	return m
+}
+
+func (m *mockCms_GetUnpublishedPostsServer) Send(p *pb.UnpublishedPost) error {
+	if err, ok := m.nextErr[m.pos]; ok {
+		return err
+	}
+
+	m.Results = append(m.Results, p)
+
+	m.pos++
+	return nil
+}
+
+func (m *mockCms_GetUnpublishedPostsServer) Context() context.Context {
+	return m.ctx
+}
+
+func (m *mockCms_GetUnpublishedPostsServer) SetContext(ctx context.Context) {
+	m.ctx = ctx
+}
+
+func NewMockCms_GetUnpublishedPostsServer() *mockCms_GetUnpublishedPostsServer {
+	return &mockCms_GetUnpublishedPostsServer{nextErr: make(map[int]error)}
+}
+
 type MockCms_GetPostCommentsServer struct {
 	grpc.ServerStream
 	Results []*pb.Comment

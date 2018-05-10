@@ -229,7 +229,7 @@ func (mr *MockProviderMockRecorder) GetUnpublishedPostBySlug(arg0, arg1 interfac
 }
 
 // GetUnpublishedPosts mocks base method
-func (m *MockProvider) GetUnpublishedPosts(arg0 *empty.Empty, arg1 proto.Cms_GetPostsServer) error {
+func (m *MockProvider) GetUnpublishedPosts(arg0 *empty.Empty, arg1 proto.Cms_GetUnpublishedPostsServer) error {
 	ret := m.ctrl.Call(m, "GetUnpublishedPosts", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -302,19 +302,6 @@ func (m *MockProvider) UpdatePost(arg0 context.Context, arg1 *proto.UpdatePostWi
 // UpdatePost indicates an expected call of UpdatePost
 func (mr *MockProviderMockRecorder) UpdatePost(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePost", reflect.TypeOf((*MockProvider)(nil).UpdatePost), arg0, arg1)
-}
-
-// UpdateUnpublishedPost mocks base method
-func (m *MockProvider) UpdateUnpublishedPost(arg0 context.Context, arg1 *proto.UpdatePostWithSlug) (*empty.Empty, error) {
-	ret := m.ctrl.Call(m, "UpdateUnpublishedPost", arg0, arg1)
-	ret0, _ := ret[0].(*empty.Empty)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateUnpublishedPost indicates an expected call of UpdateUnpublishedPost
-func (mr *MockProviderMockRecorder) UpdateUnpublishedPost(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUnpublishedPost", reflect.TypeOf((*MockProvider)(nil).UpdateUnpublishedPost), arg0, arg1)
 }
 
 // UpdateUserLastActive mocks base method
