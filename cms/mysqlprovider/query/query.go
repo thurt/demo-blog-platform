@@ -38,7 +38,19 @@ func (q *Query) GetPosts() string {
 }
 
 func (q *Query) GetUnpublishedPosts() string {
-	return "SELECT id, title, content, created, last_edited, slug FROM posts ORDER BY created DESC"
+	return fmt.Sprintf(`
+		SELECT p.id, p.slug, p.title, p.content, p.created, p.last_edited,
+		CASE WHEN EXISTS(SELECT pp.id FROM published_posts pp WHERE pp.id=p.id) 
+			THEN TRUE 
+			ELSE FALSE 
+		END AS published, 
+		CASE WHEN EXISTS(SELECT pp.last_edited FROM published_posts pp WHERE pp.id=p.id) 
+			THEN pp.last_edited 
+			ELSE "" 
+		END AS last_published 
+		FROM posts p, published_posts pp 
+		ORDER BY created DESC
+	`)
 }
 
 func (q *Query) GetComments(_ *empty.Empty) string {
@@ -86,7 +98,19 @@ func (q *Query) GetPostBySlug(r *pb.PostBySlugRequest) string {
 }
 
 func (q *Query) GetUnpublishedPost(r *pb.PostRequest) string {
-	return fmt.Sprintf("SELECT id, title, content, created, last_edited, slug FROM posts WHERE id=%d", r.GetId())
+	return fmt.Sprintf(`
+		SELECT p.id, p.slug, p.title, p.content, p.created, p.last_edited,
+		CASE WHEN EXISTS(SELECT pp.id FROM published_posts pp WHERE pp.id=p.id) 
+			THEN TRUE 
+			ELSE FALSE 
+		END AS published, 
+		CASE WHEN EXISTS(SELECT pp.last_edited FROM published_posts pp WHERE pp.id=p.id) 
+			THEN pp.last_edited 
+			ELSE "" 
+		END AS last_published 
+		FROM posts p, published_posts pp 
+		WHERE p.id=%d
+	`, r.GetId())
 }
 
 func (q *Query) GetUnpublishedPostBySlug(r *pb.PostBySlugRequest) string {
