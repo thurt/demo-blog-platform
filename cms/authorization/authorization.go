@@ -26,8 +26,8 @@ type Authorization interface {
 	UpdateComment(context.Context, *pb.UpdateCommentRequest) (*empty.Empty, error)
 	DeleteComment(context.Context, *pb.CommentRequest) (*empty.Empty, error)
 	GetUnpublishedPosts(*empty.Empty, pb.Cms_GetUnpublishedPostsServer) error
-	GetUnpublishedPost(context.Context, *pb.PostRequest) (*pb.Post, error)
-	GetUnpublishedPostBySlug(context.Context, *pb.PostBySlugRequest) (*pb.Post, error)
+	GetUnpublishedPost(context.Context, *pb.PostRequest) (*pb.UnpublishedPost, error)
+	GetUnpublishedPostBySlug(context.Context, *pb.PostBySlugRequest) (*pb.UnpublishedPost, error)
 }
 
 func New(server pb.CmsServer) pb.CmsServer {
@@ -125,7 +125,7 @@ func (a *authorization) GetUnpublishedPosts(r *empty.Empty, stream pb.Cms_GetUnp
 	return a.CmsServer.GetUnpublishedPosts(r, stream)
 }
 
-func (a *authorization) GetUnpublishedPost(ctx context.Context, r *pb.PostRequest) (*pb.Post, error) {
+func (a *authorization) GetUnpublishedPost(ctx context.Context, r *pb.PostRequest) (*pb.UnpublishedPost, error) {
 	post, err := a.CmsServer.GetUnpublishedPost(ctx, r)
 	if err != nil {
 		return nil, err
@@ -136,7 +136,7 @@ func (a *authorization) GetUnpublishedPost(ctx context.Context, r *pb.PostReques
 	return post, nil
 }
 
-func (a *authorization) GetUnpublishedPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (*pb.Post, error) {
+func (a *authorization) GetUnpublishedPostBySlug(ctx context.Context, r *pb.PostBySlugRequest) (*pb.UnpublishedPost, error) {
 	post, err := a.CmsServer.GetUnpublishedPostBySlug(ctx, r)
 	if err != nil {
 		return nil, err

@@ -291,7 +291,7 @@ func TestCreatePost(t *testing.T) {
 
 func TestGetUnpublishedPosts(t *testing.T) {
 	r := &empty.Empty{}
-	mockStream := mock_proto.NewMockCms_GetPostsServer()
+	mockStream := mock_proto.NewMockCms_GetUnpublishedPostsServer()
 
 	t.Run("requires permission", func(t *testing.T) {
 		mock, a := setup(t)
