@@ -348,3 +348,11 @@ func (p *provider) CreateNewUser(ctx context.Context, r *pb.CreateUserWithRole) 
 	}
 	return &pb.UserRequest{r.User.GetId()}, nil
 }
+
+func (p *provider) UpdateUnpublishedPost(ctx context.Context, r *pb.UpdatePostWithSlug) (*empty.Empty, error) {
+	_, err := p.db.Exec(p.q.UpdateUnpublishedPost(r))
+	if err != nil {
+		return nil, err
+	}
+	return &empty.Empty{}, nil
+}

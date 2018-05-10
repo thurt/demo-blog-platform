@@ -776,6 +776,43 @@ func TestUpdateUserLastActive(t *testing.T) {
 	})
 }
 
+func TestUpdateUnpublishedPost(t *testing.T) {
+	stubIn := &pb.UpdatePostWithSlug{Post: &pb.UpdatePostRequest{}}
+	stubOut := &empty.Empty{}
+	f.Fuzz(stubIn)
+	stubResult := sqlmock.NewResult(0, 1)
+
+	t.Run("requires sending the correct sql query", func(t *testing.T) {
+		regexSql := esc(p.q.UpdateUnpublishedPost(stubIn))
+		mock.ExpectExec(regexSql)
+
+		_, _ = p.UpdateUnpublishedPost(context.Background(), stubIn)
+
+		checkExpectations(t)
+
+	})
+	t.Run("requires returning error when sql response is an error", func(t *testing.T) {
+		mock.ExpectExec(regexAny).WillReturnError(errors.New(""))
+
+		_, err := p.UpdateUnpublishedPost(context.Background(), stubIn)
+		if err == nil {
+			t.Error("expected an error")
+		}
+	})
+	t.Run("requires returning result with correct values from sql response", func(t *testing.T) {
+		mock.ExpectExec(regexAny).WillReturnResult(stubResult)
+
+		result, err := p.UpdateUnpublishedPost(context.Background(), stubIn)
+		if err != nil {
+			t.Error("unexpected error:", err.Error())
+		}
+
+		if !reflect.DeepEqual(result, stubOut) {
+			t.Error("result should have same values as stub values")
+		}
+	})
+}
+
 func TestCreateNewUser(t *testing.T) {
 	cur := &pb.CreateUserRequest{}
 	f.Fuzz(cur)
