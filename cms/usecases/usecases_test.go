@@ -71,6 +71,18 @@ func TestCreatePost(t *testing.T) {
 	})
 }
 
+func TestUpdateUnpublishedPost(t *testing.T) {
+	t.Run("requires a Slug to be created from the Title and added to the request", func(t *testing.T) {
+		tf, uc := newTestFixture(t)
+
+		r := &pb.UpdatePostRequest{Title: "Hello World!"}
+
+		tf.Provider.EXPECT().UpdateUnpublishedPost(ctx, &pb.UpdatePostWithSlug{Slug: "hello-world", Post: r})
+
+		_, _ = uc.UpdateUnpublishedPost(ctx, r)
+	})
+}
+
 func TestUpdatePost(t *testing.T) {
 	t.Run("requires a Slug to be created from the Title and added to the request", func(t *testing.T) {
 		tf, uc := newTestFixture(t)
