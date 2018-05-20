@@ -213,10 +213,9 @@ $(CLIENT_REPO): | $(GIT)
 	git clone git@github.com:thurt/cms-client-api.git $@
 
 CLIENT_BUILD_IMAGE=jimschubert/swagger-codegen-cli:2.2.3
-CLIENT_BUILD="docker pull $(CLIENT_BUILD_IMAGE) && docker run --rm --mount type=bind,src=/$(CLIENT_REPO_NAME),dst=/local --mount type=bind,src=/cms.swagger.json,dst=/cms.swagger.json $(CLIENT_BUILD_IMAGE) generate -i /cms.swagger.json -l typescript-fetch -o /local"
-
+CLIENT_BUILD="docker pull $(CLIENT_BUILD_IMAGE) && docker run -it --rm --mount type=bind,src=/$(CLIENT_REPO_NAME),dst=/local --mount type=bind,src=/cms.swagger.json,dst=/cms.swagger.json $(CLIENT_BUILD_IMAGE) generate -i /cms.swagger.json -l typescript-fetch -o /local"
 CLIENT_COMPILE_IMAGE=node:7-alpine
-CLIENT_COMPILE="docker pull $(CLIENT_COMPILE_IMAGE) && docker run -it --mount type=bind,src=/$(CLIENT_REPO_NAME),dst=/$(CLIENT_REPO_NAME) $(CLIENT_COMPILE_IMAGE) sh -c 'cd /$(CLIENT_REPO_NAME) && npm install --unsafe-perm && ./node_modules/.bin/tsc'"
+CLIENT_COMPILE="docker pull $(CLIENT_COMPILE_IMAGE) && docker run -it --rm --mount type=bind,src=/$(CLIENT_REPO_NAME),dst=/$(CLIENT_REPO_NAME) $(CLIENT_COMPILE_IMAGE) sh -c 'cd /$(CLIENT_REPO_NAME) && npm install --unsafe-perm && ./node_modules/.bin/tsc'"
 
 GEN_CLIENT: $(CMS_SWAGGER) | $(CLIENT_REPO) $(DOCKER) 
 	@#for some reason, mounting to /tmp/ssh_auth.sock does not work. maybe related to the storage driver used by dind
@@ -233,15 +232,49 @@ GEN_CLIENT: $(CMS_SWAGGER) | $(CLIENT_REPO) $(DOCKER)
 	docker exec -it docker sh -c $(CLIENT_COMPILE)
 	docker cp docker:/$(CLIENT_REPO_NAME) ../
 	docker stop docker && docker rm docker
+	@touch GEN_CLIENT
 
-PUSH_CLIENT: | $(CLIENT_REPO) $(GIT)
+
+STUB_SERVER_BUILD_IMAGE=swaggerapi/swagger-codegen-cli:latest
+STUB_SERVER_REPO_NAME=cms-stub-server
+STUB_SERVER_REPO=../$(STUB_SERVER_REPO_NAME)
+$(STUB_SERVER_REPO): | $(GIT)
+	git clone git@github.com:thurt/cms-stub-server.git $@
+STUB_SERVER="docker pull $(STUB_SERVER_BUILD_IMAGE) && docker run -it --rm --mount type=bind,src=/$(STUB_SERVER_REPO_NAME),dst=/local --mount type=bind,src=/cms.swagger.json,dst=/cms.swagger.json $(STUB_SERVER_BUILD_IMAGE) generate -i /cms.swagger.json -l nodejs-server -o /local"
+
+GEN_STUB_SERVER: $(CMS_SWAGGER) | $(CLIENT_REPO) $(DOCKER)
+	docker run \
+		--name=docker \
+		-d \
+		-it \
+		--privileged \
+		--mount type=volume,src=dind-volume,dst=/var/lib/docker \
+		docker:dind --group 999
+	docker cp $(CMS_SWAGGER) docker:/
+	docker cp $(STUB_SERVER_REPO) docker:/
+	docker exec -it docker sh -c $(STUB_SERVER)
+	docker cp docker:/$(STUB_SERVER_REPO_NAME) ../
+	docker cp docker:/$(CLIENT_REPO_NAME) ../
+	docker stop docker && docker rm docker
+	@touch GEN_STUB_SERVER
+
+
+PUSH_CLIENT: GEN_CLIENT | $(CLIENT_REPO) $(GIT)
 ifeq ($(shell cd $(CLIENT_REPO) && git diff --exit-code > /dev/null; echo $$?),1)
 	cd $(CLIENT_REPO) && git add . && git commit -m "update swagger" && git push origin HEAD
 else
 	@echo "No changes detected for $(CLIENT_REPO)"
 endif	
 
-client: GEN_CLIENT PUSH_CLIENT
+PUSH_STUB_SERVER: GEN_STUB_SERVER | $(STUB_SERVER_REPO) $(GIT)
+ifeq ($(shell cd $(STUB_SERVER_REPO) && git diff --exit-code > /dev/null; echo $$?),1)
+	cd $(STUB_SERVER_REPO) && git add . && git commit -m "update swagger" && git push origin HEAD
+else
+	@echo "No changes detected for $(STUB_SERVER_REPO)"
+endif	
+
+
+client: PUSH_CLIENT PUSH_STUB_SERVER
 	@touch client
 
 ##############################
