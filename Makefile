@@ -214,9 +214,11 @@ $(CLIENT_REPO): | $(GIT)
 
 CLIENT_BUILD_IMAGE=jimschubert/swagger-codegen-cli:2.2.3
 CLIENT_BUILD="docker pull $(CLIENT_BUILD_IMAGE) && docker run --rm --mount type=bind,src=/$(CLIENT_REPO_NAME),dst=/local --mount type=bind,src=/cms.swagger.json,dst=/cms.swagger.json $(CLIENT_BUILD_IMAGE) generate -i /cms.swagger.json -l typescript-fetch -o /local"
-	
-GEN_CLIENT=$(CLIENT_REPO)/api.ts
-$(GEN_CLIENT): $(CMS_SWAGGER) | $(CLIENT_REPO) $(DOCKER) 
+
+CLIENT_COMPILE_IMAGE=node:7-alpine
+CLIENT_COMPILE="docker pull $(CLIENT_COMPILE_IMAGE) && docker run -it --mount type=bind,src=/$(CLIENT_REPO_NAME),dst=/$(CLIENT_REPO_NAME) $(CLIENT_COMPILE_IMAGE) sh -c 'cd /$(CLIENT_REPO_NAME) && npm install --unsafe-perm && ./node_modules/.bin/tsc'"
+
+GEN_CLIENT: $(CMS_SWAGGER) | $(CLIENT_REPO) $(DOCKER) 
 	@#for some reason, mounting to /tmp/ssh_auth.sock does not work. maybe related to the storage driver used by dind
 	docker run \
 		--name=docker \
@@ -228,6 +230,7 @@ $(GEN_CLIENT): $(CMS_SWAGGER) | $(CLIENT_REPO) $(DOCKER)
 	docker cp $(CMS_SWAGGER) docker:/
 	docker cp $(CLIENT_REPO) docker:/
 	docker exec -it docker sh -c $(CLIENT_BUILD)
+	docker exec -it docker sh -c $(CLIENT_COMPILE)
 	docker cp docker:/$(CLIENT_REPO_NAME) ../
 	docker stop docker && docker rm docker
 
@@ -238,7 +241,7 @@ else
 	@echo "No changes detected for $(CLIENT_REPO)"
 endif	
 
-client: $(GEN_CLIENT) PUSH_CLIENT
+client: GEN_CLIENT PUSH_CLIENT
 	@touch client
 
 ##############################
