@@ -252,7 +252,7 @@ func (u *useCases) RegisterNewUser(ctx context.Context, r *pb.CreateUserRequest)
 		To:      fmt.Sprintf("%s <%s>", cuwr.GetUser().GetId(), cuwr.GetUser().GetEmail()),
 		From:    "Demo Blog <no-reply@demo-blog-platform.com>",
 		Subject: "Verify Your Email",
-		Body:    "In order to complete registration with user id " + r.GetId() + " you must copy the following value into the prompt as instructed on the Demo Blog Platform website: \n\n" + tv,
+		Body:    "In order to complete registration with user id\n" + r.GetId() + "\nyou must enter this verification code on the website:\n\n" + tv,
 	})
 
 	if err != nil {
