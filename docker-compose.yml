@@ -1,42 +1,59 @@
 version: "3.3"
 services:
-    server:
-        build: ./cms
-        ports:
-            - "10000:10000" #grpc
-            - "8080:8080"   #rest
-            - "8181:8181"   #grpc tracing
-        environment:
-            - MYSQL_CONNECTION=${MYSQL_CONNECTION-root:root@tcp(db:3306)/cms}
-            - MEMCACHED_HOST=${MEMCACHED_HOST-memcached:3000}
-            - MEMCACHED_USER=${MEMCACHED_USER-memcached}
-            - MEMCACHED_PASSWORD=${MEMCACHED_PASSWORD-memcached}
-            - STATICHOST_ADDRESS=${STATICHOST_ADDRESS-https://storage.googleapis.com/learned-stone-189802.appspot.com}
-            - SMTP_HOST=${SMTP_HOST-mail}
-            - SMTP_PORT=${SMTP_PORT-25}
-            - SMTP_USER=${SMTP_USER}
-            - SMTP_PASSWORD=${SMTP_PASSWORD}
-            - DB_SCHEMA_VERSION=${DB_SCHEMA_VERSION}
-        depends_on:
-            - db
-            - memcached
-            - mail
-        command: ["/root/wait-for-it.sh", "--timeout=120", "db:3306", "--", "/root/wait-for-it.sh", "--timeout=120", "memcached:3000", "--", "/root/wait-for-it.sh", "--timeout=120", "mail:25", "--", "./cms"]
-    db:
-        build: ./cms/mysqlprovider/db
-        volumes:
-            - type: volume
-              source: db-data
-              target: /var/lib/mysql
-        environment:
-            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD-root}
-    memcached:
-        image: quay.io/aptible/memcached
-        environment:
-            - PASSWORD=${MEMCACHED_PASSWORD-memcached}
-        command: ["/usr/bin/memcached-sasl"]
-    mail:
-        image: namshi/smtp:latest
+  server:
+    build: ./cms
+    ports:
+      - "10000:10000" #grpc
+      - "8080:8080" #rest
+      - "8181:8181" #grpc tracing
+    environment:
+      - MYSQL_CONNECTION=${MYSQL_CONNECTION-root:root@tcp(db:3306)/cms}
+      - MEMCACHED_HOST=${MEMCACHED_HOST-memcached:3000}
+      - MEMCACHED_USER=${MEMCACHED_USER-memcached}
+      - MEMCACHED_PASSWORD=${MEMCACHED_PASSWORD-memcached}
+      - STATICHOST_ADDRESS=${STATICHOST_ADDRESS-https://storage.googleapis.com/learned-stone-189802.appspot.com}
+      - SMTP_HOST=${SMTP_HOST-mail}
+      - SMTP_PORT=${SMTP_PORT-1025}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - DB_SCHEMA_VERSION=${DB_SCHEMA_VERSION-1}
+    depends_on:
+      - db
+      - memcached
+      - mail
+    command:
+      [
+        "/root/wait-for-it.sh",
+        "--timeout=120",
+        "db:3306",
+        "--",
+        "/root/wait-for-it.sh",
+        "--timeout=120",
+        "memcached:3000",
+        "--",
+        "/root/wait-for-it.sh",
+        "--timeout=120",
+        "mail:1025",
+        "--",
+        "./cms",
+      ]
+  db:
+    build: ./cms/mysqlprovider/db
+    volumes:
+      - type: volume
+        source: db-data
+        target: /var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD-root}
+  memcached:
+    image: quay.io/aptible/memcached
+    environment:
+      - PASSWORD=${MEMCACHED_PASSWORD-memcached}
+    command: ["/usr/bin/memcached-sasl"]
+  mail:
+    image: mailhog/mailhog:latest
+    ports:
+      - 8025:8025
 
 volumes:
-    db-data:
+  db-data:
